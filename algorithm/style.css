@@ -1,13 +1,3 @@
-/* Local font: drop WanYuanTi.woff2 into fonts/ to activate */
-@font-face {
-    font-family: 'WanYuanTi';
-    src: url('fonts/WanYuanTi.woff2') format('woff2'),
-         url('fonts/WanYuanTi.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
 :root {
     --primary: #FF6B9D;
     --primary-light: #FFB5CC;
