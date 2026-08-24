@@ -4,37 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kotori's Colorful Seika</title>
-    <script src="auth.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <link rel="stylesheet" href="style.css">
-    <script>
-        document.addEventListener('click', function (event) {
-            var link = event.target.closest && event.target.closest('a[href]');
-            if (!link) return;
-            var href = link.getAttribute('href') || '';
-            if (href.indexOf('/luogu-journey/') !== -1 || href.indexOf('/luogu-ai-journey/') !== -1) {
-                sessionStorage.setItem('kotori-child-site-auth', 'ok');
-                localStorage.setItem('kotori-child-site-auth-time', String(Date.now()));
-            }
-        });
-    </script>
 </head>
 <body>
-    <div id="space-auth-gate" class="space-auth-gate" aria-hidden="true">
-        <div class="space-auth-card">
-            <div class="space-auth-icon">🔐</div>
-            <p class="space-auth-eyebrow">Kotori's private space</p>
-            <h1>进入 Colorful Seika</h1>
-            <p>学习站及其内部入口需要密码。</p>
-            <input id="space-auth-password" type="password" placeholder="Password" autocomplete="current-password">
-            <button id="space-auth-submit" type="button">确认进入</button>
-            <p id="space-auth-hint" class="space-auth-hint"></p>
-            <a id="space-auth-home" href="https://kotori-cjk.github.io/">返回 Homepage</a>
-        </div>
-    </div>
     <div id="bg-layer"></div>
     <div id="particles"></div>
 
@@ -48,7 +24,7 @@
                 <a href="https://bangumi.tv/user/1151382" class="header-btn" target="_blank" title="Bangumi">
                     <span class="btn-icon">📺</span> Bangumi
                 </a>
-                <a href="https://kotori-cjk.github.io/luogu-ai-journey/" class="header-btn code-analysis-btn" target="_blank" title="Code Analysis">
+                <a href="code-analysis/" class="header-btn code-analysis-btn" title="Code Analysis">
                     <span class="btn-icon">🔮</span> Code Analysis
                 </a>
                 <a id="obsidian-link" class="header-btn" title="Obsidian笔记">
@@ -60,6 +36,9 @@
                 <button id="bg-view-btn" class="header-btn" title="观赏背景">
                     <span class="btn-icon">🖼️</span> 观赏
                 </button>
+                <form class="logout-form" method="post" action="auth/logout">
+                    <button class="header-btn" type="submit" title="退出登录"><span class="btn-icon">🔒</span> 退出</button>
+                </form>
             </div>
         </header>
 
@@ -84,9 +63,10 @@
                             <button class="subject-btn sub" data-subject="cs-dsa"><span class="subj-icon">🧮</span> 数算</button>
                         </div>
                         <button class="subject-btn" data-subject="research"><span class="subj-icon">🔬</span> 科研</button>
-                        <a class="subject-btn subject-link" href="https://Kotori-cjk.github.io/luogu-journey/" target="_blank"><span class="subj-icon">🏆</span> 算法 ↗</a>
-                        <a class="subject-btn subject-link code-analysis-link" href="https://kotori-cjk.github.io/luogu-ai-journey/" target="_blank"><span class="subj-icon">🔮</span> Code Analysis ↗</a>
-                        <a class="subject-btn subject-link" href="politics-recite/"><span class="subj-icon">📕</span> 课程背诵 ↗</a>
+                        <a class="subject-btn subject-link" href="algorithm/"><span class="subj-icon">🏆</span> 算法 ↗</a>
+                        <a class="subject-btn subject-link code-analysis-link" href="code-analysis/"><span class="subj-icon">🔮</span> Code Analysis ↗</a>
+                        <a id="public-recite-link" class="subject-btn subject-link" href="https://kotori-cjk-recite.pages.dev/"><span class="subj-icon">📕</span> 课程背诵 ↗</a>
+                        <a class="subject-btn subject-link" href="ai-recite/"><span class="subj-icon">🧠</span> AI 背诵 ↗</a>
                     </div>
                 </div>
 
@@ -202,6 +182,10 @@
     <button class="bg-view-exit" id="bg-view-exit">🖼️ 点击或按 Esc 退出观赏</button>
     <div class="save-toast" id="save-toast"></div>
     <script src="app.js"></script>
+    <script type="module">
+        import { SITE_CONFIG } from './site-config.js';
+        document.getElementById('public-recite-link').href = SITE_CONFIG.reciteUrl;
+    </script>
 </body>
 </html>
 

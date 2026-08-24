@@ -1,20 +1,6 @@
 ﻿<!doctype html>
 <html lang="zh-CN">
 <head>
-    <script>
-        (function () {
-            var isPublishedSite = location.hostname.toLowerCase() === 'kotori-cjk.github.io';
-            var recentGrant = false;
-            try {
-                var grantTime = Number(localStorage.getItem('kotori-child-site-auth-time') || '0');
-                recentGrant = Date.now() - grantTime < 15000;
-            } catch (error) {}
-            var hasAccess = sessionStorage.getItem('kotori-child-site-auth') === 'ok' || recentGrant;
-            if (isPublishedSite && !hasAccess) {
-                window.location.replace('https://kotori-cjk.github.io/?space=locked');
-            }
-        })();
-    </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Bailian / 转数二训练导航</title>

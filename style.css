@@ -314,6 +314,7 @@ body.bg-viewing .bg-view-exit { display:flex; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--primary-light); border-radius:3px; }
 ::-webkit-scrollbar-thumb:hover { background:var(--primary); }
+.logout-form { display:contents; }
 
 /* RESPONSIVE */
 @media (max-width:768px) {
