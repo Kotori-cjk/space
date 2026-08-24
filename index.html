@@ -1,6 +1,8 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <script src="gate-config.js"></script>
+    <script src="gate.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kotori's Colorful Seika</title>
@@ -35,6 +37,9 @@
                 </button>
                 <button id="bg-view-btn" class="header-btn" title="观赏背景">
                     <span class="btn-icon">🖼️</span> 观赏
+                </button>
+                <button class="header-btn" type="button" title="退出登录" onclick="SpaceGate.logout()">
+                    <span class="btn-icon">🔒</span> 退出
                 </button>
             </div>
         </header>
