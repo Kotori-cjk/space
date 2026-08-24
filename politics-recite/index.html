@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>思政背诵 · 史纲</title>
+    <title>课程背诵 · 史纲 · 思修 · 军理</title>
     <script src="../auth.js" data-auth-redirect="../"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -130,10 +130,10 @@
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center gap-4">
             <div class="flex items-center gap-3 min-w-0">
                 <div id="brand-icon" class="w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center text-red-900 font-black shadow-inner shrink-0">习</div>
-                <h1 class="text-xl font-bold tracking-widest truncate">思政背诵 <span class="text-xs text-yellow-300 font-normal">史纲 · 思修</span></h1>
+                <h1 class="text-xl font-bold tracking-widest truncate">课程背诵 <span class="text-xs text-yellow-300 font-normal">史纲 · 思修 · 军理</span></h1>
             </div>
             <div class="flex items-center gap-3 shrink-0">
-                <div id="subject-summary" class="text-xs text-red-200 opacity-90 hidden sm:block">中国近现代史纲要 · 51 题</div>
+                <div id="subject-summary" class="text-xs text-red-200 opacity-90 hidden sm:block">中国近现代史纲要</div>
                 <a href="../" class="text-xs font-bold bg-white/10 hover:bg-white/20 border border-white/20 rounded-md px-3 py-2 transition whitespace-nowrap">返回主站</a>
             </div>
         </div>
@@ -168,6 +168,7 @@
     <button onclick="toggleMobileSidebar()" class="md:hidden fixed bottom-6 right-6 w-12 h-12 bg-red-800 text-white rounded-full shadow-xl flex items-center justify-center z-50 text-xl hover:bg-red-700 transition active:scale-95">☰</button>
 
     <script src="sixiang-data.js"></script>
+    <script src="junshi-data.js"></script>
     <script>
         window.onerror = function(msg, url, line) {
             console.error('错误:', msg, '行号:', line);
@@ -406,6 +407,7 @@
   }
 };
         SUBJECTS.sixiang = SIXIANG_SUBJECT;
+        SUBJECTS.junshi = JUNSHI_SUBJECT;
         const subjectOrder = Object.keys(SUBJECTS);
         const modeClass = 'mode-btn px-3 py-1.5 rounded-md text-sm font-bold transition whitespace-nowrap';
         let currentSubjectId = subjectOrder[0];
