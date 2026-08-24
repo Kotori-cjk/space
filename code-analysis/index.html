@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <script>
+        (function () {
+            var isPublishedSite = location.hostname.toLowerCase() === 'kotori-cjk.github.io';
+            var recentGrant = false;
+            try {
+                var grantTime = Number(localStorage.getItem('kotori-child-site-auth-time') || '0');
+                recentGrant = Date.now() - grantTime < 15000;
+            } catch (error) {}
+            var hasAccess = sessionStorage.getItem('kotori-child-site-auth') === 'ok' || recentGrant;
+            if (isPublishedSite && !hasAccess) {
+                window.location.replace('https://kotori-cjk.github.io/?space=locked');
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kotori's AI Journey of Luogu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="bg-layer"></div>
+    <div id="particles"></div>
+
+    <div id="app">
+        <header id="header">
+            <div class="header-left">
+                <h1 class="site-title">Kotori's AI Journey of Luogu</h1>
+                <p class="subtitle">洛谷刷题、代码诊断与思维沉淀工作台</p>
+            </div>
+            <div class="header-right">
+                <a id="github-link" class="header-btn" href="#" target="_blank" rel="noreferrer">
+                    <span class="btn-icon">🐱</span> GitHub
+                </a>
+                <button id="settings-btn" class="header-btn" type="button">
+                    <span class="btn-icon">⚙️</span> 设置
+                </button>
+                <button id="bg-view-btn" class="header-btn" type="button">
+                    <span class="btn-icon">🖼️</span> 观赏
+                </button>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <aside id="sidebar">
+                <section class="sidebar-section">
+                    <h3>📊 刷题进度</h3>
+                    <div class="progress-ring-container">
+                        <svg class="progress-ring" viewBox="0 0 120 120">
+                            <circle class="progress-ring-bg" cx="60" cy="60" r="52"></circle>
+                            <circle class="progress-ring-fill" id="progress-ring" cx="60" cy="60" r="52"></circle>
+                            <text x="60" y="55" class="progress-ring-text" id="progress-percent">0%</text>
+                            <text x="60" y="72" class="progress-ring-sub" id="progress-count">0/0</text>
+                        </svg>
+                    </div>
+                    <div class="progress-stats">
+                        <span class="stat stat-done" id="stat-total-categories">0 个分类</span>
+                        <span class="stat stat-review" id="stat-total-analyses">0 条分析</span>
+                        <span class="stat stat-wrong" id="stat-total-wrong">0 本错题</span>
+                    </div>
+                </section>
+
+                <section class="sidebar-section">
+                    <div class="section-header-row">
+                        <h3>🗓️ 每日分类</h3>
+                        <button id="toggle-category-form-btn" class="mini-action-btn" type="button">+ 添加</button>
+                    </div>
+                    <div id="category-form-card" class="inline-form-card hidden">
+                        <label for="category-title-input">分类标题</label>
+                        <input id="category-title-input" type="text" placeholder="例如 Day 1 排序与分治">
+                        <label for="category-summary-input">分类说明</label>
+                        <textarea id="category-summary-input" rows="3" placeholder="这一类题准备练什么、提醒自己什么"></textarea>
+                        <div class="inline-form-actions">
+                            <button id="save-category-btn" class="btn btn-primary" type="button">保存分类</button>
+                            <button id="cancel-category-btn" class="btn btn-secondary" type="button">取消</button>
+                        </div>
+                    </div>
+                    <div id="category-nav" class="day-nav"></div>
+                </section>
+
+                <section class="sidebar-section music-section">
+                    <h3>🎵 音乐陪练</h3>
+                    <div id="music-container">
+                        <p class="empty-hint">可以在设置里添加网易云歌曲 ID 或分享链接。</p>
+                    </div>
+                </section>
+            </aside>
+
+            <main id="main-content">
+                <div class="tabs">
+                    <button class="tab active" data-tab="plan" type="button">📋 每日计划</button>
+                    <button class="tab" data-tab="methods" type="button">💡 思维新方法</button>
+                    <button class="tab" data-tab="wrong" type="button">📕 错题本</button>
+                </div>
+
+                <section id="tab-plan" class="tab-content active"></section>
+                <section id="tab-methods" class="tab-content"></section>
+                <section id="tab-wrong" class="tab-content"></section>
+            </main>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ 设置</h2>
+                <button class="modal-close" type="button">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-group">
+                    <h3>🤖 AI 模型设置</h3>
+                    <label for="set-ai-provider">提供商</label>
+                    <select id="set-ai-provider">
+                        <option value="openai">OpenAI 兼容</option>
+                        <option value="anthropic">Claude / Anthropic</option>
+                    </select>
+                    <label for="set-ai-base-url">Base URL</label>
+                    <input id="set-ai-base-url" type="text" placeholder="https://api.openai.com/v1">
+                    <label for="set-ai-model">模型名称</label>
+                    <input id="set-ai-model" type="text" placeholder="gpt-4o-mini">
+                    <label for="set-ai-key">API Key</label>
+                    <input id="set-ai-key" type="password" placeholder="sk-...">
+                    <p class="settings-tip">支持 OpenAI 兼容接口和 Claude / Anthropic 原生接口。点击“AI 诊断”时会根据提供商自动切换请求格式。</p>
+                </div>
+
+                <div class="settings-group">
+                    <h3>🐱 GitHub 仓库</h3>
+                    <label for="set-github-repo">仓库链接</label>
+                    <input id="set-github-repo" type="text" placeholder="https://github.com/username/repo">
+                </div>
+
+                <div class="settings-group">
+                    <h3>🖼️ 背景图片</h3>
+                    <div class="bg-upload-area">
+                        <input id="bg-upload" type="file" accept="image/*" multiple hidden>
+                        <button id="bg-upload-btn" class="btn btn-accent" type="button">上传背景</button>
+                        <span class="upload-hint">支持多张图片，上传时会自动压缩并可切换。</span>
+                    </div>
+                    <div id="bg-preview-list" class="bg-preview-list"></div>
+                    <button id="bg-reset-btn" class="btn btn-secondary" type="button">恢复默认背景</button>
+                </div>
+
+                <div class="settings-group">
+                    <h3>🎵 网易云音乐</h3>
+                    <div class="music-add-row">
+                        <input id="music-input" type="text" placeholder="输入歌曲 ID 或分享链接">
+                        <button id="music-add-btn" class="btn btn-primary" type="button">添加</button>
+                    </div>
+                    <div id="music-manage-list" class="music-manage-list"></div>
+                </div>
+
+                <div class="settings-group">
+                    <h3>🗃️ 数据管理</h3>
+                    <div class="data-actions">
+                        <button id="export-btn" class="btn btn-secondary" type="button">导出数据</button>
+                        <button id="import-btn" class="btn btn-secondary" type="button">导入数据</button>
+                        <input id="import-file" type="file" accept=".json" hidden>
+                    </div>
+                    <p class="settings-tip">会完整包含分类、题目、代码、AI 分析记录、错题标记和思维记录。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="bg-view-exit" id="bg-view-exit" type="button">点击或按 Esc 退出观赏模式</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+
+
