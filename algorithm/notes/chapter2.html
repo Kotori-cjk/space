@@ -1,0 +1,858 @@
+<!DOCTYPE html><html><head>
+      <title>chapter 2</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+      
+      
+      
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#333;background:0 0;font-family:Consolas,"Liberation Mono",Menlo,Courier,monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.4;-moz-tab-size:8;-o-tab-size:8;tab-size:8;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}pre[class*=language-]{padding:.8em;overflow:auto;border-radius:3px;background:#f5f5f5}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal;background:#f5f5f5}.token.blockquote,.token.comment{color:#969896}.token.cdata{color:#183691}.token.doctype,.token.macro.property,.token.punctuation,.token.variable{color:#333}.token.builtin,.token.important,.token.keyword,.token.operator,.token.rule{color:#a71d5d}.token.attr-value,.token.regex,.token.string,.token.url{color:#183691}.token.atrule,.token.boolean,.token.code,.token.command,.token.constant,.token.entity,.token.number,.token.property,.token.symbol{color:#0086b3}.token.prolog,.token.selector,.token.tag{color:#63a35c}.token.attr-name,.token.class,.token.class-name,.token.function,.token.id,.token.namespace,.token.pseudo-class,.token.pseudo-element,.token.url-reference .token.variable{color:#795da3}.token.entity{cursor:help}.token.title,.token.title .token.punctuation{font-weight:700;color:#1d3e81}.token.list{color:#ed6a43}.token.inserted{background-color:#eaffea;color:#55a532}.token.deleted{background-color:#ffecec;color:#bd2c00}.token.bold{font-weight:700}.token.italic{font-style:italic}.language-json .token.property{color:#183691}.language-markup .token.tag .token.punctuation{color:#333}.language-css .token.function,code.language-css{color:#0086b3}.language-yaml .token.atrule{color:#63a35c}code.language-yaml{color:#183691}.language-ruby .token.function{color:#333}.language-markdown .token.url{color:#795da3}.language-makefile .token.symbol{color:#795da3}.language-makefile .token.variable{color:#183691}.language-makefile .token.builtin{color:#0086b3}.language-bash .token.keyword{color:#0086b3}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:rgba(150,150,150,.66);border:4px solid rgba(150,150,150,.66);background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      <!-- The content below will be included at the end of the <head> element. --><script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    // your code here
+  });
+</script></head><body for="html-export">
+    
+    
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="数据结构">数据结构 </h1>
+<h2 id="链表">链表 </h2>
+<p><strong>链表操作的最后一步通常为idx++(idx为每个节点的唯一坐标，不随节点的删除而消失，只是不在链上了)</strong><br>
+<em>单链表</em></p>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+
+using namespace std;
+
+const int N = 100010;
+
+int e[N], ne[N], head, idx;
+
+void init() {
+	idx = 0;
+	head = -1;
+}
+//在表头添加
+void add_to_head(int x) {
+	e[idx] = x, ne[idx] = head, head = idx++;
+}
+//删除第k个节点后面的节点
+void remove(int k) {
+	ne[k] = ne[ne[k]];
+}
+//在第k个节点后添加
+void add(int k, int x) {
+	e[idx] = x, ne[idx] = ne[k], ne[k] = idx++;
+}
+
+int main() {
+	int m;
+	cin &gt;&gt; m;
+	init();
+
+	while (m--) {
+		char op;
+		int k, x;
+		cin &gt;&gt; op;
+		if (op == 'H') {
+			cin &gt;&gt; x;
+			add_to_head(x);
+		}
+
+		else if (op == 'D') {
+			cin &gt;&gt; k;
+			//注意检查k为0的情况，此时应直接修改表头，否则会造成表头丢失
+			if (!k) head = ne[head];
+			//注意偏移量，第k个插入的数的坐标(idx)是k - 1, 故应传入k - 1
+			remove(k - 1);
+		}
+
+		else {
+			cin &gt;&gt; k &gt;&gt; x;
+			//同样注意偏移量
+			add(k - 1, x);
+		}
+	}
+
+	for (int i = head; i != -1; i = ne[i]) cout &lt;&lt; e[i] &lt;&lt; " ";
+	cout &lt;&lt; endl;
+
+	return 0;
+}
+</code></pre><p><em>双链表</em></p>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+const int N = 100010;
+
+//双链表以0,1为头尾，不需要head
+int e[N], l[N], r[N], idx;
+
+void insert(int a, int x) {
+	e[idx] = x;
+	l[idx] = a, r[idx] = r[a];
+	//对于a 和 r[a] 的修改要放在最后一步，以防更新idx造成混乱
+	l[r[a]] = idx, r[a] = idx++;
+}
+
+void remove(int a) {
+	l[r[a]] = l[a];
+	r[l[a]] = r[a];
+}
+
+int main() {
+	//这里0的右节点是1,1的左节点是0，故idx从2开始(0,1已占用两个)
+	r[0] = 1, l[1] = 0;
+	idx = 2;
+
+	int m;
+	cin &gt;&gt; m;
+	while (m--) {
+		string op;
+		int k, x;
+		cin &gt;&gt; op;
+
+		if (op == "L") {
+			cin &gt;&gt; x;
+			//头部插入在0后插
+			insert(0, x);
+		}
+
+		else if (op == "R") {
+			cin &gt;&gt; x;
+			//尾部插入在l[1](原先的尾结点)之后插
+			insert(l[1], x);
+		}
+
+		else if (op == "D") {
+			cin &gt;&gt; k;
+			//注意偏移量，idx从2开始，故传入k + 1(相对于idx从零开始的单链表基础上加2:k - 1 + 2)
+			remove(k + 1);
+		}
+
+		else if (op == "IL") {
+			cin &gt;&gt; k &gt;&gt; x;
+			//第k个节点左边插入即l[k+1]
+			insert(l[k + 1], x);
+		}
+
+		else if (op == "IR") {
+			cin &gt;&gt; k &gt;&gt; x;
+			//第k个节点右边插入即k+1
+			insert(k + 1, x);
+		}
+	}
+
+	for (int i = r[0]; i != 1; i = r[i]) cout &lt;&lt; e[i] &lt;&lt; " ";
+	cout &lt;&lt; endl;
+
+	return 0;
+}
+</code></pre><h2 id="栈">栈 </h2>
+<p><em>手写栈模版</em><br>
+//栈顶入，栈顶出</p>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+const int N = 100010;
+
+int stk[N], tt;
+
+int main() {
+	int m;
+	cin &gt;&gt; m;
+
+	string op;
+	while (m--) {
+		cin &gt;&gt; op;
+
+		if (op == "push") {
+			int x;
+			cin &gt;&gt; x;
+			stk[++tt] = x;
+		}
+
+		else if (op == "pop") tt--;
+
+		else if (op == "empty") cout &lt;&lt; (tt ? "NO" : "YES") &lt;&lt; endl;
+
+		else cout &lt;&lt; stk[tt] &lt;&lt; endl;
+	}
+
+	return 0;
+}
+</code></pre><p><em><strong>表达式求值</strong></em></p>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;cstring&gt;
+#include &lt;stack&gt;
+#include &lt;unordered_map&gt;
+
+using namespace std;
+
+//开一个数据栈，一个操作符栈
+stack&lt;int&gt; num;
+stack&lt;char&gt; op;
+
+//计算裸露表达式(无括号)
+void eval() {
+	auto b = num.top(); num.pop();
+	auto a = num.top(); num.pop();
+	auto c = op.top(); op.pop();
+
+	int x;
+	if (c == '+') x = a + b;
+	else if (c == '-') x = a - b;
+	else if (c == '*') x = a * b;
+	else if (c == '/') x = a / b;
+    //记得将结果放回数据栈
+	num.push(x);
+}
+
+int main() {
+	//用哈希表存操作符优先级
+	unordered_map&lt;char, int&gt; pr{ {'+',1},{'-',1},{'*',2},{'/',2} };
+
+	string str;
+	cin &gt;&gt; str;
+
+	for (int i = 0; i &lt; str.size(); i++) {
+		char c = str[i];
+		if (isdigit(c)) {
+			//读取数据(逐字读取将字符串转化为数字)
+			int x = 0;
+			int j = i;
+			while (j &lt; str.size() &amp;&amp; isdigit(str[j]))
+				x = x * 10 + str[j++] - '0';
+			num.push(x);
+			i = j - 1;
+		}
+
+        //左括号直接压栈(表明开始)
+		else if (c == '(') op.push(c);
+
+		//右括号说明结束，开始进行表达式计算
+		else if (c == ')') {
+			//条件：遇到左括号停止计算，并弹出左括号以进行后续操作
+			while (op.top() != '(') eval();
+			op.pop();
+		}
+
+		//遇到操作符
+		else {
+			//条件：操作符栈不空、未遇到左括号，当前栈顶操作符优先级更高
+			while (op.size() &amp;&amp; op.top() != '(' &amp;&amp; pr[op.top()] &gt;= pr[c])
+				eval();
+			//处理完毕后压入新操作符
+			op.push(c);
+		}
+	}
+	//处理剩下可能有的裸露表达式直至耗尽操作符
+	while (op.size()) eval();
+	cout &lt;&lt; num.top() &lt;&lt; endl;
+
+	return 0;
+}
+</code></pre><h2 id="队列">队列 </h2>
+<p><em>手写队列模版</em><br>
+//队尾入，队头出</p>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+const int N = 100010;
+
+int m;
+int q[N];
+//tt初始化为-1
+int tt = -1, hh;
+
+int main() {	
+	cin &gt;&gt; m;
+	while (m--) {
+		string op;
+		cin &gt;&gt; op;
+		if (op == "push") {
+			int x;
+			cin &gt;&gt; x;
+			//注意这里是++tt(和tt初始化为-1结合记忆)
+			q[++tt] = x;
+		}
+
+		else if (op == "pop") hh++;
+
+		else if (op == "empty")
+			cout &lt;&lt; (hh &lt;= tt ? "NO" : "YES") &lt;&lt; endl;
+
+		else cout &lt;&lt; q[hh] &lt;&lt; endl;
+	}
+}
+</code></pre><h2 id="单调栈与单调队列">单调栈与单调队列 </h2>
+<p><em>单调栈</em></p>
+<ul>
+<li>核心思想：先写暴力，发现比当前数大且先出现者(逆序)不可能为答案，故维护一个动态的递增栈</li>
+</ul>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+
+using namespace std;
+
+const int N = 100010;
+
+int n;
+int stk[N], tt;
+
+int main() {
+	cin &gt;&gt; n;
+	//注意这种动态读入，处理而非一次性读入的方法
+	while (n--) {
+		int x;
+		cin &gt;&gt; x;
+
+		//从栈顶弹出逆序对
+		while (tt &amp;&amp; stk[tt] &gt;= x) tt--;
+		if (!tt) cout &lt;&lt; "-1" &lt;&lt; " ";
+		else cout &lt;&lt; stk[tt] &lt;&lt; " ";
+
+		//新数入栈(不要忘了这一步！)
+		stk[++tt] = x;
+	}
+
+	return 0;
+}
+</code></pre><p><em>单调队列(滑动窗口)</em></p>
+<ul>
+<li>核心思想：先写暴力，发现求最小值时，先入队还比新元素大的不可能是最小值，故维护一个递增的单调队列，则队头为最小值</li>
+</ul>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+
+using namespace std;
+
+const int N = 1000010;
+
+//队列存的是下标，不是数组元素！
+int a[N], q[N], hh, tt = -1;
+
+int main() {
+	int n, k;
+	cin &gt;&gt; n &gt;&gt; k;
+	for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+	for (int i = 0; i &lt; n; i++) {
+		//若队头在窗口之外，可直接删去
+		if (hh &lt;= tt &amp;&amp; i - k + 1 &gt; q[hh]) hh++;
+		//单调化，队尾出队
+		while (hh &lt;= tt &amp;&amp; a[q[tt]] &gt;= a[i]) tt--;
+		//不要忘了新数入队
+		q[++tt] = i;
+		//当窗口至少有k个数才可以输出
+		if (i &gt;= k - 1) cout &lt;&lt; a[q[hh]] &lt;&lt; " ";
+	}
+	cout &lt;&lt; endl;
+
+	//最大值同理，将 &gt;= 改成 &lt;= 即可
+	hh = 0, tt = -1;
+	for (int i = 0; i &lt; n; i++) {
+		if (hh &lt;= tt &amp;&amp; i - k + 1 &gt; q[hh]) hh++;
+		while (hh &lt;= tt &amp;&amp; a[q[tt]] &lt;= a[i]) tt--;
+		q[++tt] = i;
+		if (i &gt;= k - 1) cout &lt;&lt; a[q[hh]] &lt;&lt; " ";
+	}
+
+	return 0;
+}
+</code></pre><h2 id="kmp字符串">KMP字符串 </h2>
+<p><em>模板</em></p>
+<ul>
+<li>思路：先写暴力，然后发现可以通过在匹配不成功时直接移动模式串的前缀，从而保证S的指针不回退</li>
+</ul>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+
+using namespace std;
+
+const int N = 100010, M = 1000010;
+
+int n, m, ne[N];
+char p[N], s[M];
+
+int main() {
+	//注意这里是1-indexed 故读入p + 1 和 s + 1
+	cin &gt;&gt; n &gt;&gt; p + 1 &gt;&gt; m &gt;&gt; s + 1;
+
+	//next数组，存放前后缀相同(不是对称)的最大长度
+	for (int i = 2, j = 0; i &lt;= n; i++) {
+		while (j &amp;&amp; p[j + 1] != p[i]) j = ne[j];
+		if (p[j + 1] == p[i]) j++;
+		ne[i] = j;
+	}
+
+	//利用next数组，不匹配就回退j
+	for (int i = 1, j = 0; i &lt;= m; i++) {
+		while (j &amp;&amp; p[j + 1] != s[i]) j = ne[j];
+		if (p[j + 1] == s[i]) j++;
+		if (j == n) {
+			//由于答案要求0-indexed输出，故输出i - n + 1 - 1 = i - n
+			cout &lt;&lt; i - n &lt;&lt; " ";
+			j = ne[j];
+		}
+	}
+
+	return 0;
+}
+</code></pre><h2 id="trie字符串统计">Trie字符串统计 </h2>
+<ul>
+<li>用树的结构储存字符串<br>
+<em>模版</em></li>
+</ul>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+
+using namespace std;
+
+const int N = 100010;
+
+int son[N][26], cnt[N], idx;
+char str[N];
+
+//插入
+void insert(char* str) {
+	int p = 0;
+	for (int i = 0; str[i]; i++) {
+		int u = str[i] - 'a';
+		//若原先无该节点则创建
+		if (!son[p][u]) son[p][u] = ++idx;
+		//传递至下一级
+		p = son[p][u];
+	}
+	//以该节点为结尾的字符串数量加一
+	cnt[p]++;
+}
+
+//查找
+int query(char* str) {
+	int p = 0;
+	for (int i = 0; str[i]; i++) {
+		int u = str[i] - 'a';
+		//若无该节点，则说明不含该字符串，直接返回0
+		if (!son[p][u]) return 0;
+		p = son[p][u];
+	}
+	return cnt[p];
+}
+
+int main() {
+	int n;
+	cin &gt;&gt; n;
+	while (n--) {
+		string op;
+		cin &gt;&gt; op &gt;&gt; str;
+		if (op == "I") {
+			insert(str);
+		}
+		else {
+			cout &lt;&lt; query(str) &lt;&lt; endl;
+		}
+	}
+
+	return 0;
+}
+</code></pre><p><em>最大异或对</em></p>
+<ul>
+<li>思路：用二进制的0/1组成类似Trie的树结构，某位能不同就尽量不同，以最大化答案</li>
+</ul>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+
+using namespace std;
+
+// M开这么大是因为每个数最多31位二进制，又有100000个数
+const int N = 100010, M = 3100010;
+
+int son[M][2], idx;
+int a[N];
+
+void insert(int x) {
+	int p = 0;
+	//逐位抽出二进制数，判断节点是否存在
+	for (int i = 30; i &gt;= 0; i--) {
+		int&amp; s = son[p][x &gt;&gt; i &amp; 1];
+		if (!s) s = ++idx;
+		p = s;
+	}
+}
+
+int search(int x) {
+	int p = 0, res = 0;
+	for (int i = 30; i &gt;= 0; i--) {
+		int u = x &gt;&gt; i &amp; 1;
+		//若!u(与该位不同)有数，则沿这条路走
+		if (son[p][!u]) {
+			//注意加上的是1 &lt;&lt; i 而非 i
+			res += 1 &lt;&lt; i;
+			p = son[p][!u];
+		}
+		//否则按原路走
+		else p = son[p][u];
+	}
+	return res;
+}
+
+int main() {
+	int n;
+	cin &gt;&gt; n;
+	for (int i = 0; i &lt; n; i++) cin &gt;&gt; a[i];
+
+	for (int i = 0; i &lt; n; i++) insert(a[i]);
+
+	int res = 0;
+	//逐个计算并更新最大值
+	for (int i = 0; i &lt; n; i++) res = max(res, search(a[i]));
+
+	cout &lt;&lt; res &lt;&lt; endl;
+
+	return 0;
+}
+</code></pre><h2 id="并查集">并查集 </h2>
+<p><em>并查集模版</em></p>
+<pre data-role="codeBlock" data-info="#include <iostream>" class="language-#include #include"><code>#include &lt;string&gt;
+
+using namespace std;
+
+const int N = 100010;
+
+int p[N];
+
+// find 函数(路径压缩优化)
+int find(int x) {
+	if (x != p[x]) p[x] = find(p[x]);
+	return p[x];
+}
+
+int main() {
+	int n, m;
+	cin &gt;&gt; n &gt;&gt; m;
+	for (int i = 1; i &lt;= n; i++) p[i] = i;
+
+	while (m--) {
+		string op;
+		int a, b;
+		cin &gt;&gt; op &gt;&gt; a &gt;&gt; b;
+
+		if (op == "M")	p[find(a)] = find(b); // 将a的根并为b的子树
+		else {
+			if (find(a) == find(b)) cout &lt;&lt; "Yes" &lt;&lt; endl;
+			else cout &lt;&lt; "No" &lt;&lt; endl;
+		}
+	}
+
+	return 0;
+}
+</code></pre><p><em>有计数功能的并查集</em></p>
+<ul>
+<li>思路：加一个cnt数组，<strong>当a,b不同源时</strong>，p[find(a)] = find(b) , cnt[find(b)] += cnt[find(a)];</li>
+</ul>
+<p><em>加权并查集</em></p>
+<ul>
+<li>食物链</li>
+</ul>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+
+using namespace std;
+
+const int N = 100010;
+
+int p[N], d[N];
+
+int find(int x) {
+	if (x != p[x]) {
+		// 调用find函数递归，此步完成时p[x]已经是祖宗节点
+		int t = find(p[x]);
+		// d[x] 本来是x到其父节点的距离，现在变为到其祖宗节点的距离 (d[p[x]] 是x的父节点到祖宗节点的距离)
+		d[x] += d[p[x]];
+		p[x] = t;
+	}
+	return p[x];
+}
+
+int main() {
+	int n, k;
+	cin &gt;&gt; n &gt;&gt; k;
+	for (int i = 1; i &lt;= n; i++) p[i] = i;
+
+	int res = 0;
+	while (k--) {
+		int op, x, y;
+		cin &gt;&gt; op &gt;&gt; x &gt;&gt; y;
+
+		if (x &gt; n || y &gt; n) res++;
+		else {
+			int px = find(x), py = find(y);
+			if (op == 1) {
+				// 若为同级，则x,y到共同祖宗节点py距离(mod3)相同，即d[x]==d[y]
+				if (px == py &amp;&amp; (d[x] - d[y]) % 3) res++;
+				else if (px != py) {
+					// 合并集合，且d[x] + d[px] = d[y]
+					p[px] = py;
+					d[px] = d[y] - d[x];
+				}
+			}
+
+			else {
+				// 若x吃y，则d[x] = d[y] + 1
+				if (px == py &amp;&amp; (d[x] - d[y] - 1) % 3) res++;
+				else if (px != py) {
+					// 合并集合， d[x] + d[px] = d[y] + 1
+					p[px] = py;
+					d[px] = d[y] - d[x] + 1;
+				}
+			}
+		}
+	}
+
+	cout &lt;&lt; res &lt;&lt; endl;
+
+	return 0;
+}
+</code></pre><h2 id="堆">堆 </h2>
+<p><em>堆排序模版</em></p>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+const int N = 100010;
+
+int h[N], cnt;
+
+// down函数
+void down(int u) {
+	int t = u;
+	if (u * 2 &lt;= cnt &amp;&amp; h[u * 2] &lt; h[t]) t = u * 2;
+	if (u * 2 + 1 &lt;= cnt &amp;&amp; h[u * 2 + 1] &lt; h[t]) t = u * 2 + 1;
+	if (u != t) {
+		swap(h[u], h[t]);
+		down(t);
+	}
+}
+
+int main() {
+	int n, m;
+	cin &gt;&gt; n &gt;&gt; m;
+	for (int i = 1; i &lt;= n; i++) cin &gt;&gt; h[i];
+	cnt = n;
+
+	// 优化： 叶节点不需要down，从 n / 2 到 1 进行 down操作
+	for (int i = n / 2; i; i--) down(i);
+
+	while (m--) {
+		cout &lt;&lt; h[1] &lt;&lt; " ";
+		swap(h[1], h[cnt--]);
+		down(1);
+	}
+	cout &lt;&lt; endl;
+
+	return 0;
+}
+</code></pre><p><em>模拟堆(支持改写第k个入堆的数)</em></p>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+#include &lt;string&gt;
+
+using namespace	std;
+
+const int N = 100010;
+
+// ph: point_to_heap; hp: heap_to_point
+int h[N], ph[N], hp[N], cnt;
+
+// 堆交换专用函数
+void heap_swap(int a, int b) {
+	// 先交换“电话簿地址”
+	swap(ph[hp[a]], ph[hp[b]]);
+	// 再交换“门牌号”
+	swap(hp[a], hp[b]);
+	// 最后交换值
+	swap(h[a], h[b]);
+}
+
+// down函数
+void down(int u) {
+	int t = u;
+	if (u * 2 &lt;= cnt &amp;&amp; h[u * 2] &lt; h[t]) t = u * 2;
+	if (u * 2 + 1 &lt;= cnt &amp;&amp; h[u * 2 + 1] &lt; h[t]) t = u * 2 + 1;
+	if (u != t) {
+		heap_swap(u, t);
+		down(t);
+	}
+}
+
+// up函数
+void up(int u) {
+	while (u / 2 &amp;&amp; h[u] &lt; h[u / 2]) {
+		heap_swap(u, u / 2);
+		u &gt;&gt;= 1;
+	}
+}
+
+int main() {
+	int n, m = 0;
+	cin &gt;&gt; n;
+
+	while (n--) {
+		string op;
+		int k, x;
+		cin &gt;&gt; op;
+
+		if (op == "I") {
+			cin &gt;&gt; x;
+			// 先分配新“门牌号”和“地址”
+			m++, cnt++;
+			ph[m] = cnt;
+			hp[cnt] = m;
+			h[cnt] = x;
+			// 此时在堆底，要up
+			up(cnt);
+		}
+
+		else if (op == "PM") cout &lt;&lt; h[1] &lt;&lt; endl;
+
+		else if (op == "DM") {
+			heap_swap(1, cnt);
+			cnt--;
+			down(1);
+		}
+
+		else if (op == "D") {
+			cin &gt;&gt; k;
+			// 涉及第k个入堆的数，输入的k要转换为ph[k]
+			k = ph[k];
+			heap_swap(cnt, k);
+			cnt--;
+			// up 和 down 都做一下
+			up(k);
+			down(k);
+		}
+
+		else {
+			cin &gt;&gt; k &gt;&gt; x;
+			// 涉及第k个入堆的数，输入的k要转换为ph[k]
+			k = ph[k];
+			h[k] = x;
+			// up 和 down 都做一下
+			up(k);
+			down(k);
+		}
+	}
+
+	return 0;
+}
+</code></pre><h1 id="哈希表">哈希表 </h1>
+<p><em>模拟散列表</em></p>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;cstring&gt;
+
+using namespace std;
+
+// N取数据范围的2~3倍的质数， null 为规定的无穷大，作为“空位”的标志
+const int N = 200003, null = 0x3f3f3f3f;
+
+int h[N];
+
+// find 函数同时承担查找和分配新位置两个任务
+int find(int x) {
+	// 哈希映射坐标
+	int t = (x % N + N) % N;
+	// 循环条件；非空位或空位不是x则t++ , 当 t 到 N 时 t 回到 0
+	while (h[t] != null &amp;&amp; h[t] != x) {
+		t++;
+		if (t == N) t = 0;
+	}
+	return t;
+}
+
+int main() {
+	int n;
+	cin &gt;&gt; n;
+	// 初始化所有位置为null
+	memset(h, 0x3f, sizeof h);
+
+	while (n--) {
+		string op;
+		int x;
+		cin &gt;&gt; op &gt;&gt; x;
+		if (op == "I") {
+			h[find(x)] = x;
+		}
+		else {
+			// 调用 h[find(x)] 会给x自动分配一个地址并自动赋值为null(因为memset过)，但若之前未赋值，则该位置值仍为初始的null
+			if (h[find(x)] == null) cout &lt;&lt; "No" &lt;&lt; endl;
+			else cout &lt;&lt; "Yes" &lt;&lt; endl;
+		}
+	}
+
+	return 0;
+}
+</code></pre><p><em>字符串哈希</em></p>
+<pre data-role="codeBlock" data-info="#define _CRT_SECURE_NO_WARNINGS 1" class="language-#define #define"><code>#include &lt;iostream&gt;
+#include &lt;algorithm&gt;
+
+using namespace std;
+
+typedef unsigned long long ULL;
+
+// 经验数值，取 P 为 131 或13331 为权
+const int N = 100010, P = 131;
+
+// ULL 的妙用， 当超过 2^64 自动溢出，相当于对 2^64 取模
+ULL h[N], p[N];
+char str[N];
+
+ULL get(int l, int r) {
+	// 获取子串哈希值，* p[r - l + 1] 起到“对齐”作用(类比整数)
+	return h[r] - h[l - 1] * p[r - l + 1];
+}
+
+int main() {
+	int n, m;
+	cin &gt;&gt; n &gt;&gt; m &gt;&gt; str + 1;
+
+	p[0] = 1;
+	// 预处理，计算各位哈希值(0~该位字符哈希值)
+	for (int i = 1; i &lt;= n; i++) {
+		h[i] = h[i - 1] * P + str[i];
+		p[i] = p[i - 1] * P;
+	}
+
+	while (m--) {
+		int l1, r1, l2, r2;
+		cin &gt;&gt; l1 &gt;&gt; r1 &gt;&gt; l2 &gt;&gt; r2;
+		if (get(l1, r1) == get(l2, r2)) cout &lt;&lt; "Yes" &lt;&lt; endl;
+		else cout &lt;&lt; "No" &lt;&lt; endl;
+	}
+
+	return 0;
+}
+</code></pre>
+      </div>
+      
+      
+    
+    
+    
+    
+    
+    
+  
+    </body></html>

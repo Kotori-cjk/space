@@ -1,0 +1,104 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+    <script>
+        (function () {
+            var isPublishedSite = location.hostname.toLowerCase() === 'kotori-cjk.github.io';
+            var recentGrant = false;
+            try {
+                var grantTime = Number(localStorage.getItem('kotori-child-site-auth-time') || '0');
+                recentGrant = Date.now() - grantTime < 15000;
+            } catch (error) {}
+            var hasAccess = sessionStorage.getItem('kotori-child-site-auth') === 'ok' || recentGrant;
+            if (isPublishedSite && !hasAccess) {
+                window.location.replace('https://kotori-cjk.github.io/?space=locked');
+            }
+        })();
+    </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2025 转数二题目链接</title>
+  <style>
+    :root {
+      --bg: #f6f3ec;
+      --paper: #fffdf8;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --line: #ddd6c9;
+      --accent: #0f766e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #f8f4ec 0%, #efe7da 100%);
+    }
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 28px;
+      box-shadow: 0 14px 36px rgba(31, 41, 55, 0.07);
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.1;
+    }
+    .desc {
+      margin: 0 0 24px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    ol {
+      margin: 0;
+      padding-left: 24px;
+    }
+    li {
+      margin: 0 0 16px;
+    }
+    .title {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <h1>2025 转数二题目链接</h1>
+      <p class="desc">
+        这份页面按你之前上传的 2025 文档里出现的条目整理，只单独摘出题号、题名和对应链接，方便直接点进去。
+      </p>
+      <ol>
+        <li><span class="title">29646 细菌的战争</span><a href="http://cs101.openjudge.cn/practice/29646/" target="_blank" rel="noreferrer">http://cs101.openjudge.cn/practice/29646/</a></li>
+        <li><span class="title">02318 TOYS</span><a href="http://cs101.openjudge.cn/practice/02318/" target="_blank" rel="noreferrer">http://cs101.openjudge.cn/practice/02318/</a></li>
+        <li><span class="title">21577 护林员盖房子 加强版（最大零矩阵）</span><a href="http://cs101.openjudge.cn/practice/21577" target="_blank" rel="noreferrer">http://cs101.openjudge.cn/practice/21577</a></li>
+        <li><span class="title">27205 护林员盖房子 加强版</span><a href="http://cs101.openjudge.cn/practice/27205" target="_blank" rel="noreferrer">http://cs101.openjudge.cn/practice/27205</a></li>
+        <li><span class="title">07604 n-gram串频统计</span><a href="http://cs101.openjudge.cn/practice/07604/" target="_blank" rel="noreferrer">http://cs101.openjudge.cn/practice/07604/</a></li>
+        <li><span class="title">06252 带通配符的字符串匹配</span><a href="http://cs101.openjudge.cn/practice/06252/" target="_blank" rel="noreferrer">http://cs101.openjudge.cn/practice/06252/</a></li>
+        <li><span class="title">03527 胡</span><a href="http://cs101.openjudge.cn/practice/03527/" target="_blank" rel="noreferrer">http://cs101.openjudge.cn/practice/03527/</a></li>
+        <li><span class="title">04137 最小新整数</span><a href="http://cs101.openjudge.cn/practice/04137/" target="_blank" rel="noreferrer">http://cs101.openjudge.cn/practice/04137/</a></li>
+        <li><span class="title">04005 拼点游戏</span><a href="http://cs101.openjudge.cn/practice/04005/" target="_blank" rel="noreferrer">http://cs101.openjudge.cn/practice/04005/</a></li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>
+
+

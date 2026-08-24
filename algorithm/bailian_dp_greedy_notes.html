@@ -1,0 +1,1419 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+    <script>
+        (function () {
+            var isPublishedSite = location.hostname.toLowerCase() === 'kotori-cjk.github.io';
+            var recentGrant = false;
+            try {
+                var grantTime = Number(localStorage.getItem('kotori-child-site-auth-time') || '0');
+                recentGrant = Date.now() - grantTime < 15000;
+            } catch (error) {}
+            var hasAccess = sessionStorage.getItem('kotori-child-site-auth') === 'ok' || recentGrant;
+            if (isPublishedSite && !hasAccess) {
+                window.location.replace('https://kotori-cjk.github.io/?space=locked');
+            }
+        })();
+    </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bailian DP / 贪心题解整理</title>
+  <style>
+    :root{
+      --bg:#f7f2e9;
+      --paper:#fffdf8;
+      --ink:#1f2937;
+      --muted:#6b7280;
+      --line:#ddd6c9;
+      --accent:#0f766e;
+      --accent2:#7c3aed;
+      --soft:#ecfeff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Segoe UI","Microsoft YaHei",sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15,118,110,.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(124,58,237,.08), transparent 25%),
+        linear-gradient(180deg,#f8f4ec 0%,#efe7da 100%);
+      line-height:1.65;
+    }
+    .page{
+      max-width:1100px;
+      margin:0 auto;
+      padding:36px 20px 56px;
+    }
+    .hero{
+      background:rgba(255,253,248,.94);
+      border:1px solid rgba(221,214,201,.95);
+      border-radius:8px;
+      padding:28px;
+      box-shadow:0 16px 40px rgba(31,41,55,.07);
+    }
+    .tag{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      background:var(--soft);
+      color:var(--accent);
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:10px;
+    }
+    h1{
+      margin:0;
+      font-size:clamp(28px,4.6vw,44px);
+      line-height:1.1;
+    }
+    .lead{
+      margin:14px 0 0;
+      color:#374151;
+      max-width:880px;
+    }
+    .meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      list-style:none;
+      padding:0;
+      margin:18px 0 0;
+    }
+    .meta li{
+      padding:6px 12px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      color:var(--muted);
+      font-size:13px;
+    }
+    .overview{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+      margin-top:24px;
+    }
+    .overview-card{
+      background:rgba(255,253,248,.94);
+      border:1px solid rgba(221,214,201,.95);
+      border-radius:8px;
+      padding:18px;
+      box-shadow:0 8px 22px rgba(31,41,55,.05);
+    }
+    .overview-card h2{
+      margin:0 0 10px;
+      font-size:20px;
+    }
+    .overview-card p{
+      margin:0 0 10px;
+      color:#374151;
+      font-size:14px;
+    }
+    .overview-card ol{
+      margin:0;
+      padding-left:20px;
+    }
+    .overview-card li{
+      margin:4px 0;
+    }
+    .section-title{
+      margin:28px 0 12px;
+      font-size:24px;
+    }
+    details{
+      background:rgba(255,253,248,.94);
+      border:1px solid rgba(221,214,201,.95);
+      border-radius:8px;
+      margin-bottom:14px;
+      overflow:hidden;
+      box-shadow:0 8px 22px rgba(31,41,55,.05);
+    }
+    summary{
+      cursor:pointer;
+      list-style:none;
+      padding:16px 18px;
+      font-weight:700;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(248,244,236,.95));
+    }
+    summary::-webkit-details-marker{display:none}
+    .badge{
+      font-size:12px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#ede9fe;
+      color:var(--accent2);
+      font-weight:700;
+    }
+    .badge.diff{
+      background:#dcfce7;
+      color:#166534;
+    }
+    .badge.warn{
+      background:#fef3c7;
+      color:#92400e;
+    }
+    .badge.plan{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+    .content{
+      padding:0 18px 18px;
+      border-top:1px solid rgba(221,214,201,.7);
+    }
+    .content h3{
+      margin:16px 0 8px;
+      font-size:16px;
+    }
+    .content p{
+      margin:8px 0;
+    }
+    pre{
+      margin:10px 0 0;
+      padding:14px;
+      border-radius:6px;
+      background:#111827;
+      color:#f9fafb;
+      overflow:auto;
+      font-size:13px;
+      line-height:1.55;
+    }
+    code{font-family:Consolas,"Courier New",monospace}
+    ul{
+      margin:8px 0 0 20px;
+      padding:0;
+    }
+    a{
+      color:var(--accent);
+      text-decoration:none;
+    }
+    a:hover{text-decoration:underline}
+    @media (max-width:860px){
+      .overview{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="tag">Bailian / 动态规划与贪心</div>
+      <h1>DP / 贪心题解整理</h1>
+      <p class="lead">
+        这份页面根据你批量下载的题面整理，覆盖 25 道题。每题都给出基本思路、可交的标准代码和易错提醒，适合作为刷题记录页或个人网站专题页。
+      </p>
+      <ul class="meta">
+        <li>总题数：25</li>
+        <li>主题：贪心 / DP</li>
+        <li>用途：训练记录 / 复盘 / 网站展示</li>
+      </ul>
+    </section>
+
+    <section class="overview">
+      <article class="overview-card">
+        <h2>推荐顺序 · 贪心</h2>
+        <p>先从稳定拿分题开始，再补区间和综合贪心。</p>
+        <ol>
+          <li>1017 装箱问题</li>
+          <li>1083 Moving Tables</li>
+          <li>4151 电影节</li>
+          <li>4144 畜栏保留问题</li>
+          <li>4034 选择客栈</li>
+          <li>1065 Wooden Sticks</li>
+          <li>1328 Radar Installation</li>
+          <li>4137 最小新整数</li>
+        </ol>
+      </article>
+      <article class="overview-card">
+        <h2>推荐顺序 · DP</h2>
+        <p>先模板，再背包，再状态设计，最后做状压和回文切割。</p>
+        <ol>
+          <li>1163 The Triangle</li>
+          <li>2760 数字三角形</li>
+          <li>2726 / 2727 / 2773 采药类</li>
+          <li>4131 Charm Bracelet</li>
+          <li>2755 神奇的口袋</li>
+          <li>1088 滑雪</li>
+          <li>4118 开餐馆</li>
+          <li>4121 股票买卖</li>
+          <li>1159 Palindrome</li>
+          <li>3262 新数字三角形</li>
+          <li>1661 帮助 Jimmy</li>
+          <li>4122 切割回文</li>
+          <li>1170 Shopping Offers</li>
+          <li>1185 炮兵阵地</li>
+          <li>4149 课程大作业</li>
+        </ol>
+      </article>
+    </section>
+
+    <h2 class="section-title">贪心</h2>
+
+    <details>
+      <summary>1017 装箱问题 <span class="badge">贪心</span><span class="badge diff">绿</span><span class="badge plan">先做</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1017/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>按箱子大小从大到小贪心装。6x6、5x5、4x4、3x3 先各自占掉若干大箱子，再利用这些箱子里的剩余空间去补 2x2 和 1x1。最后再处理剩余的 2x2 和 1x1。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    while (true) {
+        int a[7];
+        for (int i = 1; i &lt;= 6; ++i) cin &gt;&gt; a[i];
+        if (!a[1] &amp;&amp; !a[2] &amp;&amp; !a[3] &amp;&amp; !a[4] &amp;&amp; !a[5] &amp;&amp; !a[6]) break;
+
+        int ans = 0;
+        ans += a[6];
+
+        ans += a[5];
+        a[1] = max(0, a[1] - 11 * a[5]);
+
+        ans += a[4];
+        int need2 = 5 * a[4];
+        if (a[2] &gt;= need2) a[2] -= need2;
+        else {
+            int lack = need2 - a[2];
+            a[1] = max(0, a[1] - lack * 4);
+            a[2] = 0;
+        }
+
+        ans += (a[3] + 3) / 4;
+        int rem3 = a[3] % 4;
+        if (rem3) {
+            static int need2arr[4] = {0, 5, 3, 1};
+            static int need1arr[4] = {0, 7, 6, 5};
+            int need2 = need2arr[rem3];
+            if (a[2] &gt;= need2) {
+                a[2] -= need2;
+                a[1] = max(0, a[1] - need1arr[rem3] * 4);
+            } else {
+                int lack = need2 - a[2];
+                a[1] = max(0, a[1] - need1arr[rem3] * 4 - lack * 4);
+                a[2] = 0;
+            }
+        }
+
+        if (a[2] &gt; 0) {
+            ans += (a[2] + 8) / 9;
+            int rem2 = a[2] % 9;
+            if (rem2) a[1] = max(0, a[1] - (36 - rem2 * 4));
+        }
+
+        if (a[1] &gt; 0) ans += (a[1] + 35) / 36;
+
+        cout &lt;&lt; ans &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>3x3 剩余 1、2、3 块时，补空间的公式不一样，别写混。</li>
+          <li>补 2x2 不够时，要把缺的部分换算成 1x1。</li>
+          <li>所有扣减都要注意别减成负数。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>1065 Wooden Sticks <span class="badge">贪心</span><span class="badge diff">黄</span><span class="badge plan">进阶</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1065/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>先按长度升序、长度相同按重量升序排序。然后反复从前往后贪心选一条“可接上的链”，把能接上的木棍都拿掉，一共要开多少条链就是答案。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Stick {
+    int l, w;
+    bool used = false;
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+    while (T--) {
+        int n;
+        cin &gt;&gt; n;
+        vector&lt;Stick&gt; a(n);
+        for (int i = 0; i &lt; n; ++i) cin &gt;&gt; a[i].l &gt;&gt; a[i].w;
+        sort(a.begin(), a.end(), [](const Stick&amp; x, const Stick&amp; y) {
+            if (x.l != y.l) return x.l &lt; y.l;
+            return x.w &lt; y.w;
+        });
+
+        int ans = 0;
+        for (int i = 0; i &lt; n; ++i) {
+            if (a[i].used) continue;
+            ++ans;
+            a[i].used = true;
+            int lastw = a[i].w;
+            for (int j = i + 1; j &lt; n; ++j) {
+                if (!a[j].used &amp;&amp; a[j].w &gt;= lastw) {
+                    a[j].used = true;
+                    lastw = a[j].w;
+                }
+            }
+        }
+        cout &lt;&lt; ans &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>排序时长度相同必须按重量升序，否则贪心链会出错。</li>
+          <li>这是“最少链覆盖”，不是普通 LIS。</li>
+          <li>题目多组数据，`used` 每组都要重置。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>1083 Moving Tables <span class="badge">贪心</span><span class="badge diff">绿</span><span class="badge plan">先做</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1083/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>把房间号映射成走廊段编号：`(room + 1) / 2`。每次搬桌子占用的是一个闭区间，统计每个走廊段被多少次搬运覆盖，最大覆盖次数乘 10 就是答案。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+    while (T--) {
+        int n;
+        cin &gt;&gt; n;
+        vector&lt;int&gt; cnt(205, 0);
+        for (int i = 0; i &lt; n; ++i) {
+            int s, t;
+            cin &gt;&gt; s &gt;&gt; t;
+            s = (s + 1) / 2;
+            t = (t + 1) / 2;
+            if (s &gt; t) swap(s, t);
+            for (int j = s; j &lt;= t; ++j) cnt[j]++;
+        }
+        int mx = *max_element(cnt.begin(), cnt.end());
+        cout &lt;&lt; mx * 10 &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>房间要先映射到走廊段，不是直接拿原编号做区间。</li>
+          <li>端点重合算冲突，所以要按闭区间统计。</li>
+          <li>答案单位是分钟，最后别忘记乘 10。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>1328 Radar Installation <span class="badge">贪心</span><span class="badge diff">黄</span><span class="badge plan">进阶</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1328/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>每个岛 `(x, y)` 能被雷达覆盖，当且仅当雷达放在区间 `[x - sqrt(d^2-y^2), x + sqrt(d^2-y^2)]` 内。于是问题变成最少选几个点覆盖所有区间，按右端点排序后贪心选点。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, d, tc = 1;
+    while (cin &gt;&gt; n &gt;&gt; d, n || d) {
+        vector&lt;pair&lt;double, double&gt;&gt; segs;
+        bool ok = true;
+        for (int i = 0; i &lt; n; ++i) {
+            int x, y;
+            cin &gt;&gt; x &gt;&gt; y;
+            if (y &gt; d) ok = false;
+            else {
+                double dx = sqrt(1.0 * d * d - 1.0 * y * y);
+                segs.push_back({x - dx, x + dx});
+            }
+        }
+        if (!ok) {
+            cout &lt;&lt; "Case " &lt;&lt; tc++ &lt;&lt; ": -1\n";
+            continue;
+        }
+        sort(segs.begin(), segs.end(), [](auto&amp; a, auto&amp; b) {
+            return a.second &lt; b.second;
+        });
+        int ans = 0;
+        double last = -1e100;
+        for (auto&amp; [l, r] : segs) {
+            if (l &gt; last) {
+                ++ans;
+                last = r;
+            }
+        }
+        cout &lt;&lt; "Case " &lt;&lt; tc++ &lt;&lt; ": " &lt;&lt; ans &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>如果有 `y &gt; d`，直接无解。</li>
+          <li>要按右端点排序，不是左端点。</li>
+          <li>浮点比较时通常用 `l &gt; last` 即可，这题数据足够稳。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4034 选择客栈 <span class="badge">贪心 / 扫描</span><span class="badge diff">黄</span><span class="badge plan">进阶</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/4034/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>从左到右扫描。`num[color]` 记录该颜色出现过多少次，`ok[color]` 记录“截至最近一次出现低价咖啡馆位置”为止，该颜色有多少客栈可以与当前位置配对。如果当前客栈咖啡馆价格 `<= p`，就把所有颜色的 `ok` 同步成当前 `num`。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, k, p;
+    cin &gt;&gt; n &gt;&gt; k &gt;&gt; p;
+    vector&lt;long long&gt; num(k, 0), ok(k, 0);
+    long long ans = 0;
+
+    for (int i = 0; i &lt; n; ++i) {
+        int c, cost;
+        cin &gt;&gt; c &gt;&gt; cost;
+        if (cost &lt;= p) {
+            for (int j = 0; j &lt; k; ++j) ok[j] = num[j];
+        }
+        ans += ok[c];
+        num[c]++;
+    }
+    cout &lt;&lt; ans &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>这题不是简单“同色配对数”，中间必须有一家价格不超过 `p` 的咖啡馆。</li>
+          <li>`n` 最多 200000，答案要用 `long long`。</li>
+          <li>`k` 很小，允许每次低价咖啡馆出现时遍历所有颜色。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4137 最小新整数 <span class="badge">贪心 / 单调栈</span><span class="badge diff">黄</span><span class="badge warn">易错</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/4137/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>经典删数位。维护一个单调递增栈，当前数字比栈顶小且还可以删，就把栈顶弹掉。最后如果还没删够，就从末尾删。处理完后去掉前导零。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+    while (T--) {
+        string s;
+        int k;
+        cin &gt;&gt; s &gt;&gt; k;
+        string st;
+        for (char ch : s) {
+            while (!st.empty() &amp;&amp; k &gt; 0 &amp;&amp; st.back() &gt; ch) {
+                st.pop_back();
+                --k;
+            }
+            st.push_back(ch);
+        }
+        while (k &gt; 0 &amp;&amp; !st.empty()) {
+            st.pop_back();
+            --k;
+        }
+        int pos = 0;
+        while (pos &lt; (int)st.size() &amp;&amp; st[pos] == '0') ++pos;
+        string ans = st.substr(pos);
+        if (ans.empty()) ans = "0";
+        cout &lt;&lt; ans &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>删完后一定要处理前导零。</li>
+          <li>如果最后全删空了，输出 `0`。</li>
+          <li>别把它写成枚举删位，那样复杂度不对。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4144 畜栏保留问题 <span class="badge">贪心 + 堆</span><span class="badge diff">黄</span><span class="badge plan">主练</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/4144/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>按开始时间排序，用小根堆维护每个畜栏当前最早的结束时间。若堆顶结束时间 `<` 当前开始时间，就复用该畜栏；否则新开一个畜栏。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Cow {
+    int l, r, id;
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;Cow&gt; a(n);
+    for (int i = 0; i &lt; n; ++i) {
+        cin &gt;&gt; a[i].l &gt;&gt; a[i].r;
+        a[i].id = i;
+    }
+    sort(a.begin(), a.end(), [](const Cow&amp; x, const Cow&amp; y) {
+        return x.l &lt; y.l;
+    });
+
+    priority_queue&lt;pair&lt;int,int&gt;, vector&lt;pair&lt;int,int&gt;&gt;, greater&lt;pair&lt;int,int&gt;&gt;&gt; pq;
+    vector&lt;int&gt; ans(n);
+    int stalls = 0;
+
+    for (auto &amp;c : a) {
+        if (!pq.empty() &amp;&amp; pq.top().first &lt; c.l) {
+            auto [endt, sid] = pq.top(); pq.pop();
+            ans[c.id] = sid;
+            pq.push({c.r, sid});
+        } else {
+            ++stalls;
+            ans[c.id] = stalls;
+            pq.push({c.r, stalls});
+        }
+    }
+
+    cout &lt;&lt; stalls &lt;&lt; '\n';
+    for (int x : ans) cout &lt;&lt; x &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>区间是闭区间，所以能复用的条件是 `前一头牛结束时间 &lt; 当前开始时间`。</li>
+          <li>输出顺序要按原输入顺序，不是按排序后的顺序。</li>
+          <li>堆里除了结束时间还要存畜栏编号。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4151 电影节 <span class="badge">区间贪心</span><span class="badge diff">绿</span><span class="badge plan">先做</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/4151/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>标准区间选择。按结束时间升序排序，能看就看，维护当前最后一部电影的结束时间。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    while (cin &gt;&gt; n, n) {
+        vector&lt;pair&lt;int,int&gt;&gt; a(n);
+        for (int i = 0; i &lt; n; ++i) cin &gt;&gt; a[i].first &gt;&gt; a[i].second;
+        sort(a.begin(), a.end(), [](auto&amp; x, auto&amp; y) {
+            if (x.second != y.second) return x.second &lt; y.second;
+            return x.first &lt; y.first;
+        });
+        int ans = 0, last = -1e9;
+        for (auto&amp; [l, r] : a) {
+            if (l &gt;= last) {
+                ++ans;
+                last = r;
+            }
+        }
+        cout &lt;&lt; ans &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>题目允许端点重合，所以条件是 `start &gt;= last_end`。</li>
+          <li>多组数据以 `n = 0` 结束。</li>
+          <li>按结束时间排序，不是开始时间。</li>
+        </ul>
+      </div>
+    </details>
+
+    <h2 class="section-title">动态规划</h2>
+
+    <details>
+      <summary>1088 滑雪 <span class="badge">记忆化搜索 / DP</span><span class="badge diff">黄</span><span class="badge plan">主练</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1088/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>`dfs(x, y)` 表示从 `(x, y)` 出发能滑出的最长路径。向四个方向搜严格更低的点，用记忆化避免重复计算。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int r, c;
+int h[105][105], f[105][105];
+int dx[4] = {-1, 1, 0, 0};
+int dy[4] = {0, 0, -1, 1};
+
+int dfs(int x, int y) {
+    if (f[x][y] != -1) return f[x][y];
+    f[x][y] = 1;
+    for (int i = 0; i &lt; 4; ++i) {
+        int nx = x + dx[i], ny = y + dy[i];
+        if (nx &gt;= 0 &amp;&amp; nx &lt; r &amp;&amp; ny &gt;= 0 &amp;&amp; ny &lt; c &amp;&amp; h[nx][ny] &lt; h[x][y]) {
+            f[x][y] = max(f[x][y], dfs(nx, ny) + 1);
+        }
+    }
+    return f[x][y];
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin &gt;&gt; r &gt;&gt; c;
+    for (int i = 0; i &lt; r; ++i)
+        for (int j = 0; j &lt; c; ++j)
+            cin &gt;&gt; h[i][j];
+
+    memset(f, -1, sizeof f);
+    int ans = 0;
+    for (int i = 0; i &lt; r; ++i)
+        for (int j = 0; j &lt; c; ++j)
+            ans = max(ans, dfs(i, j));
+    cout &lt;&lt; ans &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>只能走向严格更低的格子。</li>
+          <li>`dfs` 返回的是“从这里开始”的答案，不是全局答案。</li>
+          <li>别忘记 `memset(f, -1, ...)`。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>1159 Palindrome <span class="badge">DP</span><span class="badge diff">黄</span><span class="badge warn">易错</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1159/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>最少插入字符数 = `n - 最长回文子序列长度`。最长回文子序列可以转化成原串和反串的 LCS，用滚动数组做，空间 `O(n)`。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    string s;
+    cin &gt;&gt; n &gt;&gt; s;
+    string t = s;
+    reverse(t.begin(), t.end());
+
+    vector&lt;int&gt; dp(n + 1, 0), pre(n + 1, 0);
+    for (int i = 1; i &lt;= n; ++i) {
+        swap(dp, pre);
+        fill(dp.begin(), dp.end(), 0);
+        for (int j = 1; j &lt;= n; ++j) {
+            if (s[i - 1] == t[j - 1]) dp[j] = pre[j - 1] + 1;
+            else dp[j] = max(pre[j], dp[j - 1]);
+        }
+    }
+    cout &lt;&lt; n - dp[n] &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>`n` 到 5000，别开二维 `5000 x 5000 int`。</li>
+          <li>大小写是区分的，别做任何统一化处理。</li>
+          <li>如果你写区间 DP，也能过，但实现更容易写错。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>1163 The Triangle <span class="badge">DP</span><span class="badge diff">绿</span><span class="badge plan">先做</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1163/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>自底向上转移：`f[i][j] = a[i][j] + max(f[i+1][j], f[i+1][j+1])`。最后 `f[1][1]` 就是答案。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;vector&lt;int&gt;&gt; a(n + 2, vector&lt;int&gt;(n + 2, 0));
+    for (int i = 1; i &lt;= n; ++i)
+        for (int j = 1; j &lt;= i; ++j)
+            cin &gt;&gt; a[i][j];
+
+    for (int i = n - 1; i &gt;= 1; --i)
+        for (int j = 1; j &lt;= i; ++j)
+            a[i][j] += max(a[i + 1][j], a[i + 1][j + 1]);
+
+    cout &lt;&lt; a[1][1] &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>这题最稳的是自底向上，边界最少。</li>
+          <li>别把下标写成从 `0` 开始又没统一处理。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>1170 Shopping Offers <span class="badge">状态压缩 DP</span><span class="badge diff">偏黄</span><span class="badge warn">压轴</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1170/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>商品种类最多只有 5 种，把购物篮状态压成 5 维小范围状态。普通单买也当成优惠方案，做记忆化搜索或状态 DP，求最小花费。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Offer {
+    int cnt[5]{};
+    int price;
+};
+
+int basePow[6];
+vector&lt;Offer&gt; offers;
+int need[5], b;
+unordered_map&lt;int, int&gt; memo;
+
+int encode(const int a[]) {
+    int s = 0;
+    for (int i = 0; i &lt; b; ++i) s += a[i] * basePow[i];
+    return s;
+}
+
+int dfs(int state) {
+    if (state == 0) return 0;
+    if (memo.count(state)) return memo[state];
+
+    int cur[5]{};
+    int tmp = state;
+    for (int i = 0; i &lt; b; ++i) {
+        cur[i] = tmp % 6;
+        tmp /= 6;
+    }
+
+    int ans = INT_MAX / 2;
+    for (auto &amp;of : offers) {
+        int nxt[5];
+        bool ok = true;
+        for (int i = 0; i &lt; b; ++i) {
+            if (cur[i] &lt; of.cnt[i]) { ok = false; break; }
+            nxt[i] = cur[i] - of.cnt[i];
+        }
+        if (ok) ans = min(ans, dfs(encode(nxt)) + of.price);
+    }
+    return memo[state] = ans;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    basePow[0] = 1;
+    for (int i = 1; i &lt;= 5; ++i) basePow[i] = basePow[i - 1] * 6;
+
+    cin &gt;&gt; b;
+    map&lt;int, int&gt; id;
+    vector&lt;int&gt; code(b), price(b);
+    for (int i = 0; i &lt; b; ++i) {
+        cin &gt;&gt; code[i] &gt;&gt; need[i] &gt;&gt; price[i];
+        id[code[i]] = i;
+    }
+
+    int s;
+    cin &gt;&gt; s;
+    offers.clear();
+    for (int i = 0; i &lt; s; ++i) {
+        Offer of;
+        int n;
+        cin &gt;&gt; n;
+        for (int j = 0; j &lt; n; ++j) {
+            int c, k;
+            cin &gt;&gt; c &gt;&gt; k;
+            if (id.count(c)) of.cnt[id[c]] = k;
+        }
+        cin &gt;&gt; of.price;
+        offers.push_back(of);
+    }
+
+    for (int i = 0; i &lt; b; ++i) {
+        Offer of;
+        of.cnt[i] = 1;
+        of.price = price[i];
+        offers.push_back(of);
+    }
+
+    memo.clear();
+    cout &lt;&lt; dfs(encode(need)) &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>只关心购物篮里出现的商品，其它代码可以忽略。</li>
+          <li>普通单买也要当成一种“方案”加入，否则状态转不回去。</li>
+          <li>每种商品数量最多 5，常用 `6` 进制压状态。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>1185 炮兵阵地 <span class="badge">状态压缩 DP</span><span class="badge diff">偏黄</span><span class="badge warn">压轴</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1185/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>先枚举每一行的合法摆放状态：同一行不能相邻，也不能隔一个相邻。然后做三维 DP：`dp[row][state_cur][state_pre]`，检查和前两行是否冲突。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
+    cin &gt;&gt; n &gt;&gt; m;
+    vector&lt;int&gt; g(n + 1, 0);
+    for (int i = 1; i &lt;= n; ++i) {
+        string s;
+        cin &gt;&gt; s;
+        for (int j = 0; j &lt; m; ++j)
+            if (s[j] == 'H') g[i] |= (1 &lt;&lt; j);
+    }
+
+    vector&lt;int&gt; state, cnt;
+    for (int s = 0; s &lt; (1 &lt;&lt; m); ++s) {
+        if ((s &amp; (s &lt;&lt; 1)) == 0 &amp;&amp; (s &amp; (s &lt;&lt; 2)) == 0) {
+            state.push_back(s);
+            cnt.push_back(__builtin_popcount((unsigned)s));
+        }
+    }
+
+    int S = state.size();
+    vector dp(n + 1, vector(S, vector&lt;int&gt;(S, -1)));
+    for (int i = 0; i &lt; S; ++i) {
+        if ((state[i] &amp; g[1]) == 0) dp[1][i][0] = cnt[i];
+    }
+
+    for (int row = 2; row &lt;= n; ++row) {
+        for (int i = 0; i &lt; S; ++i) {
+            if (state[i] &amp; g[row]) continue;
+            for (int j = 0; j &lt; S; ++j) {
+                if (state[j] &amp; g[row - 1]) continue;
+                if (state[i] &amp; state[j]) continue;
+                for (int k = 0; k &lt; S; ++k) {
+                    if (dp[row - 1][j][k] == -1) continue;
+                    if (state[i] &amp; state[k]) continue;
+                    dp[row][i][j] = max(dp[row][i][j], dp[row - 1][j][k] + cnt[i]);
+                }
+            }
+        }
+    }
+
+    int ans = 0;
+    for (int i = 0; i &lt; S; ++i)
+        for (int j = 0; j &lt; S; ++j)
+            ans = max(ans, dp[n][i][j]);
+    cout &lt;&lt; ans &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>同一行不仅不能相邻，间隔 1 也不行，所以要检查 `s &amp; (s &lt;&lt; 2)`。</li>
+          <li>当前行要同时和前一行、前两行检查冲突。</li>
+          <li>`H` 表示山地，当前状态不能压到山地上。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>1661 帮助 Jimmy <span class="badge">DP</span><span class="badge diff">黄</span><span class="badge plan">进阶</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/1661/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>平台按高度从高到低排序。`dp[i][0/1]` 表示落到第 `i` 个平台左/右端点后，到地面的最短时间。转移时寻找该端点正下方的第一块平台。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Node {
+    int l, r, h;
+} a[1005];
+
+int dp[1005][2];
+int n, X, Y, MAXH;
+
+int findBelow(int x, int h) {
+    for (int i = 1; i &lt;= n; ++i) {
+        if (a[i].h &lt; h &amp;&amp; a[i].l &lt;= x &amp;&amp; x &lt;= a[i].r) return i;
+    }
+    return 0;
+}
+
+int solve(int i, int side) {
+    int &amp;res = dp[i][side];
+    if (res != -1) return res;
+    int x = (side == 0 ? a[i].l : a[i].r);
+    int j = findBelow(x, a[i].h);
+    if (!j) {
+        if (a[i].h &gt; MAXH) return res = 1e9;
+        return res = a[i].h;
+    }
+    int down = a[i].h - a[j].h;
+    if (down &gt; MAXH) return res = 1e9;
+    res = min(solve(j, 0) + abs(x - a[j].l), solve(j, 1) + abs(x - a[j].r)) + down;
+    return res;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+    while (T--) {
+        cin &gt;&gt; n &gt;&gt; X &gt;&gt; Y &gt;&gt; MAXH;
+        for (int i = 1; i &lt;= n; ++i) cin &gt;&gt; a[i].l &gt;&gt; a[i].r &gt;&gt; a[i].h;
+        sort(a + 1, a + n + 1, [](const Node&amp; A, const Node&amp; B) {
+            return A.h &gt; B.h;
+        });
+        memset(dp, -1, sizeof dp);
+
+        int idx = 0;
+        for (int i = 1; i &lt;= n; ++i) {
+            if (a[i].l &lt;= X &amp;&amp; X &lt;= a[i].r &amp;&amp; a[i].h &lt; Y) {
+                idx = i;
+                break;
+            }
+        }
+        if (!idx) cout &lt;&lt; Y &lt;&lt; '\n';
+        else if (Y - a[idx].h &gt; MAXH) cout &lt;&lt; "1000000000\n";
+        else {
+            int ans = min(solve(idx, 0) + X - a[idx].l, solve(idx, 1) + a[idx].r - X) + (Y - a[idx].h);
+            cout &lt;&lt; ans &lt;&lt; '\n';
+        }
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>平台按高度降序后，向下找第一块能接住的位置。</li>
+          <li>如果某次下落超过 `MAX`，这条路直接不可行。</li>
+          <li>起点是空中，不是某个平台本身。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>2726 / 2727 / 2773 采药类 <span class="badge">0/1 背包</span><span class="badge diff">绿</span><span class="badge plan">先做</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/2726/" target="_blank" rel="noreferrer">2726</a> / <a href="http://bailian.openjudge.cn/practice/2727/" target="_blank" rel="noreferrer">2727</a> / <a href="http://bailian.openjudge.cn/practice/2773/" target="_blank" rel="noreferrer">2773</a></p>
+        <h3>基本思路</h3>
+        <p>这几题题面本质都是：时间是容量，草药价值是收益，每株只能采一次，因此是标准 0/1 背包。`f[j]` 表示总时间不超过 `j` 时的最大价值。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T, M;
+    cin &gt;&gt; T &gt;&gt; M;
+    vector&lt;int&gt; f(T + 1, 0);
+    for (int i = 0; i &lt; M; ++i) {
+        int t, v;
+        cin &gt;&gt; t &gt;&gt; v;
+        for (int j = T; j &gt;= t; --j) {
+            f[j] = max(f[j], f[j - t] + v);
+        }
+    }
+    cout &lt;&lt; f[T] &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>内层必须倒序枚举，保证每株草药只用一次。</li>
+          <li>别把它误写成完全背包。</li>
+          <li>`f[j]` 是“容量不超过 j 的最优值”，不是恰好装满。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>2755 神奇的口袋 <span class="badge">计数 DP</span><span class="badge diff">绿</span><span class="badge plan">先做</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/2755/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>统计选若干物品体积和恰好为 40 的方案数。用 0/1 背包计数，`f[j]` 表示凑出体积 `j` 的方案数。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;long long&gt; f(41, 0);
+    f[0] = 1;
+    for (int i = 0; i &lt; n; ++i) {
+        int x;
+        cin &gt;&gt; x;
+        for (int j = 40; j &gt;= x; --j)
+            f[j] += f[j - x];
+    }
+    cout &lt;&lt; f[40] &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>这是“方案数”，不是“最大价值”。</li>
+          <li>`f[0] = 1` 是计数 DP 的核心初始化。</li>
+          <li>仍然要倒序枚举，因为每件物品只能选一次。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>2760 数字三角形 <span class="badge">DP</span><span class="badge diff">绿</span><span class="badge plan">先做</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/2760/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>和 `1163` 完全同型，自底向上 DP。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin &gt;&gt; n;
+    vector&lt;vector&lt;int&gt;&gt; a(n + 2, vector&lt;int&gt;(n + 2, 0));
+    for (int i = 1; i &lt;= n; ++i)
+        for (int j = 1; j &lt;= i; ++j)
+            cin &gt;&gt; a[i][j];
+    for (int i = n - 1; i &gt;= 1; --i)
+        for (int j = 1; j &lt;= i; ++j)
+            a[i][j] += max(a[i + 1][j], a[i + 1][j + 1]);
+    cout &lt;&lt; a[1][1] &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>这题就是经典模板，适合练“看见题型就秒写”。</li>
+          <li>别把路径限制写成能走三个方向。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>3262 新数字三角形 <span class="badge">DP</span><span class="badge diff">绿</span><span class="badge plan">模板变形</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/3262/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>先把从每个位置出发到最底层的最大路径和都算出来，状态还是 `f[i][j] = a[i][j] + max(f[i+1][j], f[i+1][j+1])`。最后输出指定起点 `(R, C)` 的值。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    while (true) {
+        int n;
+        cin &gt;&gt; n;
+        if (n == 0) break;
+        vector&lt;vector&lt;int&gt;&gt; a(n + 2, vector&lt;int&gt;(n + 2, 0));
+        for (int i = 1; i &lt;= n; ++i)
+            for (int j = 1; j &lt;= i; ++j)
+                cin &gt;&gt; a[i][j];
+        int R, C;
+        cin &gt;&gt; R &gt;&gt; C;
+        for (int i = n - 1; i &gt;= 1; --i)
+            for (int j = 1; j &lt;= i; ++j)
+                a[i][j] += max(a[i + 1][j], a[i + 1][j + 1]);
+        cout &lt;&lt; a[R][C] &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>这是多组数据，`n = 0` 结束。</li>
+          <li>别误以为只能从顶点开始，本题起点是给定的。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4118 开餐馆 <span class="badge">DP</span><span class="badge diff">黄</span><span class="badge plan">主练</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/4118/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>典型一维 DP。`dp[i]` 表示考虑前 `i` 个地点的最大利润。转移：不选 `i`，或者选 `i` 并接上距离它超过 `k` 的最后一个位置。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+    while (T--) {
+        int n, k;
+        cin &gt;&gt; n &gt;&gt; k;
+        vector&lt;int&gt; m(n + 1), p(n + 1), dp(n + 1, 0);
+        for (int i = 1; i &lt;= n; ++i) cin &gt;&gt; m[i];
+        for (int i = 1; i &lt;= n; ++i) cin &gt;&gt; p[i];
+        for (int i = 1; i &lt;= n; ++i) {
+            dp[i] = dp[i - 1];
+            int j = i - 1;
+            while (j &gt;= 1 &amp;&amp; m[i] - m[j] &lt;= k) --j;
+            dp[i] = max(dp[i], dp[j] + p[i]);
+        }
+        cout &lt;&lt; dp[n] &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>题目要求距离必须“大于 `k`”，不是大于等于。</li>
+          <li>`n &lt; 100`，直接 `O(n^2)` 就够，不必过度优化。</li>
+          <li>每组数据都要重新初始化 `dp`。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4121 股票买卖 <span class="badge">状态机 DP</span><span class="badge diff">黄</span><span class="badge warn">易错</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/4121/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>最多做两次交易，用四个状态维护：第一次买入、第一次卖出、第二次买入、第二次卖出。每天更新一次。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+    while (T--) {
+        int n;
+        cin &gt;&gt; n;
+        long long buy1 = LLONG_MIN / 4, sell1 = 0;
+        long long buy2 = LLONG_MIN / 4, sell2 = 0;
+        for (int i = 0; i &lt; n; ++i) {
+            long long x;
+            cin &gt;&gt; x;
+            buy1 = max(buy1, -x);
+            sell1 = max(sell1, buy1 + x);
+            buy2 = max(buy2, sell1 - x);
+            sell2 = max(sell2, buy2 + x);
+        }
+        cout &lt;&lt; sell2 &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>同一天允许“卖完再买”，所以状态转移顺序要统一。</li>
+          <li>价格可能为负，别把初值随便设成 `-1e9` 这种太小的数。</li>
+          <li>最多两次交易，不是无限次。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4122 切割回文 <span class="badge">区间 DP / 线性 DP</span><span class="badge diff">黄</span><span class="badge warn">易错</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/4122/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>先预处理 `pal[i][j]` 表示子串 `s[i..j]` 是否回文。再设 `dp[i]` 表示前 `i` 个字符最少切几刀，枚举最后一段回文串的起点。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+    while (T--) {
+        string s;
+        cin &gt;&gt; s;
+        int n = s.size();
+        vector&lt;vector&lt;bool&gt;&gt; pal(n, vector&lt;bool&gt;(n, false));
+        for (int i = n - 1; i &gt;= 0; --i) {
+            for (int j = i; j &lt; n; ++j) {
+                if (s[i] == s[j] &amp;&amp; (j - i &lt; 2 || pal[i + 1][j - 1])) pal[i][j] = true;
+            }
+        }
+        vector&lt;int&gt; dp(n + 1, 1e9);
+        dp[0] = -1;
+        for (int i = 1; i &lt;= n; ++i) {
+            for (int j = 0; j &lt; i; ++j) {
+                if (pal[j][i - 1]) dp[i] = min(dp[i], dp[j] + 1);
+            }
+        }
+        cout &lt;&lt; dp[n] &lt;&lt; '\n';
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>`dp[0] = -1` 这个技巧能让整串本身是回文时答案自然变成 0。</li>
+          <li>回文预处理顺序要从短串推到长串，通常 `i` 倒着扫。</li>
+          <li>不要把“最少回文段数”和“最少切割次数”混起来。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4131 Charm Bracelet <span class="badge">0/1 背包</span><span class="badge diff">绿</span><span class="badge plan">先做</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/4131/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>标准 0/1 背包。`f[j]` 表示容量不超过 `j` 时的最大 desirability。每个饰品最多使用一次，所以倒序枚举容量。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int N, M;
+    cin &gt;&gt; N &gt;&gt; M;
+    vector&lt;int&gt; f(M + 1, 0);
+    for (int i = 0; i &lt; N; ++i) {
+        int w, d;
+        cin &gt;&gt; w &gt;&gt; d;
+        for (int j = M; j &gt;= w; --j)
+            f[j] = max(f[j], f[j - w] + d);
+    }
+    cout &lt;&lt; f[M] &lt;&lt; '\n';
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>别写成完全背包，饰品每个只能用一次。</li>
+          <li>容量 `M` 比较大，但一维数组足够。</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>4149 课程大作业 <span class="badge">状压 DP</span><span class="badge diff">偏黄</span><span class="badge warn">压轴</span></summary>
+      <div class="content">
+        <p><a href="http://bailian.openjudge.cn/practice/4149/" target="_blank" rel="noreferrer">题目链接</a></p>
+        <h3>基本思路</h3>
+        <p>`N &lt;= 15`，用状压 DP。`dp[mask]` 表示完成 `mask` 这些课程的最小扣分，`time[mask]` 表示完成这些课程总共花的时间。转移时枚举最后做哪门课。若扣分相同，按字典序更小的方案更新。</p>
+        <h3>标准代码</h3>
+        <pre><code>#include &lt;bits/stdc++.h&gt;
+using namespace std;
+
+struct Course {
+    string name;
+    int d, c;
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int T;
+    cin &gt;&gt; T;
+    while (T--) {
+        int n;
+        cin &gt;&gt; n;
+        vector&lt;Course&gt; a(n);
+        for (int i = 0; i &lt; n; ++i) cin &gt;&gt; a[i].name &gt;&gt; a[i].d &gt;&gt; a[i].c;
+
+        int N = 1 &lt;&lt; n;
+        vector&lt;int&gt; dp(N, INT_MAX / 2), tim(N, 0);
+        vector&lt;string&gt; path(N, "");
+        dp[0] = 0;
+
+        for (int mask = 1; mask &lt; N; ++mask) {
+            for (int i = 0; i &lt; n; ++i) {
+                if (!(mask &amp; (1 &lt;&lt; i))) continue;
+                int pre = mask ^ (1 &lt;&lt; i);
+                int nowTime = tim[pre] + a[i].c;
+                int penalty = dp[pre] + max(0, nowTime - a[i].d);
+                string cand = path[pre] + a[i].name + "\n";
+                if (penalty &lt; dp[mask] || (penalty == dp[mask] &amp;&amp; cand &lt; path[mask])) {
+                    dp[mask] = penalty;
+                    tim[mask] = nowTime;
+                    path[mask] = cand;
+                }
+            }
+        }
+
+        cout &lt;&lt; dp[N - 1] &lt;&lt; '\n' &lt;&lt; path[N - 1];
+    }
+    return 0;
+}</code></pre>
+        <h3>易错提醒</h3>
+        <ul>
+          <li>罚分是 `max(0, 完成时间 - 截止时间)`，不是简单差值累加。</li>
+          <li>相同最优值时要输出字典序更小的方案。</li>
+          <li>这题不是贪心，必须用状压 DP。</li>
+        </ul>
+      </div>
+    </details>
+  </main>
+</body>
+</html>
+
+

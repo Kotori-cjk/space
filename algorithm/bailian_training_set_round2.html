@@ -1,0 +1,308 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+    <script>
+        (function () {
+            var isPublishedSite = location.hostname.toLowerCase() === 'kotori-cjk.github.io';
+            var recentGrant = false;
+            try {
+                var grantTime = Number(localStorage.getItem('kotori-child-site-auth-time') || '0');
+                recentGrant = Date.now() - grantTime < 15000;
+            } catch (error) {}
+            var hasAccess = sessionStorage.getItem('kotori-child-site-auth') === 'ok' || recentGrant;
+            if (isPublishedSite && !hasAccess) {
+                window.location.replace('https://kotori-cjk.github.io/?space=locked');
+            }
+        })();
+    </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>百炼机考训练题单 · 第二梯队</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --paper: rgba(255, 252, 246, 0.94);
+      --ink: #172033;
+      --muted: #5f6b7a;
+      --line: #d8d1c7;
+      --accent: #8b5cf6;
+      --accent-2: #0f766e;
+      --soft: #ede9fe;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.16), transparent 28%),
+        radial-gradient(circle at 100% 10%, rgba(15, 118, 110, 0.12), transparent 30%),
+        linear-gradient(180deg, #f8f4ec 0%, #efe7da 100%);
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 40px 20px 64px;
+    }
+
+    .hero {
+      padding: 28px;
+      border: 1px solid rgba(139, 92, 246, 0.14);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 18px 42px rgba(23, 32, 51, 0.08);
+    }
+
+    .tag {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4.5vw, 46px);
+      line-height: 1.1;
+    }
+
+    .lead {
+      margin: 14px 0 0;
+      max-width: 860px;
+      color: #334155;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+      padding: 0;
+      list-style: none;
+    }
+
+    .meta li {
+      padding: 6px 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .section {
+      overflow: hidden;
+      border: 1px solid rgba(216, 209, 199, 0.96);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 10px 24px rgba(23, 32, 51, 0.06);
+    }
+
+    .section-head {
+      padding: 18px 18px 12px;
+      border-bottom: 1px solid rgba(216, 209, 199, 0.9);
+      background: linear-gradient(180deg, rgba(255,255,255,0.7), rgba(248,244,236,0.95));
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .section-head p {
+      margin: 8px 0 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .list {
+      list-style: none;
+      margin: 0;
+      padding: 6px 0;
+    }
+
+    .list li + li {
+      border-top: 1px solid rgba(216, 209, 199, 0.55);
+    }
+
+    .list a {
+      display: flex;
+      gap: 12px;
+      align-items: baseline;
+      padding: 12px 18px;
+      color: inherit;
+      text-decoration: none;
+      transition: background-color 120ms ease;
+    }
+
+    .list a:hover {
+      background: rgba(237, 233, 254, 0.65);
+    }
+
+    .id {
+      min-width: 52px;
+      color: var(--accent-2);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .footer {
+      margin-top: 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 860px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="tag">Bailian / 第二梯队</div>
+      <h1>百炼机考训练题单 · 第二梯队</h1>
+      <p class="lead">
+        这份题单和第一份 50 题已经做过按题号去重，保留下来的是更适合作为第二轮补强的 46 道题。
+        仍然围绕机考风格，重点放在贪心、DP、搜索、二分、结构体排序、单调结构和 STL。
+      </p>
+      <ul class="meta">
+        <li>总题数：46</li>
+        <li>已与第一题单去重</li>
+        <li>用途：第二轮补强 / 混合识别 / 模拟补池</li>
+      </ul>
+    </section>
+
+    <section class="grid">
+      <article class="section">
+        <div class="section-head">
+          <h2>贪心</h2>
+          <p>继续补“排序后扫描”“区间选择”“局部决策”这类机考高频题。</p>
+        </div>
+        <ul class="list">
+          <li><a href="http://bailian.openjudge.cn/practice/1094/" target="_blank" rel="noreferrer"><span class="id">1094</span><span>Sorting It All Out</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2299/" target="_blank" rel="noreferrer"><span class="id">2299</span><span>Ultra-QuickSort</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2993/" target="_blank" rel="noreferrer"><span class="id">2993</span><span>区间</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2996/" target="_blank" rel="noreferrer"><span class="id">2996</span><span>选课</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/3181/" target="_blank" rel="noreferrer"><span class="id">3181</span><span>Pizza schedule</span></a></li>
+        </ul>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2>DP</h2>
+          <p>强调线性 DP、背包、序列型 DP，补足机考后段的状态定义能力。</p>
+        </div>
+        <ul class="list">
+          <li><a href="http://bailian.openjudge.cn/practice/1163/" target="_blank" rel="noreferrer"><span class="id">1163</span><span>The Triangle</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/1170/" target="_blank" rel="noreferrer"><span class="id">1170</span><span>Shopping Offers</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2726/" target="_blank" rel="noreferrer"><span class="id">2726</span><span>采药</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2727/" target="_blank" rel="noreferrer"><span class="id">2727</span><span>还是采药问题</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2755/" target="_blank" rel="noreferrer"><span class="id">2755</span><span>神奇的口袋</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2760/" target="_blank" rel="noreferrer"><span class="id">2760</span><span>数字三角形</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2773/" target="_blank" rel="noreferrer"><span class="id">2773</span><span>采药</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/4149/" target="_blank" rel="noreferrer"><span class="id">4149</span><span>课程大作业</span></a></li>
+        </ul>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2>搜索：BFS / DFS / 状态搜索</h2>
+          <p>第二批更偏迷宫、图搜索和“模型识别”，适合混合训练。</p>
+        </div>
+        <ul class="list">
+          <li><a href="http://bailian.openjudge.cn/practice/1103/" target="_blank" rel="noreferrer"><span class="id">1103</span><span>Maze</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/1522/" target="_blank" rel="noreferrer"><span class="id">1522</span><span>N-Credible Mazes</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/1858/" target="_blank" rel="noreferrer"><span class="id">1858</span><span>Interesting Maze Game</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2157/" target="_blank" rel="noreferrer"><span class="id">2157</span><span>Maze</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2644/" target="_blank" rel="noreferrer"><span class="id">2644</span><span>Maze</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2790/" target="_blank" rel="noreferrer"><span class="id">2790</span><span>迷宫</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/3435/" target="_blank" rel="noreferrer"><span class="id">3435</span><span>Borg Maze</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/4063/" target="_blank" rel="noreferrer"><span class="id">4063</span><span>DFS spanning tree</span></a></li>
+        </ul>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2>二分</h2>
+          <p>继续打边界感和判定函数，避免二分在考场里变成情绪崩点。</p>
+        </div>
+        <ul class="list">
+          <li><a href="http://bailian.openjudge.cn/practice/1757/" target="_blank" rel="noreferrer"><span class="id">1757</span><span>Binary Search</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2774/" target="_blank" rel="noreferrer"><span class="id">2774</span><span>木材加工</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2388/" target="_blank" rel="noreferrer"><span class="id">2388</span><span>寻找中位数</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/4145/" target="_blank" rel="noreferrer"><span class="id">4145</span><span>放弃考试</span></a></li>
+        </ul>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2>结构体排序 / STL</h2>
+          <p>更适合作为第二轮补池：多关键字排序、队列和基础结构维护。</p>
+        </div>
+        <ul class="list">
+          <li><a href="http://bailian.openjudge.cn/practice/2752/" target="_blank" rel="noreferrer"><span class="id">2752</span><span>字符串数组排序问题</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2915/" target="_blank" rel="noreferrer"><span class="id">2915</span><span>字符串排序</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2998/" target="_blank" rel="noreferrer"><span class="id">2998</span><span>日志排序</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/3245/" target="_blank" rel="noreferrer"><span class="id">3245</span><span>空调排名</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/3672/" target="_blank" rel="noreferrer"><span class="id">3672</span><span>比赛排名</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/3702/" target="_blank" rel="noreferrer"><span class="id">3702</span><span>距离排序</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/4084/" target="_blank" rel="noreferrer"><span class="id">4084</span><span>拓扑排序</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/3861/" target="_blank" rel="noreferrer"><span class="id">3861</span><span>Queue</span></a></li>
+        </ul>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2>单调栈 / 单调结构</h2>
+          <p>补强“下标、弹栈、窗口、候选维护”的稳定性。</p>
+        </div>
+        <ul class="list">
+          <li><a href="http://bailian.openjudge.cn/practice/4077/" target="_blank" rel="noreferrer"><span class="id">4077</span><span>出栈序列统计</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2469/" target="_blank" rel="noreferrer"><span class="id">2469</span><span>Stack 'em Up</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2259/" target="_blank" rel="noreferrer"><span class="id">2259</span><span>Team Queue</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2482/" target="_blank" rel="noreferrer"><span class="id">2482</span><span>Stars in Your Window</span></a></li>
+        </ul>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2>字符串 / 实现补强</h2>
+          <p>这组更偏机考真题味道，适合拿来练读题、实现和调试节奏。</p>
+        </div>
+        <ul class="list">
+          <li><a href="http://bailian.openjudge.cn/practice/1200/" target="_blank" rel="noreferrer"><span class="id">1200</span><span>Crazy Search</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/1501/" target="_blank" rel="noreferrer"><span class="id">1501</span><span>Word-Search Wonder</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/1674/" target="_blank" rel="noreferrer"><span class="id">1674</span><span>Sorting by Swapping</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2050/" target="_blank" rel="noreferrer"><span class="id">2050</span><span>Searching the Web</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2406/" target="_blank" rel="noreferrer"><span class="id">2406</span><span>字符串乘方</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/2743/" target="_blank" rel="noreferrer"><span class="id">2743</span><span>字符串判等</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/4007/" target="_blank" rel="noreferrer"><span class="id">4007</span><span>计算字符串距离</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/4042/" target="_blank" rel="noreferrer"><span class="id">4042</span><span>Rabin-Karp字符串匹配</span></a></li>
+          <li><a href="http://bailian.openjudge.cn/practice/4073/" target="_blank" rel="noreferrer"><span class="id">4073</span><span>最长公共字符串后缀</span></a></li>
+        </ul>
+      </article>
+    </section>
+
+    <p class="footer">这份题单与第一题单按题号去重后生成，适合作为第二轮专题补强页面。</p>
+  </main>
+</body>
+</html>
+
+

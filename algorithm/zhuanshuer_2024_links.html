@@ -1,0 +1,126 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+    <script>
+        (function () {
+            var isPublishedSite = location.hostname.toLowerCase() === 'kotori-cjk.github.io';
+            var recentGrant = false;
+            try {
+                var grantTime = Number(localStorage.getItem('kotori-child-site-auth-time') || '0');
+                recentGrant = Date.now() - grantTime < 15000;
+            } catch (error) {}
+            var hasAccess = sessionStorage.getItem('kotori-child-site-auth') === 'ok' || recentGrant;
+            if (isPublishedSite && !hasAccess) {
+                window.location.replace('https://kotori-cjk.github.io/?space=locked');
+            }
+        })();
+    </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2024 转数二题目整理</title>
+  <style>
+    :root {
+      --bg: #f6f3ec;
+      --paper: #fffdf8;
+      --ink: #1f2937;
+      --muted: #6b7280;
+      --line: #ddd6c9;
+      --accent: #0f766e;
+      --warn: #9a3412;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, #f8f4ec 0%, #efe7da 100%);
+    }
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+    }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 28px;
+      box-shadow: 0 14px 36px rgba(31, 41, 55, 0.07);
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.1;
+    }
+    .desc {
+      margin: 0 0 10px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .note {
+      margin: 0 0 24px;
+      color: var(--warn);
+      font-size: 14px;
+    }
+    ol {
+      margin: 0;
+      padding-left: 24px;
+    }
+    li {
+      margin: 0 0 16px;
+    }
+    .title {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .tag {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 12px;
+      vertical-align: middle;
+    }
+    .tag.search {
+      background: #fff7ed;
+      color: #c2410c;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <h1>2024 转数二题目整理</h1>
+      <p class="desc">
+        这份页面根据你之前上传的 2024 PDF 整理。当前能直接在已有题库中明确对上的题给直达链接，其余题先给统一搜索入口。
+      </p>
+      <p class="note">
+        目前已直接确认 2 题，其余 6 题还没有从现有标题库里直接命中。
+      </p>
+      <ol>
+        <li><span class="title">A 围栏 <span class="tag search">搜索入口</span></span><a href="http://openjudge.cn/search/?q=%E5%9B%B4%E6%A0%8F" target="_blank" rel="noreferrer">http://openjudge.cn/search/?q=围栏</a></li>
+        <li><span class="title">B 简单密码 <span class="tag">已确认</span></span><a href="http://bailian.openjudge.cn/practice/2767/" target="_blank" rel="noreferrer">http://bailian.openjudge.cn/practice/2767/</a></li>
+        <li><span class="title">C 小明家里有几亩地？ <span class="tag search">搜索入口</span></span><a href="http://openjudge.cn/search/?q=%E5%B0%8F%E6%98%8E%E5%AE%B6%E9%87%8C%E6%9C%89%E5%87%A0%E4%BA%A9%E5%9C%B0" target="_blank" rel="noreferrer">http://openjudge.cn/search/?q=小明家里有几亩地</a></li>
+        <li><span class="title">D 最后一块石头 <span class="tag search">搜索入口</span></span><a href="http://openjudge.cn/search/?q=%E6%9C%80%E5%90%8E%E4%B8%80%E5%9D%97%E7%9F%B3%E5%A4%B4" target="_blank" rel="noreferrer">http://openjudge.cn/search/?q=最后一块石头</a></li>
+        <li><span class="title">E 会议室时间安排 <span class="tag search">搜索入口</span></span><a href="http://openjudge.cn/search/?q=%E4%BC%9A%E8%AE%AE%E5%AE%A4%E6%97%B6%E9%97%B4%E5%AE%89%E6%8E%92" target="_blank" rel="noreferrer">http://openjudge.cn/search/?q=会议室时间安排</a></li>
+        <li><span class="title">F 矩形数量 <span class="tag search">搜索入口</span></span><a href="http://openjudge.cn/search/?q=%E7%9F%A9%E5%BD%A2%E6%95%B0%E9%87%8F" target="_blank" rel="noreferrer">http://openjudge.cn/search/?q=矩形数量</a></li>
+        <li><span class="title">G 逃离迷宫 <span class="tag search">搜索入口</span></span><a href="http://openjudge.cn/search/?q=%E9%80%83%E7%A6%BB%E8%BF%B7%E5%AE%AB" target="_blank" rel="noreferrer">http://openjudge.cn/search/?q=逃离迷宫</a></li>
+        <li><span class="title">H C Looooops <span class="tag">已确认</span></span><a href="http://bailian.openjudge.cn/practice/2115/" target="_blank" rel="noreferrer">http://bailian.openjudge.cn/practice/2115/</a></li>
+      </ol>
+    </section>
+  </main>
+</body>
+</html>
+
+

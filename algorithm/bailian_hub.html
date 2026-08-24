@@ -1,0 +1,257 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+    <script>
+        (function () {
+            var isPublishedSite = location.hostname.toLowerCase() === 'kotori-cjk.github.io';
+            var recentGrant = false;
+            try {
+                var grantTime = Number(localStorage.getItem('kotori-child-site-auth-time') || '0');
+                recentGrant = Date.now() - grantTime < 15000;
+            } catch (error) {}
+            var hasAccess = sessionStorage.getItem('kotori-child-site-auth') === 'ok' || recentGrant;
+            if (isPublishedSite && !hasAccess) {
+                window.location.replace('https://kotori-cjk.github.io/?space=locked');
+            }
+        })();
+    </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bailian / 转数二训练导航</title>
+  <style>
+    :root{
+      --bg:#f6f2e9;
+      --paper:#fffdf8;
+      --ink:#1f2937;
+      --muted:#6b7280;
+      --line:#ddd6c9;
+      --accent:#0f766e;
+      --accent2:#7c3aed;
+      --soft:#ecfeff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Segoe UI","Microsoft YaHei",sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(15,118,110,.10), transparent 26%),
+        radial-gradient(circle at top right, rgba(124,58,237,.08), transparent 24%),
+        linear-gradient(180deg,#f8f4ec 0%,#efe7da 100%);
+      line-height:1.65;
+    }
+    .page{
+      max-width:1160px;
+      margin:0 auto;
+      padding:36px 20px 60px;
+    }
+    .hero{
+      background:rgba(255,253,248,.94);
+      border:1px solid rgba(221,214,201,.95);
+      border-radius:8px;
+      padding:28px;
+      box-shadow:0 16px 40px rgba(31,41,55,.07);
+    }
+    .tag{
+      display:inline-block;
+      padding:4px 10px;
+      border-radius:999px;
+      background:var(--soft);
+      color:var(--accent);
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:10px;
+    }
+    h1{
+      margin:0;
+      font-size:clamp(30px,4.8vw,46px);
+      line-height:1.1;
+    }
+    .lead{
+      margin:14px 0 0;
+      max-width:900px;
+      color:#374151;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:18px;
+      margin-top:28px;
+    }
+    .section{
+      background:rgba(255,253,248,.94);
+      border:1px solid rgba(221,214,201,.95);
+      border-radius:8px;
+      overflow:hidden;
+      box-shadow:0 10px 24px rgba(31,41,55,.06);
+    }
+    .section-head{
+      padding:18px;
+      border-bottom:1px solid rgba(221,214,201,.8);
+      background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(248,244,236,.95));
+    }
+    .section-head h2{
+      margin:0;
+      font-size:22px;
+    }
+    .section-head p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .list{
+      list-style:none;
+      margin:0;
+      padding:6px 0;
+    }
+    .list li + li{
+      border-top:1px solid rgba(221,214,201,.55);
+    }
+    .list a{
+      display:block;
+      padding:14px 18px;
+      color:inherit;
+      text-decoration:none;
+    }
+    .list a:hover{
+      background:#f9fafb;
+    }
+    .item-title{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:700;
+      margin-bottom:4px;
+    }
+    .item-desc{
+      color:var(--muted);
+      font-size:14px;
+    }
+    .badge{
+      font-size:12px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#ede9fe;
+      color:var(--accent2);
+      font-weight:700;
+    }
+    .badge.main{
+      background:#dcfce7;
+      color:#166534;
+    }
+    .badge.exam{
+      background:#fff7ed;
+      color:#c2410c;
+    }
+    @media (max-width:860px){
+      .grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="tag">Bailian / 转数二</div>
+      <h1>训练导航总入口</h1>
+      <p class="lead">
+        这里把你前面整理出来的 Bailian 题单、DP / 贪心专题页，以及 2024 / 2025 转数二题目链接页都串到一起。
+        后面你继续往网站里塞内容时，可以把这里当成首页或栏目入口。
+      </p>
+    </section>
+
+    <section class="grid">
+      <article class="section">
+        <div class="section-head">
+          <h2>题单入口</h2>
+          <p>先做主训练池，再做第二梯队补强。</p>
+        </div>
+        <ul class="list">
+          <li>
+            <a href="./bailian_training_set.html">
+              <div class="item-title">第一梯队题单 <span class="badge main">50 题</span></div>
+              <div class="item-desc">主训练池，优先刷，覆盖搜索、DP、贪心、二分、排序与 STL。</div>
+            </a>
+          </li>
+          <li>
+            <a href="./bailian_training_set_round2.html">
+              <div class="item-title">第二梯队题单 <span class="badge">46 题</span></div>
+              <div class="item-desc">和第一梯队按题号去重后的补强池，适合第二轮混合识别训练。</div>
+            </a>
+          </li>
+        </ul>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2>专题笔记</h2>
+          <p>这部分更适合复盘和查模板。</p>
+        </div>
+        <ul class="list">
+          <li>
+            <a href="./bailian_dp_greedy_notes.html">
+              <div class="item-title">DP / 贪心题解整理 <span class="badge main">25 题</span></div>
+              <div class="item-desc">每题都有基本思路、标准代码、易错提醒，并新增了难度和推荐顺序。</div>
+            </a>
+          </li>
+        </ul>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2>往年题链接</h2>
+          <p>把已知的 2024 / 2025 题目入口单独留一层，方便快速对照。</p>
+        </div>
+        <ul class="list">
+          <li>
+            <a href="./zhuanshuer_2024_links.html">
+              <div class="item-title">2024 转数二题目整理 <span class="badge exam">真题</span></div>
+              <div class="item-desc">目前包含已确认直达链接和搜索入口。</div>
+            </a>
+          </li>
+          <li>
+            <a href="./zhuanshuer_2025_links.html">
+              <div class="item-title">2025 转数二题目链接 <span class="badge exam">题单</span></div>
+              <div class="item-desc">从你上传的 2025 文档里抽出来的题号和可点击链接。</div>
+            </a>
+          </li>
+        </ul>
+      </article>
+
+      <article class="section">
+        <div class="section-head">
+          <h2>建议使用顺序</h2>
+          <p>这一段可以直接当你网站上的“阅读指引”。</p>
+        </div>
+        <ul class="list">
+          <li>
+            <a href="./bailian_training_set.html">
+              <div class="item-title">第 1 步：刷第一梯队</div>
+              <div class="item-desc">先建立机考主力题型手感，优先追求稳。</div>
+            </a>
+          </li>
+          <li>
+            <a href="./bailian_dp_greedy_notes.html">
+              <div class="item-title">第 2 步：回到专题页复盘</div>
+              <div class="item-desc">把 DP / 贪心这两块练成能在考场里稳定复现的模板。</div>
+            </a>
+          </li>
+          <li>
+            <a href="./bailian_training_set_round2.html">
+              <div class="item-title">第 3 步：补第二梯队</div>
+              <div class="item-desc">开始做变形题和混合题，练识别与调度。</div>
+            </a>
+          </li>
+          <li>
+            <a href="./zhuanshuer_2024_links.html">
+              <div class="item-title">第 4 步：回头对照往年题</div>
+              <div class="item-desc">检查自己对真题风格的适应度有没有上来。</div>
+            </a>
+          </li>
+        </ul>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
+
+

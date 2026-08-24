@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>洛谷刷题复盘分析</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #FF6B9D; --bg: #FFF5F7; --card: #fff; --text: #4A4A6A;
+  --text-light: #9898B8; --border: #F0E0E8; --warm: #FFD93D;
+  --danger: #FF6B6B; --mint: #7DCEA0; --orange: #FF9A3C;
+}
+body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); max-width: 920px; margin: 0 auto; padding: 32px 24px; line-height: 1.75; }
+h1, h2, h3, h4 { font-family: 'ZCOOL KuaiLe', cursive; color: var(--primary); margin-top: 1.6em; margin-bottom: 0.6em; }
+h1 { border-bottom: 3px solid var(--primary); padding-bottom: 12px; font-size: 32px; }
+h2 { border-left: 5px solid var(--primary); padding-left: 14px; font-size: 24px; }
+h3 { color: #E8527F; font-size: 19px; }
+h4 { color: var(--orange); font-size: 17px; }
+table { border-collapse: collapse; width: 100%; margin: 16px 0; background: var(--card); box-shadow: 0 2px 12px rgba(255,107,157,0.08); border-radius: 8px; overflow: hidden; }
+th, td { padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+th { background: linear-gradient(135deg, var(--primary), #B4A0E5); color: #fff; }
+tr:hover { background: var(--bg); }
+code { background: #f0e8f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #c0376a; }
+pre { background: #2d2d40; color: #f0f0f5; padding: 14px; border-radius: 8px; overflow-x: auto; }
+pre code { background: none; color: inherit; padding: 0; }
+ul, ol { padding-left: 24px; }
+li { margin: 4px 0; }
+blockquote { border-left: 4px solid var(--warm); padding: 8px 14px; background: #FFF8E1; margin: 12px 0; color: #6a5a30; border-radius: 0 6px 6px 0; }
+strong { color: var(--danger); }
+hr { border: none; border-top: 2px dashed var(--border); margin: 32px 0; }
+a { color: var(--primary); }
+.back-link { display: inline-block; padding: 8px 16px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 20px; margin-bottom: 20px; }
+.back-link:hover { background: #E8527F; }
+</style>
+</head>
+<body>
+<a class="back-link" href="../index.html">← 返回主页</a>
+<h1 id="_1">洛谷刷题复盘分析</h1>
+<blockquote>
+<p>基于 <code>kotori-luogu-backup.json</code> 生成
+错题 6 题 + 重点题 16 题（P1433 重叠）= 共 21 道</p>
+</blockquote>
+<hr />
+<h2 id="_2">一、整体统计</h2>
+<h3 id="wrong-6">错题（标记为 ❌ wrong，共 6 道）</h3>
+<p>P1433、P3811、P1095、P1140、P2761、P1080</p>
+<h3 id="starred-16">重点题（标记为 ⭐ starred，共 16 道）</h3>
+<p>P3143、P4147、P4391、P8306、P1605、P1731、P1588、P1162、P1433、P1113、P1833、P2196、P1020、P1044、P2622、P1031</p>
+<h3 id="_3">算法考点分布</h3>
+<table>
+<thead>
+<tr>
+<th>主题</th>
+<th>题数</th>
+<th>题号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DP（动态规划）</strong></td>
+<td>8</td>
+<td>P1140、P1095、P3811、P1020、P1044、P1833、P1113、P2196</td>
+</tr>
+<tr>
+<td><strong>DFS / 搜索剪枝</strong></td>
+<td>3</td>
+<td>P1731、P1605、P1433</td>
+</tr>
+<tr>
+<td><strong>BFS / Flood Fill</strong></td>
+<td>2</td>
+<td>P1162、P1588</td>
+</tr>
+<tr>
+<td><strong>字符串（KMP/Trie）</strong></td>
+<td>2</td>
+<td>P4391、P8306</td>
+</tr>
+<tr>
+<td><strong>贪心 + 分治</strong></td>
+<td>2</td>
+<td>P3143、P1031</td>
+</tr>
+<tr>
+<td><strong>状压 DP</strong></td>
+<td>1</td>
+<td>P2622</td>
+</tr>
+<tr>
+<td><strong>单调栈</strong></td>
+<td>1</td>
+<td>P4147</td>
+</tr>
+<tr>
+<td><strong>贪心 + 高精度</strong></td>
+<td>1</td>
+<td>P1080</td>
+</tr>
+<tr>
+<td><strong>图论 + DP</strong></td>
+<td>1</td>
+<td>P2761</td>
+</tr>
+</tbody>
+</table>
+<p><strong>核心结论</strong>：DP 类题目占了近一半，且错题中 3/6 是 DP。<strong>DP 是当前最薄弱也最值得攻克的区域</strong>。</p>
+<hr />
+<h2 id="_4">二、逐题分析</h2>
+<h3 id="p1140-dp">❌ P1140 相似基因（错题，序列 DP）</h3>
+<p><strong>类型</strong>：双序列 DP / 序列对齐（LCS 变体）</p>
+<p><strong>核心思路</strong>：
+- 状态：<code>f[i][j]</code> = 字符串 a 前 i 位与字符串 b 前 j 位对齐时的<strong>最大得分</strong>
+- 转移：三种最后一步
+  - <code>a[i]</code> 对 <code>b[j]</code>：<code>f[i-1][j-1] + tab[a[i]][b[j]]</code>
+  - <code>a[i]</code> 对空位 <code>-</code>：<code>f[i-1][j] + tab[a[i]][-]</code>
+  - 空位 <code>-</code> 对 <code>b[j]</code>：<code>f[i][j-1] + tab[-][b[j]]</code></p>
+<p><strong>易错提醒</strong>（你的两次错都在这里）：
+1. <strong>初始化不统一</strong>：必须填满整行 <code>f[0][j]</code>（a 为空，b 用 j 个 <code>-</code> 补全）和整列 <code>f[i][0]</code>（b 为空，a 用 i 个 <code>-</code> 补全），不能只设 <code>f[0][1]</code> 和 <code>f[1][0]</code>
+2. <strong>状态转移含义混淆</strong>：
+   - <code>f[i-1][j]</code> 意思是 <strong>a 前 i-1 位 vs b 前 j 位已对齐</strong>，现在新增 <code>a[i]</code> 配 <code>-</code>
+   - <code>f[i][j-1]</code> 意思是 <strong>a 前 i 位 vs b 前 j-1 位已对齐</strong>，现在新增 <code>-</code> 配 <code>b[j]</code>
+3. 不可达态要设成 <code>-∞</code>（你笔记里写的 <code>-2e8</code>），不能用 0，否则会和有效得分混淆</p>
+<p><strong>关键词</strong>：序列 DP、对齐、罚分表、<code>-</code> 补位</p>
+<hr />
+<h3 id="p3811">❌ P3811 【模板】乘法逆元（错题，数论 / 线性递推）</h3>
+<p><strong>类型</strong>：批量线性递推（不是逐个快速幂）</p>
+<p><strong>你的错误</strong>：用快速幂对 1~n 每个数单独求 → O(n log p)，超时</p>
+<p><strong>正确思路</strong>：线性递推 DP
+$$\text{inv}[i] = -\lfloor p/i \rfloor \cdot \text{inv}[p \bmod i] \bmod p$$
+- 复杂度 O(n)
+- 推导：从 <code>p = ⌊p/i⌋·i + (p mod i)</code> 出发模 p</p>
+<p><strong>易错提醒</strong>：
+1. 看到"求 <strong>1~n</strong> 所有数的逆元"这种<strong>批量</strong>词眼，要立刻想到线性递推
+2. 实现中负数取模要 <code>+p</code> 防止结果为负</p>
+<p><strong>关键词</strong>：批量、1~n、线性递推</p>
+<hr />
+<h3 id="p1095-dp">❌ P1095 守望者的逃离（错题，贪心 / 简单 DP）</h3>
+<p><strong>类型</strong>：双决策状态机 DP</p>
+<p><strong>你笔记为空，必须补</strong>：</p>
+<p><strong>核心思路</strong>：
+- 每秒只能做一件事：闪烁（消耗 10 魔法，前进 60 米）或跑步（前进 17 米）或休息（恢复 4 魔法）
+- 状态：<code>f[t]</code> = t 秒能到达的最远距离；同时需要追踪剩余魔法
+- 实现：循环 t，每秒分两阶段——先决定是否能闪烁、再决定是否前进或休息</p>
+<p><strong>易错提醒</strong>：
+1. <strong>贪心陷阱</strong>：不能简单"魔法够就闪烁"，要考虑魔法不够时是该跑还是该等
+2. 注意提前终止：到达 T 或距离 ≥ M 即可输出
+3. 两阶段判断顺序不能反</p>
+<p><strong>关键词</strong>：守望者、双策略、时间循环</p>
+<hr />
+<h3 id="p2761-dp">❌ P2761 软件补丁问题（错题，状压 DP / 最短路）</h3>
+<p><strong>类型</strong>：状压最短路（Dijkstra on bit-mask states）</p>
+<p><strong>你笔记为空，必须补</strong>：</p>
+<p><strong>核心思路</strong>：
+- 把 bug 集合压缩成二进制状态 <code>s</code>（每位表示某 bug 是否存在）
+- 每个补丁是状态转移边：需要满足"必须含某些 bug、不能含某些 bug"，作用是"修掉某些 bug、新增某些 bug"
+- 跑 Dijkstra：从全 1 状态（所有 bug 存在）到全 0 状态</p>
+<p><strong>易错提醒</strong>：
+1. 状态数最多 <code>2^n</code>，n ≤ 20，注意空间
+2. 补丁的前置/作用条件用<strong>两个位掩码</strong>表示（"必须含的位"和"不能含的位"），判断时用位与
+3. 不可达要输出 0（视题目而定）</p>
+<p><strong>关键词</strong>：状压最短路、bug 位掩码、补丁建图</p>
+<hr />
+<h3 id="p1080">❌ P1080 国王游戏（错题，贪心 + 高精度）</h3>
+<p><strong>类型</strong>：贪心排序 + 高精度运算</p>
+<p><strong>你笔记为空，必须补</strong>：</p>
+<p><strong>核心思路</strong>：
+- 排序贪心：按 <code>a[i] * b[i]</code> <strong>升序</strong>排
+- 证明：交换相邻两人不变优时，可推出此排序
+- 答案：最大的 <code>(前缀积 / b[i])</code>，用高精度</p>
+<p><strong>易错提醒</strong>（结合你思考空间 #11、#12 的高精度坑）：
+1. <strong>比较器</strong>：<code>BigInt::operator&lt;</code> 必须<strong>从最高位（数组末尾）开始比较</strong>，相等返回 <code>false</code>
+2. <code>operator&lt;</code> 必须加 <code>const</code> 修饰
+3. 高精度除法要清空构造函数残留的 <code>0</code>
+4. 排序键是<strong>乘积</strong>，不是 a 或 b 单独——很多人栽在这里</p>
+<p><strong>关键词</strong>：贪心、相邻交换、高精度除法</p>
+<hr />
+<h3 id="p1433">❌ P1433 吃奶酪（错题 + 重点）</h3>
+<p><strong>类型</strong>：状压 DP / 旅行商问题</p>
+<p><strong>核心思路</strong>：
+- 状态：<code>f[s][i]</code> = 已经吃了集合 <code>s</code> 中的奶酪、当前在第 i 块奶酪的最短路径
+- 转移：<code>f[s | (1&lt;&lt;j)][j] = min(f[s][i] + dis(i,j))</code>
+- 答案：<code>min(f[(1&lt;&lt;n)-1][i])</code> for all i</p>
+<p><strong>易错提醒</strong>：
+1. 距离用 <code>double</code>，比较时小心精度
+2. 起点是原点 (0,0)，要单独处理第 0 步
+3. n ≤ 15，状态 <code>2^n * n</code> 不大，但常数要控制</p>
+<p><strong>关键词</strong>：TSP、状压 DP、欧几里得距离</p>
+<hr />
+<h3 id="p1731-dfs">⭐ P1731 生日蛋糕（重点，DFS 剪枝）</h3>
+<p><strong>类型</strong>：DFS + 多重剪枝（你笔记里写了完整的十节心法）</p>
+<p><strong>核心思路</strong>：
+- 按层决策 <code>(r, h)</code>，dfs 参数：剩余层数 m、剩余体积 n、半径上界 r、高度上界 h、当前面积 s
+- 终止：<code>m == 0 &amp;&amp; n == 0</code></p>
+<p><strong>四大剪枝</strong>：
+1. <strong>体积下界</strong>：<code>minV[m] = Σi³</code>，若 <code>n &lt; minV[m]</code> 剪
+2. <strong>面积下界</strong>：<code>minS[m] = 2Σi²</code>，若 <code>s + minS[m] ≥ ans</code> 剪
+3. <strong>单位代价</strong>：剩余面积 ≥ <code>2n/r</code>，若 <code>s + 2n/r ≥ ans</code> 剪
+4. <strong>枚举范围收缩</strong>：从源头限制 r、h 上界</p>
+<p><strong>易错提醒</strong>：
+1. DFS 参数传"上界"而非"当前值"，循环在内部枚举
+2. 只有最底层加底面积 <code>r²</code>，其他层只加侧面积 <code>2rh</code>
+3. 终止条件看<strong>状态语义</strong>："还剩多少"→ 到 0；"做到第几"→ 到 n</p>
+<p><strong>关键词</strong>：按层决策、未来代价下界、剪枝</p>
+<hr />
+<h3 id="p1605-dfs">⭐ P1605 迷宫（重点，DFS 路径计数）</h3>
+<p><strong>类型</strong>：DFS 计数 + visited 自管理</p>
+<p><strong>核心思路</strong>：从起点出发数到终点的路径数</p>
+<p><strong>易错提醒</strong>（你的核心心得）：
+- <strong>visited 管理模式</strong>："当前点只处理自己，子节点留给进入子节点层次时他自己处理"
+- 顺序：进入 → 标记自己 → 拓展周围（<strong>不标记子节点</strong>）→ 拓展完成 → 撤销自己标记
+- 全程不去动子节点的 visited 状态</p>
+<p><strong>代码片段</strong>（你的版本）：</p>
+<pre><code class="language-cpp">void dfs(int x, int y) {
+    if (x == fx &amp;&amp; y == fy) { ans++; return; }
+    visited[x][y] = true;
+    for (拓展四个方向) {
+        if (合法 &amp;&amp; !visited[nx][ny]) dfs(nx, ny);
+    }
+    visited[x][y] = false;  // 回溯
+}
+</code></pre>
+<p><strong>关键词</strong>：DFS 回溯、visited 数组、路径计数</p>
+<hr />
+<h3 id="p1162-bfs-flood-fill">⭐ P1162 填涂颜色（重点，BFS Flood Fill）</h3>
+<p><strong>类型</strong>：边界 Flood Fill</p>
+<p><strong>核心思路</strong>：
+- 从<strong>边界</strong>的 0 出发 BFS，把所有连通的 0 染成"外部"
+- 剩下的 0 就是被 1 围起来的"内部"</p>
+<p><strong>易错提醒</strong>：
+1. <strong>从边界开始</strong>（而不是从内部找），这样能区分内外
+2. 注意题目要求把"内部 0"染成 2，外部 0 还原
+3. 四方向 BFS 即可，不需要八方向</p>
+<p><strong>关键词</strong>：flood fill、边界 BFS、内外区分</p>
+<hr />
+<h3 id="p1588-bfs">⭐ P1588 丢失的牛（重点，BFS 状态转移）</h3>
+<p><strong>类型</strong>：一维数轴 BFS / 状态空间搜索</p>
+<p><strong>核心思路</strong>：
+- 每个位置三种转移：<code>x-1</code>、<code>x+1</code>、<code>2*x</code>
+- 用 BFS 求最少步数</p>
+<p><strong>易错提醒</strong>：
+1. 范围要够大（一般开到 2*max 防止 <code>2*x</code> 越界）
+2. visited 要标记访问过的位置
+3. 不要忘了起点 == 终点的边界情况</p>
+<p><strong>关键词</strong>：一维 BFS、状态转移图</p>
+<hr />
+<h3 id="p3143">⭐ P3143 钻石收藏家（重点，分治枚举分界点）</h3>
+<p><strong>类型</strong>：枚举分界点 + 前后缀预处理</p>
+<p><strong>核心思路</strong>（你笔记的精华）：
+1. 排序后用双指针/二分找每个位置 i 能选的最长合法长度 <code>lenv[i]</code>
+2. <strong>后缀最优</strong>：<code>best[i] = max(best[i+1], lenv[i])</code> —— 要么不选 i，要么选 i
+3. 枚举分界点 k：<code>ans = max(lenv[i] + best[next_pos])</code></p>
+<p><strong>易错提醒</strong>（你笔记的关键洞见）：
+- 看到"<strong>分为两不相交部分</strong>"立刻想到枚举分界点+分治
+- <code>best</code> 数组的含义："从位置 i 开始的最优解"——要么从 i 开始选，要么跳过 i</p>
+<p><strong>关键词</strong>：双指针、后缀最大、分界枚举</p>
+<hr />
+<h3 id="p4147">⭐ P4147 玉蟾宫（重点，单调栈 + 柱状图最大矩形）</h3>
+<p><strong>类型</strong>：二维问题压缩为一维 + 单调栈</p>
+<p><strong>核心思路</strong>（你笔记的精华）：
+- <strong>二维压缩为一维</strong>：对每一行预处理"以该格为底，向上能延伸多高"，得到柱状图
+- 对每个柱状图跑<strong>单调栈</strong>求最大矩形面积</p>
+<p><strong>易错提醒</strong>：
+1. 单调栈实现要注意"左边第一个更小"和"右边第一个更小"的处理
+2. 注意题目可能要求矩形面积乘 3（最大子矩阵的"价值"）
+3. 高度数组累加：当前格是 <code>F</code> 则 <code>h[j]++</code>，否则 <code>h[j] = 0</code></p>
+<p><strong>关键词</strong>：柱状图、单调栈、二维降维</p>
+<hr />
+<h3 id="p4391-kmp">⭐ P4391 无线传输（重点，KMP 最小周期）</h3>
+<p><strong>类型</strong>：KMP next 数组应用</p>
+<p><strong>核心思路</strong>（你笔记的精华）：
+- 对于长度为 n 的字符串 s，<strong>最小周期候选</strong> = <code>n - next[n]</code>
+- 当 <code>n % p == 0</code> 时，s 是 p 的完整周期重复
+- <strong>原理</strong>：<code>1~p</code> 与 <code>n-p+1~n</code> 这段由 KMP 失配数组的性质保证相同</p>
+<p><strong>易错提醒</strong>：
+1. 本题只需输出 <code>n - next[n]</code>（无需判断 n%p == 0，因为题目保证答案存在）
+2. KMP 的 <code>next</code> 数组下标从 1 开始时 <code>next[1] = 0</code></p>
+<p><strong>关键词</strong>：KMP、最小循环节、<code>n - next[n]</code></p>
+<hr />
+<h3 id="p8306-trie">⭐ P8306 字典树（重点，Trie 前缀计数）</h3>
+<p><strong>类型</strong>：Trie 模板 + 前缀经过次数</p>
+<p><strong>核心思路</strong>（你笔记的精华）：
+- <strong><code>cnt[p]</code> 记录的是经过该节点的字符串数量</strong>，而不是在该节点结束的字符串个数
+- 这样查询"以某字符串为前缀的数量"时，沿着 Trie 走到末位读 cnt 即可</p>
+<p><strong>易错提醒</strong>：
+1. 多测要 memset，复杂度算清楚
+2. 节点编号从 1 开始
+3. 注意大小写字母 + 数字的字符映射</p>
+<p><strong>关键词</strong>：Trie、前缀计数、<code>cnt[p]</code> 语义</p>
+<hr />
+<h3 id="p1113-dp">⭐ P1113 杂务（重点，拓扑 DP）</h3>
+<p><strong>类型</strong>：拓扑排序 + 树形/DAG DP</p>
+<p><strong>核心思路</strong>（你笔记的精华）：
+- 任务有明确前置 → <strong>拓扑排序</strong>
+- 同层任务可并行（木桶效应）→ <strong>用 max 更新</strong>
+- <code>f[u] = u 自身耗时 + max(f[v] for v 是 u 的前置)</code></p>
+<p><strong>易错提醒</strong>：
+1. 答案是所有 <code>f[u]</code> 的最大值，不是最后一个节点
+2. 入度为 0 的节点是起点，初始 <code>f[u] = time[u]</code>
+3. 注意拓扑序遍历，前驱要先算完</p>
+<p><strong>关键词</strong>：拓扑排序、max 更新、木桶效应</p>
+<hr />
+<h3 id="p1833">⭐ P1833 樱花（重点，混合背包）</h3>
+<p><strong>类型</strong>：01 + 完全 + 多重背包混合</p>
+<p><strong>核心思路</strong>：
+- 时间转分钟当作背包容量
+- 不同种类樱花对应三种背包：限定次数（多重）、无限次（完全）、一次（01）
+- 多重背包用<strong>二进制拆分</strong>优化</p>
+<p><strong>易错提醒</strong>：
+1. 完全背包正序，01 背包倒序，多重拆完后按 01 处理（倒序）
+2. 时间计算：可能跨过 0 点，注意取模
+3. 注意 <code>T = 0</code> 表示无限次（即完全背包）</p>
+<p><strong>关键词</strong>：混合背包、二进制拆分、时间转分钟</p>
+<hr />
+<h3 id="p2196-dag-dp">⭐ P2196 挖地雷（重点，DAG 路径 DP）</h3>
+<p><strong>类型</strong>：有向无环图最长路径</p>
+<p><strong>核心思路</strong>：
+- <code>f[i]</code> = 从节点 i 出发能挖到的最大地雷数
+- 转移：<code>f[i] = w[i] + max(f[j])</code> for j 是 i 能到达的节点
+- 倒序计算（因为依赖后面）</p>
+<p><strong>易错提醒</strong>：
+1. <strong>记录路径</strong>：用 <code>nxt[i]</code> 数组记下转移到哪个 j，输出时回溯打印
+2. 注意答案路径需要从 max(f[i]) 的起点开始追
+3. 输出格式：节点编号用 <code>-</code> 或空格连接（按题目要求）</p>
+<p><strong>关键词</strong>：DAG DP、路径记录、回溯输出</p>
+<hr />
+<h3 id="p1020-lis-dilworth">⭐ P1020 导弹拦截（重点，LIS + Dilworth）</h3>
+<p><strong>类型</strong>：最长不上升子序列 + Dilworth 定理</p>
+<p><strong>核心思路</strong>（你笔记的精华）：
+- 第一问：最长<strong>不上升</strong>子序列长度
+- 第二问：<strong>最少分组数</strong>——根据 <strong>Dilworth 定理</strong> = 最长<strong>严格上升</strong>子序列长度
+- 大白话：序列里"互相排斥"（满足不能同组规则）的元素最多有几个，就最少需要几组</p>
+<p><strong>易错提醒</strong>（你笔记的关键洞见）：
+1. <strong>同长度元素的处理</strong>：若两元素长度相同，按重量降序排，防止 LIS 误判为"递增"
+2. <strong>不上升 vs 不下降 vs 严格上升 vs 严格下降</strong> 容易混，做之前先用 1~2 个例子手算
+3. n 大时必须用 O(n log n) 优化（<code>q[len]</code> 维护长度为 len 的子序列结尾最小值，二分插入）</p>
+<p><strong>O(n log n) LIS 核心代码</strong>：</p>
+<pre><code class="language-cpp">int len = 0;
+for (int i = 1; i &lt;= n; i++) {
+    int l = 0, r = len;
+    while (l &lt; r) {
+        int mid = l + r + 1 &gt;&gt; 1;
+        if (q[mid] &lt; a[i]) l = mid; else r = mid - 1;
+    }
+    q[r + 1] = a[i];
+    len = max(len, r + 1);
+}
+</code></pre>
+<ul>
+<li>严格上升用 <code>&lt;</code>，不下降用 <code>&lt;=</code></li>
+</ul>
+<p><strong>关键词</strong>：LIS、Dilworth 定理、不上升 / 严格上升</p>
+<hr />
+<h3 id="p1044-dp">⭐ P1044 栈（重点，卡特兰数 / DP）</h3>
+<p><strong>类型</strong>：栈出栈序列计数</p>
+<p><strong>核心思路</strong>：
+- 方法一：<strong>卡特兰数</strong> $C_n = \frac{1}{n+1}\binom{2n}{n}$
+- 方法二：DP，<code>f[i][j]</code> = 已入栈 i 个、栈中还有 j 个 时的方案数（你思考空间 #8 里详细推过）
+  - push：<code>f[i+1][j+1] += f[i][j]</code>
+  - pop：<code>f[i][j-1] += f[i][j]</code></p>
+<p><strong>易错提醒</strong>：
+1. 起点 <code>f[0][0] = 1</code>
+2. 答案是 <code>f[n][0]</code>
+3. DP 转移如果用"推式"（同层 j → j-1），<code>j</code> 要倒序</p>
+<p><strong>关键词</strong>：卡特兰数、栈序列、二维 DP</p>
+<hr />
+<h3 id="p2622-ii-dp">⭐ P2622 关灯问题 II（重点，状压 DP / 最短路）</h3>
+<p><strong>类型</strong>：状压 + BFS / Dijkstra</p>
+<p><strong>核心思路</strong>：
+- 状态：每盏灯的开关用二进制位表示，共 <code>2^n</code> 个状态
+- 每个开关是状态转移：枚举每位检查"开/关/翻"
+- BFS 求从初始状态（全 1）到全 0 的最少步数</p>
+<p><strong>位运算四件套</strong>（你笔记的精华）：</p>
+<pre><code class="language-cpp">查询：if ((s &gt;&gt; j) &amp; 1)
+打开：s |= (1 &lt;&lt; j);
+关闭：s &amp;= ~(1 &lt;&lt; j);
+翻转：s ^= (1 &lt;&lt; j);
+</code></pre>
+<p><strong>易错提醒</strong>：
+1. 同一开关对不同灯的作用不同（开/关/不影响），实现时要分情况
+2. 状态空间最大 <code>2^n</code>，n ≤ 10 不会爆
+3. BFS 每条边权为 1，无需 Dijkstra</p>
+<p><strong>关键词</strong>：状压、位运算、BFS 最少步数</p>
+<hr />
+<h3 id="p1031">⭐ P1031 均分纸牌（重点，贪心累加）</h3>
+<p><strong>类型</strong>：贪心 / 前缀和</p>
+<p><strong>核心思路</strong>：
+- 算出平均值 avg，每堆减去 avg 得到差值数组 b
+- 从左到右扫，若 <code>b[i-1] != 0</code> 则需要一次移动，并把 <code>b[i-1]</code> 累加到 <code>b[i]</code></p>
+<p><strong>易错提醒</strong>（你笔记的关键）：</p>
+<pre><code class="language-cpp">// ✅ 正确
+for (int i = 1; i &lt;= n; i++) {
+    if (b[i - 1] != 0) {
+        cnt++;
+        b[i] += b[i - 1];
+    }
+}
+
+// ❌ 错误（判断的是 b[i] 而非 b[i-1]）
+if (b[i] != 0) { ... }
+</code></pre>
+<p>判断对象必须是<strong>前一个</strong>位置是否需要移动，而非当前位置。</p>
+<p><strong>关键词</strong>：贪心、前缀累加、差值传递</p>
+<hr />
+<h2 id="_5">三、元能力短板（来自思考空间）</h2>
+<h3 id="1dp">短板 1：DP 流程不严格</h3>
+<p>你已经写过 8 条 DP 元笔记（建模、初始化、循环顺序、数组建立、排列vs组合…），但仍在 P1140 上栽。</p>
+<p><strong>修复方案</strong>（强制 4 步流程）：
+1. ✍️ 用<strong>完整中文</strong>写状态定义（不能只写"表示最优值"）
+2. ✍️ 画依赖箭头（<code>f[A]</code> ← <code>f[B]</code>）
+3. ✍️ 推导初始化（"空"状态是真的吗？）
+4. ✍️ 决定循环方向（看箭头起点先算完）</p>
+<h3 id="2">短板 2：高精度模板坑</h3>
+<ul>
+<li><code>operator&lt;</code> 必须 <code>const</code></li>
+<li>从<strong>最高位</strong>比较，相等返 <code>false</code></li>
+<li>优先队列比较器逻辑是反的（写 <code>&lt;</code> 得大根堆）</li>
+</ul>
+<p><strong>建议</strong>：整理一份标准 BigInt 模板，永远不再手写。</p>
+<h3 id="3">短板 3：输入处理</h3>
+<p><code>cin &gt;&gt;</code> 和 <code>getline</code> 混用残留换行符。
+<strong>口诀</strong>：空白无意义用 <code>cin &gt;&gt;</code>；整行有意义用 <code>getline</code>；类型混合先读 <code>string token</code>；行内再分析用 <code>stringstream</code>。</p>
+<hr />
+<h2 id="_6">四、行动清单</h2>
+<table>
+<thead>
+<tr>
+<th>优先级</th>
+<th>任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🔴 高</td>
+<td>补完 P1433、P1095、P1080、P2761 的错因记录到错题本</td>
+</tr>
+<tr>
+<td>🔴 高</td>
+<td>P1140 重做一遍，严格按"完整中文定义状态"流程走</td>
+</tr>
+<tr>
+<td>🟡 中</td>
+<td>把高精度 BigInt 整理成可复用模板，加入个人 snippets</td>
+</tr>
+<tr>
+<td>🟡 中</td>
+<td>DP 类题做之前<strong>先动笔再动键盘</strong>——这是效率最大瓶颈</td>
+</tr>
+<tr>
+<td>🟡 中</td>
+<td>P3811 重做，体会"批量"关键词对应线性递推</td>
+</tr>
+<tr>
+<td>🟢 低</td>
+<td>状压、KMP、Trie 你已经摸到门道了，二刷时直接看自己的 starNotes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="_7">五、二刷建议路线</h2>
+<p>按以下顺序二刷，每题做完再看本文档对应分析：</p>
+<ol>
+<li><strong>DP 基础</strong>：P1095 → P3811 → P1140 → P1020 → P1044</li>
+<li><strong>背包</strong>：P1833</li>
+<li><strong>图论 DP</strong>：P1113 → P2196 → P2761</li>
+<li><strong>搜索</strong>：P1605 → P1433 → P1731</li>
+<li><strong>数据结构</strong>：P4147（单调栈）→ P4391（KMP）→ P8306（Trie）→ P2622（状压）</li>
+</ol>
+<hr />
+<p><em>生成时间：基于 kotori-luogu-backup.json，作者：Kotori + Claude Opus 4.7</em></p>
+</body>
+</html>
