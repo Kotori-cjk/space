@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <script src="../../../gate-config.js"></script>
+  <script src="../../../gate.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ICS · 第二章习题集</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">CSAPP · CHAPTER 2</p>
+      <h1>信息的表示和处理</h1>
+      <p>把位级运算、整数表示与 IEEE 754 变成能立刻反馈的练习。</p>
+      <p><a href="../../">← 返回 CS Learning</a></p>
+    </div>
+    <div class="score-card" aria-live="polite">
+      <span>本次已答对</span>
+      <strong id="score">0 / 26</strong>
+      <small id="score-detail">开始第一题吧</small>
+    </div>
+  </header>
+
+  <main>
+    <section class="study-panel" aria-labelledby="study-title">
+      <div>
+        <p class="section-kicker">STUDY LIST</p>
+        <h2 id="study-title">第二章学习清单</h2>
+        <p class="muted">勾选会保存在当前浏览器；它们不会影响答题成绩。</p>
+      </div>
+      <div class="checklist" id="checklist"></div>
+    </section>
+
+    <section class="toolbar" aria-label="题目筛选">
+      <div class="filter-group" id="filters"></div>
+      <button class="ghost-button" id="reset-progress" type="button">清空答题记录</button>
+    </section>
+
+    <section class="question-area" aria-labelledby="question-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">PRACTICE</p>
+          <h2 id="question-title">核心习题</h2>
+        </div>
+        <p id="visible-count" class="muted"></p>
+      </div>
+      <div id="questions" class="questions"></div>
+    </section>
+
+    <section class="catalog-area" aria-labelledby="catalog-title">
+      <div class="section-heading">
+        <div>
+          <p class="section-kicker">TEXTBOOK CATALOG</p>
+          <h2 id="catalog-title">课本完整习题 · 2.1–2.97</h2>
+          <p class="muted">97 题全部收录。题干是便于复习的中文摘要；需要核对原题细节时，请以本目录 PDF 为准。</p>
+        </div>
+        <p id="catalog-count" class="muted"></p>
+      </div>
+      <div id="catalog" class="catalog"></div>
+    </section>
+
+    <section class="source-note">
+      <h2>题目依据与使用说明</h2>
+      <p>题目提炼自本地课程资料《深入理解计算机系统-笔记版》第二章及 <code>icsnote.pdf</code> 前 10 页。上方“核心习题”是可自动判定的短答/填空练习；下方目录完整覆盖课本练习题 2.1–2.97。原始 PDF 未随此站点发布。</p>
+      <p>十六进制可写成 <code>0x41</code> 或 <code>41</code>；空格、大小写和末尾分号不影响判定。自动题只有答错才显示答案和解析。证明题、表格题与编程题不做伪自动判题，点击“查看参考答案/实现”即可查看。</p>
+    </section>
+  </main>
+
+  <template id="question-template">
+    <article class="question-card">
+      <div class="question-topline">
+        <span class="question-number"></span>
+        <span class="topic-tag"></span>
+        <span class="source-tag"></span>
+      </div>
+      <h3 class="question-title"></h3>
+      <p class="question-prompt"></p>
+      <pre class="question-code" hidden><code></code></pre>
+      <div class="answer-row">
+        <label>
+          <span class="sr-only">你的答案</span>
+          <input class="answer-input" type="text" autocomplete="off" placeholder="输入你的答案" />
+        </label>
+        <button class="check-button" type="button">检查</button>
+      </div>
+      <p class="result" aria-live="polite"></p>
+      <div class="explanation" hidden>
+        <p><strong>正确答案：</strong><code class="correct-answer"></code></p>
+        <p class="explanation-text"></p>
+      </div>
+    </article>
+  </template>
+
+  <template id="catalog-template">
+    <article class="catalog-card">
+      <div class="catalog-main">
+        <span class="catalog-number"></span>
+        <div>
+          <h3 class="catalog-title"></h3>
+          <p class="catalog-prompt"></p>
+        </div>
+      </div>
+      <div class="catalog-actions">
+        <span class="catalog-kind"></span>
+        <button class="reference-button" type="button">查看参考答案</button>
+      </div>
+      <div class="reference" hidden></div>
+    </article>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

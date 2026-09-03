@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <script src="../gate-config.js"></script>
+  <script src="../gate.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Kotori 的 CS Learning：ICS 与数算学习目录。">
+  <title>CS Learning · Kotori's Colorful Seika</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Yusei+Magic&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="paper-noise" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="wordmark" href="../" aria-label="返回 Colorful Seika"><span>C</span><div><small>Kotori's</small><strong>CS Learning</strong></div></a>
+    <a class="back-link" href="../">← 返回学习空间</a>
+  </header>
+
+  <main>
+    <section class="hero-section">
+      <div class="hero-copy">
+        <p class="eyebrow">NOTES FROM THE MACHINE ROOM</p>
+        <h1>在系统与算法之间，<span>慢慢搭起自己的知识架。</span></h1>
+        <p class="hero-lead">这里先收录 ICS 和数算。每一章以一篇小型博客为入口：留下本章的核心概念、练习与复盘；新的课程之后也可以按相同结构加入。</p>
+        <nav class="hero-actions" aria-label="课程分区"><a class="primary-link" href="#ics">浏览 ICS</a><a class="secondary-link" href="#dsa">查看数算</a></nav>
+      </div>
+      <aside class="hero-note" aria-label="学习索引摘要"><span class="tape" aria-hidden="true"></span><p>LEARNING INDEX</p><strong>ICS · 12 chapters</strong><small>数算 · 即将整理</small><i>✦</i></aside>
+    </section>
+
+    <section id="ics" class="course-section" aria-labelledby="ics-title">
+      <div class="section-heading"><span>01</span><div><small>INTRODUCTION TO COMPUTER SYSTEMS</small><h2 id="ics-title">ICS</h2></div><p>从程序如何被表示、执行，到系统如何存储、通信和并发。第二章已接入互动习题站。</p></div>
+      <div class="post-grid">
+        <article class="post-card is-planned"><p>ICS · CH 01</p><h3>计算机系统漫游</h3><span>从 hello 程序出发，整理编译、链接、加载与运行的全景。</span><em>笔记整理中</em></article>
+        <article class="post-card is-featured"><p>ICS · CH 02</p><h3>信息的表示和处理</h3><span>位级运算、整数表示、浮点数与课本练习的交互式复习。</span><a href="ics/chapter-02/">进入第二章习题集 <b>↗</b></a></article>
+        <article class="post-card is-planned"><p>ICS · CH 03</p><h3>程序的机器级表示</h3><span>从 C 代码到汇编，观察过程、栈帧与控制流。</span><em>笔记整理中</em></article>
+        <article class="post-card is-planned"><p>ICS · CH 04</p><h3>处理器体系结构</h3><span>把指令如何沿着数据通路流动，拆成可追踪的阶段。</span><em>笔记整理中</em></article>
+        <article class="post-card is-planned"><p>ICS · CH 05</p><h3>优化程序性能</h3><span>从程序变换到性能模型，记录可以验证的优化思路。</span><em>笔记整理中</em></article>
+        <article class="post-card is-planned"><p>ICS · CH 06</p><h3>存储器层次结构</h3><span>缓存、局部性与内存山：性能为什么会有断层。</span><em>笔记整理中</em></article>
+        <article class="post-card is-planned"><p>ICS · CH 07</p><h3>链接</h3><span>目标文件、符号解析与库：程序如何成为可执行文件。</span><em>笔记整理中</em></article>
+        <article class="post-card is-planned"><p>ICS · CH 08</p><h3>异常控制流</h3><span>异常、进程、信号与非本地跳转的统一视角。</span><em>笔记整理中</em></article>
+        <article class="post-card is-planned"><p>ICS · CH 09</p><h3>虚拟内存</h3><span>地址翻译、页表与内存映射，把抽象落回硬件。</span><em>笔记整理中</em></article>
+        <article class="post-card is-planned"><p>ICS · CH 10</p><h3>系统级 I/O</h3><span>文件、描述符与 Unix I/O：从接口到可靠读写。</span><em>笔记整理中</em></article>
+        <article class="post-card is-planned"><p>ICS · CH 11</p><h3>网络编程</h3><span>客户端、服务器与套接字：程序如何跨网络协作。</span><em>笔记整理中</em></article>
+        <article class="post-card is-planned"><p>ICS · CH 12</p><h3>并发编程</h3><span>线程、同步和并发错误，为系统收束最后一章。</span><em>笔记整理中</em></article>
+      </div>
+    </section>
+
+    <section id="dsa" class="course-section dsa-section" aria-labelledby="dsa-title">
+      <div class="section-heading"><span>02</span><div><small>DATA STRUCTURES AND ALGORITHMS</small><h2 id="dsa-title">数算</h2></div><p>作为第二条课程线预留。后续章节会沿用同一篇章式博客索引。</p></div>
+      <article class="coming-card"><div><p>NEW COURSE TRACK</p><h3>数算学习档案</h3><span>目录将在课程内容确定后逐章展开。</span></div><i>⌛</i></article>
+    </section>
+  </main>
+
+  <footer>Made as a small personal study archive. · <a href="../">Kotori's Colorful Seika</a></footer>
+</body>
+</html>
