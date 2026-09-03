@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <script src="../gate-config.js"></script>
+  <script src="../gate.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ICS · 待整理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Yusei+Magic&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="pending-page">
+  <div class="paper-noise" aria-hidden="true"></div>
+  <main class="pending-card">
+    <p class="eyebrow">ICS LEARNING ARCHIVE</p>
+    <h1 id="pending-title">正在整理</h1>
+    <p id="pending-copy">这个部分正在整理中。</p>
+    <a class="primary-link" href="./">← 返回 ICS 目录</a>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const chapter = Number(params.get('chapter'));
+    const section = { notes: '笔记', exercises: '习题集', lab: 'Lab' }[params.get('section')];
+    if (Number.isInteger(chapter) && chapter >= 1 && chapter <= 12 && section) {
+      document.getElementById('pending-title').textContent = `ICS 第 ${chapter} 章 · ${section}`;
+      document.getElementById('pending-copy').textContent = `ICS 第 ${chapter} 章的${section}正在整理中，完成后会直接替换此入口。`;
+      document.title = `ICS 第 ${chapter} 章 · ${section}`;
+    }
+  </script>
+</body>
+</html>
