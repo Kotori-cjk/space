@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <script src="../../../../gate-config.js"></script>
+  <script src="../../../../gate.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="用可迁移的框架学习位级问题分析：建模、验证、边界与浮点表示。" />
+  <title>位级思维训练室</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="回到位级思维训练室顶部"><span class="brand-mark">∿</span><span>bits / reasoning</span></a>
+    <nav aria-label="页面导航"><a href="../">第二章习题集</a><a href="../../../">CS Learning</a><a href="#play">操作台</a><a href="#atlas">策略地图</a><a href="#practice">迁移练习</a></nav>
+    <button id="theme-toggle" class="icon-button" type="button" aria-label="切换深浅色外观">◐</button>
+  </header>
+
+  <main id="top">
+    <section class="intro-grid" aria-labelledby="page-title">
+      <div class="intro-copy">
+        <p class="overline">CSAPP · CHAPTER 2 · THINKING WORKBENCH</p>
+        <h1 id="page-title">先看<strong>位的关系</strong>，<br />再写表达式。</h1>
+        <p class="lede">这里不放 Data Lab 原题或答案。你要练的是面对一条新限制时，如何把自然语言拆成位级目标、选择不变量、列出边界，并验证自己的推理。</p>
+        <div class="intro-actions"><a class="button primary" href="#play">从操作台开始</a><a class="button text" href="#process">先看方法 →</a></div>
+      </div>
+      <aside class="reading-card" aria-label="本页学习路径">
+        <p class="card-eyebrow">今天的路径</p>
+        <ol>
+          <li><span>01</span>把一句需求翻译成每一位的行为</li>
+          <li><span>02</span>用掩码、移动和符号位构造中间量</li>
+          <li><span>03</span>用极端输入攻击自己的结论</li>
+          <li><span>04</span>在陌生情境里选出正确策略</li>
+        </ol>
+        <p class="tiny">目标不是背技巧，而是形成一套可重复的分析动作。</p>
+      </aside>
+    </section>
+
+    <section id="process" class="process-section" aria-labelledby="process-title">
+      <div class="section-title"><p class="overline">THE ROUTINE</p><h2 id="process-title">所有位级问题都先走这四步</h2></div>
+      <div class="process-track">
+        <article><span class="step-number">1</span><h3>明确对象</h3><p>它是整字、一个字段、一个符号位，还是浮点的某个区段？先画出位宽和编号。</p></article>
+        <article><span class="step-number">2</span><h3>写出位级目标</h3><p>对每一位问：保留、清零、翻转、移动、选择，还是统计？自然语言必须落到这类动作。</p></article>
+        <article><span class="step-number">3</span><h3>找不变量</h3><p>什么始终应成立？例如“字段外的位不变”“结果符号不变”“高位一定为 0”。</p></article>
+        <article><span class="step-number">4</span><h3>攻击边界</h3><p>用全 0、全 1、最高位为 1、相等、临界移位、恰好一半这些输入反证自己。</p></article>
+      </div>
+    </section>
+
+    <section id="play" class="workbench" aria-labelledby="workbench-title">
+      <div class="section-title"><p class="overline">PLAY WITH THE BITS</p><h2 id="workbench-title">8 位操作台</h2><p>改动输入，看每一位如何被保留、过滤、比较或移动。先观察，再概括成不变量。</p></div>
+      <div class="workbench-grid">
+        <div class="bit-stage">
+          <div class="control-row">
+            <label>动作<select id="bit-mode"><option value="and">AND：只留下双方都为 1 的位</option><option value="xor">XOR：只标出不同的位</option><option value="mask">掩码：用 B 过滤 A</option><option value="shift">逻辑右移：左边补 0</option><option value="neighbor">邻位关系：标记相邻的 1</option></select></label>
+            <label id="shift-control" hidden>右移 <input id="shift-count" type="range" min="0" max="7" value="2" /><output id="shift-output">2 位</output></label>
+          </div>
+          <div class="word-editor">
+            <div class="word-label"><span>A · 数据</span><input id="word-a" inputmode="numeric" maxlength="8" value="10110110" aria-label="A 的八位二进制" /><small>点击下面的位也能改</small></div>
+            <div id="bits-a" class="bit-row" aria-label="A 的各二进制位"></div>
+          </div>
+          <div id="word-b-wrap" class="word-editor">
+            <div class="word-label"><span>B · 参照 / 掩码</span><input id="word-b" inputmode="numeric" maxlength="8" value="00111100" aria-label="B 的八位二进制" /></div>
+            <div id="bits-b" class="bit-row" aria-label="B 的各二进制位"></div>
+          </div>
+          <div class="result-block">
+            <div class="word-label"><span>结果</span><output id="word-result">00110100</output></div>
+            <div id="bits-result" class="bit-row result-row" aria-live="polite" aria-label="结果的各二进制位"></div>
+          </div>
+        </div>
+        <aside id="bit-reading" class="explain-panel" aria-live="polite"></aside>
+      </div>
+    </section>
+
+    <section id="atlas" class="atlas-section" aria-labelledby="atlas-title">
+      <div class="section-title"><p class="overline">STRATEGY ATLAS</p><h2 id="atlas-title">遇到新问题时，从这里挑第一把工具</h2><p>不是题库，是“问题形状 → 推理起手式”的地图。点一张卡，读它的最小推导链。</p></div>
+      <div class="atlas-layout">
+        <div id="strategy-list" class="strategy-list" role="list" aria-label="策略列表"></div>
+        <article id="strategy-detail" class="strategy-detail" aria-live="polite"></article>
+      </div>
+    </section>
+
+    <section id="challenge" class="challenge-section" aria-labelledby="challenge-title">
+      <div class="section-title"><p class="overline">PUZZLE-POINT TRANSFER</p><h2 id="challenge-title">16 个考察点，一题一个进阶迁移</h2><p>左侧的名称只用于核对考察点覆盖；右侧题目全部重新编写，题干、输入和目标均不复述 Data Lab 原题。</p></div>
+      <div class="challenge-layout">
+        <div id="puzzle-list" class="puzzle-list" aria-label="考察点对应题列表"></div>
+        <article id="puzzle-detail" class="puzzle-detail" aria-live="polite"></article>
+      </div>
+    </section>
+    <section id="practice" class="practice-section" aria-labelledby="practice-title">
+      <div class="practice-heading"><div><p class="overline">TRANSFER PRACTICE</p><h2 id="practice-title">换一个故事，还是同一种思维</h2><p>每次只选“第一步该怎样建模”。答对后才展示完整的推理骨架；它不是可直接套用的题解。</p></div><div class="progress-wrap"><span id="progress-label">0 / 10 个策略已识别</span><div class="progress" role="progressbar" aria-labelledby="progress-label" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><span id="progress-bar"></span></div></div></div>
+      <div class="practice-card">
+        <div class="question-meta"><span id="question-topic">字段操作</span><button id="next-question" class="button text" type="button">换一个情境 →</button></div>
+        <h3 id="question-title"></h3>
+        <p id="question-prompt"></p>
+        <fieldset id="question-options"><legend>先选你的分析起点</legend></fieldset>
+        <div class="answer-actions"><button id="check-answer" class="button primary" type="button">检查思路</button><p id="answer-feedback" aria-live="polite"></p></div>
+        <div id="reasoning-skeleton" class="reasoning-skeleton" hidden></div>
+      </div>
+    </section>
+
+    <section class="scratch-section" aria-labelledby="scratch-title">
+      <div class="section-title"><p class="overline">YOUR OWN PROOF PLAN</p><h2 id="scratch-title">不要立刻写代码，先写这四行</h2></div>
+      <div class="scratch-grid">
+        <label><span>① 每一位或字段最终要做什么？</span><textarea id="scratch-goal" rows="3" placeholder="例如：只改变指定字段，其余位必须原样保留。"></textarea></label>
+        <label><span>② 我准备构造什么中间量？</span><textarea id="scratch-middle" rows="3" placeholder="例如：字段掩码、符号掩码、被移动到低位的副本。"></textarea></label>
+        <label><span>③ 什么不变量能证明方向没错？</span><textarea id="scratch-invariant" rows="3" placeholder="例如：结果在字段外与原数相同。"></textarea></label>
+        <label><span>④ 我要用哪几个边界值攻击它？</span><textarea id="scratch-boundary" rows="3" placeholder="例如：全 0、全 1、最高位为 1、边界字段、恰好半舍。"></textarea></label>
+      </div>
+      <div class="scratch-footer"><p id="scratch-status" aria-live="polite">草稿只保存在当前浏览器。</p><button id="clear-scratch" class="button text" type="button">清空草稿</button></div>
+    </section>
+
+    <section class="coverage-section" aria-labelledby="coverage-title">
+      <div class="section-title"><p class="overline">COVERAGE CHECK</p><h2 id="coverage-title">这套方法覆盖了哪些“新题形状”？</h2></div>
+      <div id="coverage-grid" class="coverage-grid"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>概念脉络参考 <a href="https://slide.huh.moe/" target="_blank" rel="noreferrer">ICS Slides</a> 与 <a href="https://arthals.ink/blog/data-lab#bitconditional" target="_blank" rel="noreferrer">Arthals 的位级分析文章</a>；视觉采用 <a href="https://www.elainafan.one/p/stack-theme/" target="_blank" rel="noreferrer">Stack 主题的卡片层次</a>，并参考开源 <a href="https://github.com/cworld1/astro-theme-pure" target="_blank" rel="noreferrer">Astro Theme Pure</a> 的文档阅读节奏。</p>
+    <p>本页为原创训练情境；不收录、改写或提供 Data Lab 原题及其答案。</p>
+  </footer>
+  <script src="app.js"></script>
+</body>
+</html>
