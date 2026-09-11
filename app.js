@@ -3,16 +3,17 @@ const EMOJIS = ['✿','❀','🌸','⭐','💫','🎀','🦋','🌙'];
 const PARENTS = {
   math:    { name:'数学', icon:'📐' },
   physics: { name:'物理', icon:'⚛️' },
-  computer:{ name:'计算机', icon:'💻' }
+  computer:{ name:'计算机', icon:'💻' },
+  ai:      { name:'AI', icon:'🤖' }
 };
 const SUBJECTS = {
-  'math-probability': { name:'概率论', icon:'🎲', color:'var(--c-math)', parent:'math' },
   'math-ode':      { name:'常微分方程', icon:'〰️', color:'var(--c-math)', parent:'math' },
   'physics-mech':  { name:'理力', icon:'⚙️', color:'var(--c-physics)', parent:'physics' },
   'physics-general': { name:'普物', icon:'🧲', color:'var(--c-physics)', parent:'physics' },
   'cs-ics':        { name:'ICS', icon:'🖥️', color:'var(--c-cs)', parent:'computer' },
   'cs-dsa':        { name:'数算', icon:'🧮', color:'var(--c-cs)', parent:'computer' },
-  'research':      { name:'科研', icon:'🔬', color:'var(--c-ai)' }
+  'ai-cv':         { name:'计算机视觉', icon:'👁️', color:'var(--c-ai)', parent:'ai' },
+  'research':      { name:'科研', icon:'🔬', color:'var(--c-ai)', parent:'ai' }
 };
 const SUBJECT_KEYS = Object.keys(SUBJECTS);
 
@@ -63,17 +64,17 @@ function idbGetAll() {
 
 /* ===== State ===== */
 let state = {
-  currentView: 'math-probability',
-  notes: { 'math-probability':{}, 'math-ode':{}, 'physics-mech':{}, 'physics-general':{}, 'cs-ics':{}, 'cs-dsa':{}, research:{} },
+  currentView: 'math-ode',
+  notes: { 'math-ode':{}, 'physics-mech':{}, 'physics-general':{}, 'cs-ics':{}, 'cs-dsa':{}, 'ai-cv':{}, research:{} },
   tasks: [],
   subjectLinks: {
-    'math-probability':{ notebookLM:'' }, 'math-ode':{ notebookLM:'' },
+    'math-ode':{ notebookLM:'' },
     'physics-mech':{ notebookLM:'' }, 'physics-general':{ notebookLM:'' },
-    'cs-ics':{ notebookLM:'' }, 'cs-dsa':{ notebookLM:'' }, research:{ notebookLM:'' }
+    'cs-ics':{ notebookLM:'' }, 'cs-dsa':{ notebookLM:'' }, 'ai-cv':{ notebookLM:'' }, research:{ notebookLM:'' }
   },
   settings: {
     obsidianVault: 'Obsidian Vault',
-    obsidianFolders: { 'math-probability':'', 'math-ode':'', 'physics-mech':'', 'physics-general':'', 'cs-ics':'', 'cs-dsa':'', research:'' },
+    obsidianFolders: { 'math-ode':'', 'physics-mech':'', 'physics-general':'', 'cs-ics':'', 'cs-dsa':'', 'ai-cv':'', research:'' },
     musicIds: [],
     backgrounds: [],
     currentBg: -1
@@ -114,14 +115,15 @@ function load() {
         subjectLinks:{...state.subjectLinks,...(p.subjectLinks||{})},
         notes:{...state.notes,...(p.notes||{})}};
       if (!state.tasks) state.tasks = [];
-      if (state.currentView==='math') state.currentView='math-probability';
+      if (state.currentView==='math') state.currentView='math-ode';
       if (state.currentView==='physics') state.currentView='physics-mech';
       const subjectMigrations = {
-        'math-analysis':'math-probability',
+        'math-probability':'math-ode',
+        'math-analysis':'math-ode',
         'math-linalg':'math-ode',
         'physics-elec':'physics-general',
         'cs':'cs-ics',
-        'ai':'research'
+        'ai':'ai-cv'
       };
       Object.entries(subjectMigrations).forEach(([oldKey,newKey]) => {
         ['notes','subjectLinks'].forEach(field => {
@@ -133,11 +135,11 @@ function load() {
         if (state.currentView === oldKey) state.currentView = newKey;
       });
       ['notes','subjectLinks'].forEach(field => {
-        if (state[field].math) { if(!state[field]['math-probability']) state[field]['math-probability']=state[field].math; delete state[field].math; }
+        if (state[field].math) { if(!state[field]['math-ode']) state[field]['math-ode']=state[field].math; delete state[field].math; }
         if (state[field].physics) { if(!state[field]['physics-mech']) state[field]['physics-mech']=state[field].physics; delete state[field].physics; }
       });
       const of = state.settings.obsidianFolders || {};
-      if (of.math) { if(!of['math-probability']) of['math-probability']=of.math; delete of.math; }
+      if (of.math) { if(!of['math-ode']) of['math-ode']=of.math; delete of.math; }
       if (of.physics) { if(!of['physics-mech']) of['physics-mech']=of.physics; delete of.physics; }
       state.settings.obsidianFolders = of;
       SUBJECT_KEYS.forEach(k => {
@@ -145,7 +147,7 @@ function load() {
         if (!state.subjectLinks[k]) state.subjectLinks[k] = { notebookLM:'' };
         if (!state.settings.obsidianFolders[k]) state.settings.obsidianFolders[k] = '';
       });
-      const taskSubjectMigrations = { math:'math-probability', 'math-analysis':'math-probability', physics:'physics-mech', cs:'cs-ics', ai:'research' };
+      const taskSubjectMigrations = { math:'math-ode', 'math-probability':'math-ode', 'math-analysis':'math-ode', physics:'physics-mech', cs:'cs-ics', ai:'ai-cv' };
       state.tasks.forEach(task => {
         if (!task.id) task.id = uid();
         if (taskSubjectMigrations[task.subject]) task.subject = taskSubjectMigrations[task.subject];
@@ -155,7 +157,7 @@ function load() {
           : { id:step.id || uid(), text:step.text || '', done:!!step.done, ddl:step.ddl || '' });
         task.ddl = task.ddl || '';
       });
-      if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-probability';
+      if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-ode';
     }
   } catch(e) { console.warn('Load failed',e); }
 }
@@ -531,7 +533,7 @@ function taskTagClass(subject) {
   if (subject?.startsWith('math-')) return 'task-tag-math';
   if (subject?.startsWith('physics-')) return 'task-tag-physics';
   if (subject?.startsWith('cs-')) return 'task-tag-cs';
-  if (subject === 'research') return 'task-tag-ai';
+  if (subject?.startsWith('ai-') || subject === 'research') return 'task-tag-ai';
   return 'task-tag-general';
 }
 
@@ -748,7 +750,7 @@ async function importData(file) {
         notes:{...state.notes,...(d.notes||{})}};
       if(!state.tasks) state.tasks=[];
       const importedSubjectMigrations = {
-        'math-analysis':'math-probability', 'math-linalg':'math-ode', 'physics-elec':'physics-general', 'cs':'cs-ics', 'ai':'research'
+        'math-probability':'math-ode', 'math-analysis':'math-ode', 'math-linalg':'math-ode', 'physics-elec':'physics-general', 'cs':'cs-ics', 'ai':'ai-cv'
       };
       Object.entries(importedSubjectMigrations).forEach(([oldKey,newKey]) => {
         ['notes','subjectLinks'].forEach(field => {
@@ -759,7 +761,7 @@ async function importData(file) {
         }
         if (state.currentView === oldKey) state.currentView = newKey;
       });
-      const importedTaskSubjectMigrations = { math:'math-probability', 'math-analysis':'math-probability', physics:'physics-mech', cs:'cs-ics', ai:'research' };
+      const importedTaskSubjectMigrations = { math:'math-ode', 'math-probability':'math-ode', 'math-analysis':'math-ode', physics:'physics-mech', cs:'cs-ics', ai:'ai-cv' };
       state.tasks.forEach(task => {
         if (!task.id) task.id = uid();
         if (importedTaskSubjectMigrations[task.subject]) task.subject = importedTaskSubjectMigrations[task.subject];
@@ -774,7 +776,7 @@ async function importData(file) {
         if (!state.subjectLinks[key]) state.subjectLinks[key] = { notebookLM:'' };
         if (!state.settings.obsidianFolders[key]) state.settings.obsidianFolders[key] = '';
       });
-      if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-probability';
+      if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-ode';
       save(); applyBackground(); renderMusic(); updateObsidianLink(); renderAll();
       alert('导入成功！');
     } catch(err) { alert('导入失败：文件格式不正确'); }
@@ -1099,6 +1101,20 @@ function setupEvents() {
   });
 }
 
+function setupSidebarToggle() {
+  const toggle = document.getElementById('sidebar-toggle');
+  const storageKey = 'kotori-seika-sidebar-collapsed';
+  const setCollapsed = collapsed => {
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+    toggle.setAttribute('aria-expanded', String(!collapsed));
+    toggle.textContent = collapsed ? '▶' : '◀';
+    toggle.title = collapsed ? '展开左侧面板' : '收起左侧面板';
+    localStorage.setItem(storageKey, String(collapsed));
+  };
+  setCollapsed(localStorage.getItem(storageKey) === 'true');
+  toggle.addEventListener('click', () => setCollapsed(!document.body.classList.contains('sidebar-collapsed')));
+}
+
 /* ===== Init (async: opens IndexedDB first) ===== */
 async function init() {
   await idbOpen();
@@ -1110,6 +1126,7 @@ async function init() {
   applyBackground();
   renderMusic();
   setupEvents();
+  setupSidebarToggle();
   renderAll();
   window.addEventListener('beforeunload', () => save());
   setInterval(save, 30000);
