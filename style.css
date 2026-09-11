@@ -59,6 +59,7 @@ html.space-locked .space-auth-gate { display:flex; }
 .sidebar-toggle:hover { transform:scale(1.06); background:#fff; }
 body.sidebar-collapsed #sidebar { width:0; min-width:0; padding-left:0; padding-right:0; border-color:transparent; overflow:hidden; }
 body.sidebar-collapsed .sidebar-toggle { left:12px; }
+body.sidebar-collapsed #main-content { width:min(100%,1240px); max-width:1240px; margin-inline:auto; }
 .sidebar-section { margin-bottom:24px; }
 .sidebar-section h3 { font-family:var(--font-cute); font-size:16px; color:var(--primary); margin-bottom:12px; padding-bottom:6px; border-bottom:2px dashed var(--primary-light); }
 
