@@ -383,6 +383,34 @@ function insertImageAtCursor(ta, ref) {
   ta.value = before + (before.endsWith('\n')||!before?'':'\n') + `![image](${ref})\n` + after;
   ta.dispatchEvent(new Event('input',{bubbles:true}));
 }
+function stickerKeys(editor) {
+  try { return JSON.parse(editor?.dataset.stickers || '[]'); }
+  catch { return []; }
+}
+function renderStickerStrip(keys=[]) {
+  if (!keys.length) return '';
+  return `<div class="sticker-strip">${keys.map(key => {
+    const src = imageCache[key];
+    return src ? `<img src="${src}" alt="贴图">` : '';
+  }).join('')}</div>`;
+}
+function renderStickerPicker(id, keys=[]) {
+  return `<div class="sticker-editor" data-stickers='${JSON.stringify(keys)}'>
+    <label class="note-tool-btn">🖼 贴图<input class="sticker-input" type="file" accept="image/*" multiple id="${id}"></label>
+    <div class="sticker-preview">${keys.map(key => {
+      const src = imageCache[key];
+      return src ? `<span><img src="${src}" alt="贴图"><button type="button" data-sticker-remove="${key}" aria-label="移除贴图">✕</button></span>` : '';
+    }).join('')}</div>
+  </div>`;
+}
+function updateStickerPicker(editor, keys) {
+  editor.dataset.stickers = JSON.stringify(keys);
+  const preview = editor.querySelector('.sticker-preview');
+  if (preview) preview.innerHTML = keys.map(key => {
+    const src = imageCache[key];
+    return src ? `<span><img src="${src}" alt="贴图"><button type="button" data-sticker-remove="${key}" aria-label="移除贴图">✕</button></span>` : '';
+  }).join('');
+}
 
 /* ===== Particles ===== */
 function initParticles() {
@@ -456,7 +484,8 @@ function renderNotes(subj) {
     <input type="text" id="note-title-input" class="note-title-input" placeholder="标题（知识点名称）...">
     <div class="note-toolbar">
       <button class="note-tool-btn" id="note-preview-btn">👁 预览</button>
-      <label class="note-tool-btn">📷 贴图<input type="file" accept="image/*" id="note-img-input"></label>
+      <label class="note-tool-btn">📷 插入正文图<input type="file" accept="image/*" id="note-img-input"></label>
+      ${renderStickerPicker('note-sticker-input')}
     </div>
     <textarea id="note-textarea" placeholder="支持 Markdown 语法，可直接粘贴图片..."></textarea>
     <div class="note-preview" id="note-preview" style="display:none"></div>
@@ -509,7 +538,7 @@ function renderNotes(subj) {
             <button class="note-fold" data-note-fold='${JSON.stringify({subj,date,idx:realIdx})}'>${n.collapsed ? '展开' : '折叠'}</button>
           </div>
         </div>
-        <div class="note-body">${renderMarkdown(n.content)}</div>
+        <div class="note-body">${renderMarkdown(n.content)}${renderStickerStrip(n.stickers)}</div>
         <button class="note-delete" data-note-del='${JSON.stringify({subj,date,idx:realIdx})}'>✕</button>
       </div>`;
     });
@@ -582,6 +611,7 @@ function renderTaskView() {
       <input type="datetime-local" id="task-ddl-input">
       <textarea id="task-steps-input" class="task-steps-input" placeholder="子步骤（选填，每行一个）\n可单独指定：整理例题 @ 2026-07-20 23:00"></textarea>
       <p class="task-form-hint">有子步骤时，DDL 归属于各子步骤；没有子步骤时，DDL 归属于总任务。</p>
+      ${renderStickerPicker('task-sticker-input')}
       <div class="task-form-bottom">
         <select id="task-subject-select">
           ${taskSubjectOptions()}
@@ -614,6 +644,7 @@ function renderTaskView() {
             <input type="text" class="task-edit-title" value="${escHtml(t.title)}" placeholder="任务标题">
             <textarea class="task-edit-detail" placeholder="详情（选填）">${escHtml(t.detail || '')}</textarea>
             <select class="task-edit-subject">${taskSubjectOptions(t.subject)}</select>
+            ${renderStickerPicker(`task-sticker-input-${t._idx}`, t.stickers || [])}
             <label class="task-field-label">⏰ 总任务 DDL（仅无子步骤时使用）</label>
             <input type="datetime-local" class="task-edit-ddl" value="${escHtml(t.ddl || '')}">
             <div class="task-edit-steps">
@@ -635,6 +666,7 @@ function renderTaskView() {
         <div class="task-content">
           <div class="task-title">${escHtml(t.title)}</div>
           ${t.detail ? `<div class="task-detail">${escHtml(t.detail)}</div>` : ''}
+          ${renderStickerStrip(t.stickers)}
           ${steps.length ? `<div class="task-steps">
             ${steps.map((step,stepIdx) => `<div class="task-step${step.done?' done':''}">
               <button class="task-step-check${step.done?' checked':''}" data-task-step-toggle="${t._idx}" data-step-idx="${stepIdx}" aria-label="切换子步骤状态">${step.done?'✓':''}</button>
@@ -797,6 +829,12 @@ function setupEvents() {
   const vn = document.getElementById('view-notes');
 
   vn.addEventListener('click', e => {
+    const stickerRemove = e.target.closest('[data-sticker-remove]');
+    if (stickerRemove) {
+      const editor = stickerRemove.closest('.sticker-editor');
+      updateStickerPicker(editor, stickerKeys(editor).filter(key => key !== stickerRemove.dataset.stickerRemove));
+      return;
+    }
     const scrollEntry = e.target.closest('[data-scroll-to]');
     if (scrollEntry) {
       const target = document.getElementById('note-anchor-' + scrollEntry.dataset.scrollTo);
@@ -821,7 +859,8 @@ function setupEvents() {
       const ta = document.getElementById('note-textarea');
       const title = titleInput ? titleInput.value.trim() : '';
       const content = ta.value.trim();
-      if (!content && !title) return;
+      const stickers = stickerKeys(document.getElementById('note-sticker-input')?.closest('.sticker-editor'));
+      if (!content && !title && !stickers.length) return;
       const subj = state.currentView;
       const editing = ta.dataset.editingNote ? JSON.parse(ta.dataset.editingNote) : null;
       if (editing) {
@@ -829,6 +868,7 @@ function setupEvents() {
         if (note) {
           note.title = title;
           note.content = content;
+          note.stickers = stickers;
           note.updatedAt = now();
           save(); renderNotes(editing.subj);
         }
@@ -836,7 +876,7 @@ function setupEvents() {
       }
       const d = today();
       if (!state.notes[subj][d]) state.notes[subj][d] = [];
-      state.notes[subj][d].push({ id:uid(), title, content, time:now() });
+      state.notes[subj][d].push({ id:uid(), title, content, stickers, time:now() });
       save(); renderNotes(subj);
       const ti = document.getElementById('note-title-input');
       if (ti) ti.focus();
@@ -892,6 +932,7 @@ function setupEvents() {
         ta.dataset.editingNote = JSON.stringify(d);
         ta.style.display = '';
       }
+      updateStickerPicker(document.getElementById('note-sticker-input')?.closest('.sticker-editor'), note.stickers || []);
       if (pv) { pv.style.display = 'none'; pv.innerHTML = ''; }
       const submit = document.getElementById('note-submit-btn');
       const cancel = document.getElementById('note-cancel-edit-btn');
@@ -921,6 +962,12 @@ function setupEvents() {
         if (ta) insertImageAtCursor(ta, 'idb:' + key);
         e.target.value = '';
       });
+    }
+    if (e.target.matches?.('.sticker-input') && e.target.files.length) {
+      const editor = e.target.closest('.sticker-editor');
+      Promise.all(Array.from(e.target.files).map(async file => saveImageToIDB(await compressImage(file, 480, 0.75))))
+        .then(keys => updateStickerPicker(editor, [...stickerKeys(editor), ...keys]));
+      e.target.value = '';
     }
   });
 
@@ -956,6 +1003,12 @@ function setupEvents() {
   // Task view
   const vt = document.getElementById('view-tasks');
   vt.addEventListener('click', e => {
+    const stickerRemove = e.target.closest('[data-sticker-remove]');
+    if (stickerRemove) {
+      const editor = stickerRemove.closest('.sticker-editor');
+      updateStickerPicker(editor, stickerKeys(editor).filter(key => key !== stickerRemove.dataset.stickerRemove));
+      return;
+    }
     if (e.target.id === 'task-add-btn') {
       const title = document.getElementById('task-title-input').value.trim();
       if (!title) return;
@@ -965,7 +1018,8 @@ function setupEvents() {
       const steps = document.getElementById('task-steps-input').value.split('\n')
         .map(text => text.trim()).filter(Boolean)
         .map(text => parseTaskStepLine(text, ddl));
-      state.tasks.push({ id:uid(), title, detail, subject, steps, ddl:steps.length ? '' : ddl, date:today(), done:false });
+      const stickers = stickerKeys(document.getElementById('task-sticker-input')?.closest('.sticker-editor'));
+      state.tasks.push({ id:uid(), title, detail, subject, steps, stickers, ddl:steps.length ? '' : ddl, date:today(), done:false });
       save(); renderAll();
       return;
     }
@@ -1015,6 +1069,7 @@ function setupEvents() {
       task.title = title;
       task.detail = card.querySelector('.task-edit-detail').value.trim();
       task.subject = card.querySelector('.task-edit-subject').value;
+      task.stickers = stickerKeys(card.querySelector('.sticker-editor'));
       task.steps = Array.from(card.querySelectorAll('.task-edit-step')).map(row => ({
         id: row.dataset.stepId || uid(),
         text: row.querySelector('.task-edit-step-input').value.trim(),
@@ -1028,6 +1083,14 @@ function setupEvents() {
     }
     const del = e.target.closest('[data-task-del]');
     if (del) { state.tasks.splice(+del.dataset.taskDel,1); editingTaskId = null; save(); renderAll(); }
+  });
+
+  vt.addEventListener('change', e => {
+    if (!e.target.matches?.('.sticker-input') || !e.target.files.length) return;
+    const editor = e.target.closest('.sticker-editor');
+    Promise.all(Array.from(e.target.files).map(async file => saveImageToIDB(await compressImage(file, 480, 0.75))))
+      .then(keys => updateStickerPicker(editor, [...stickerKeys(editor), ...keys]));
+    e.target.value = '';
   });
 
   // Settings

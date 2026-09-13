@@ -149,6 +149,13 @@ body.sidebar-collapsed #main-content { width:min(100%,1240px); max-width:1240px;
 .note-preview img { max-width:100%; border-radius:var(--radius-xs); }
 .note-input-row { display:flex; gap:8px; margin-top:8px; }
 .note-input-row .btn { align-self:flex-end; }
+.sticker-editor { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.sticker-editor .note-tool-btn input[type="file"] { display:none; }
+.sticker-preview,.sticker-strip { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.sticker-preview span { position:relative; display:block; width:54px; height:54px; }
+.sticker-preview img,.sticker-strip img { width:54px; height:54px; object-fit:cover; border:2px solid #fff; border-radius:11px; box-shadow:0 4px 12px rgba(65,55,49,.14); }
+.sticker-preview button { position:absolute; top:-6px; right:-6px; width:18px; height:18px; padding:0; border:0; border-radius:50%; background:var(--primary-dark); color:#fff; font-size:11px; line-height:18px; cursor:pointer; }
+.sticker-strip { margin-top:10px; }
 
 /* NOTE TITLE INPUT */
 .note-title-input { width:100%; padding:10px 14px; margin-bottom:10px; border:2px solid var(--border); border-radius:var(--radius-xs); font-family:var(--font-cute); font-size:16px; color:var(--primary-dark); transition:border-color .2s; background:#fff; }
@@ -190,6 +197,7 @@ body.sidebar-collapsed #main-content { width:min(100%,1240px); max-width:1240px;
 .task-form-hint { margin:-2px 2px 2px; color:var(--text-light); font-size:11px; line-height:1.5; }
 .task-form-bottom { display:flex; gap:8px; align-items:center; }
 .task-form-bottom select { padding:8px 12px; border:2px solid var(--border); border-radius:var(--radius-xs); font-family:var(--font-body); font-size:13px; color:var(--text); background:#fff; }
+.task-form .sticker-editor,.task-edit-form .sticker-editor { padding:8px 10px; border:1px dashed var(--border); border-radius:var(--radius-xs); background:rgba(255,255,255,.42); }
 .task-date-group { margin-bottom:20px; }
 .task-date-label { font-family:var(--font-cute); font-size:16px; color:var(--text-light); margin-bottom:10px; padding-bottom:4px; border-bottom:1px dashed var(--border); }
 .task-card { background:var(--card); border-radius:var(--radius-sm); padding:14px 18px; margin-bottom:8px; box-shadow:var(--shadow); display:flex; align-items:flex-start; gap:12px; transition:all .25s; }
