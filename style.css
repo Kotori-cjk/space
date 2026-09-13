@@ -150,7 +150,9 @@ body.sidebar-collapsed #main-content { width:min(100%,1240px); max-width:1240px;
 .note-input-row { display:flex; gap:8px; margin-top:8px; }
 .note-input-row .btn { align-self:flex-end; }
 .sticker-editor { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.sticker-editor:focus { outline:2px solid var(--primary-light); outline-offset:3px; }
 .sticker-editor .note-tool-btn input[type="file"] { display:none; }
+.sticker-paste-hint { color:var(--text-light); font-size:11px; }
 .sticker-preview,.sticker-strip { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
 .sticker-preview span { position:relative; display:block; width:54px; height:54px; }
 .sticker-preview img,.sticker-strip img { width:54px; height:54px; object-fit:cover; border:2px solid #fff; border-radius:11px; box-shadow:0 4px 12px rgba(65,55,49,.14); }

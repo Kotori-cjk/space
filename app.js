@@ -395,8 +395,9 @@ function renderStickerStrip(keys=[]) {
   }).join('')}</div>`;
 }
 function renderStickerPicker(id, keys=[]) {
-  return `<div class="sticker-editor" data-stickers='${JSON.stringify(keys)}'>
+  return `<div class="sticker-editor" data-stickers='${JSON.stringify(keys)}' tabindex="0" title="点击后可直接粘贴剪贴板图片">
     <label class="note-tool-btn">🖼 贴图<input class="sticker-input" type="file" accept="image/*" multiple id="${id}"></label>
+    <span class="sticker-paste-hint">点击此处后 Ctrl+V 粘贴</span>
     <div class="sticker-preview">${keys.map(key => {
       const src = imageCache[key];
       return src ? `<span><img src="${src}" alt="贴图"><button type="button" data-sticker-remove="${key}" aria-label="移除贴图">✕</button></span>` : '';
@@ -404,12 +405,28 @@ function renderStickerPicker(id, keys=[]) {
   </div>`;
 }
 function updateStickerPicker(editor, keys) {
+  if (!editor) return;
   editor.dataset.stickers = JSON.stringify(keys);
   const preview = editor.querySelector('.sticker-preview');
   if (preview) preview.innerHTML = keys.map(key => {
     const src = imageCache[key];
     return src ? `<span><img src="${src}" alt="贴图"><button type="button" data-sticker-remove="${key}" aria-label="移除贴图">✕</button></span>` : '';
   }).join('');
+}
+async function addStickerFiles(editor, files) {
+  const imageFiles = Array.from(files || []).filter(file => file.type.startsWith('image/'));
+  if (!editor || !imageFiles.length) return;
+  const keys = await Promise.all(imageFiles.map(async file => saveImageToIDB(await compressImage(file, 480, 0.75))));
+  updateStickerPicker(editor, [...stickerKeys(editor), ...keys]);
+}
+function pasteStickerImage(e) {
+  const editor = e.target.closest?.('.sticker-editor');
+  const items = e.clipboardData?.items;
+  const files = items ? Array.from(items).filter(item => item.type.startsWith('image/')).map(item => item.getAsFile()) : [];
+  if (!editor || !files.length) return false;
+  e.preventDefault();
+  addStickerFiles(editor, files);
+  return true;
 }
 
 /* ===== Particles ===== */
@@ -965,8 +982,7 @@ function setupEvents() {
     }
     if (e.target.matches?.('.sticker-input') && e.target.files.length) {
       const editor = e.target.closest('.sticker-editor');
-      Promise.all(Array.from(e.target.files).map(async file => saveImageToIDB(await compressImage(file, 480, 0.75))))
-        .then(keys => updateStickerPicker(editor, [...stickerKeys(editor), ...keys]));
+      addStickerFiles(editor, e.target.files);
       e.target.value = '';
     }
   });
@@ -986,6 +1002,7 @@ function setupEvents() {
 
   // Image paste → IndexedDB
   vn.addEventListener('paste', async e => {
+    if (pasteStickerImage(e)) return;
     if (!e.target.matches || !e.target.matches('#note-textarea')) return;
     const items = e.clipboardData && e.clipboardData.items;
     if (!items) return;
@@ -1087,10 +1104,19 @@ function setupEvents() {
 
   vt.addEventListener('change', e => {
     if (!e.target.matches?.('.sticker-input') || !e.target.files.length) return;
-    const editor = e.target.closest('.sticker-editor');
-    Promise.all(Array.from(e.target.files).map(async file => saveImageToIDB(await compressImage(file, 480, 0.75))))
-      .then(keys => updateStickerPicker(editor, [...stickerKeys(editor), ...keys]));
+    addStickerFiles(e.target.closest('.sticker-editor'), e.target.files);
     e.target.value = '';
+  });
+  vt.addEventListener('paste', e => {
+    if (pasteStickerImage(e)) return;
+    if (!e.target.matches?.('#task-detail-input, .task-edit-detail')) return;
+    const items = e.clipboardData?.items;
+    const files = items ? Array.from(items).filter(item => item.type.startsWith('image/')).map(item => item.getAsFile()) : [];
+    if (!files.length) return;
+    const editor = e.target.closest('.task-form, .task-edit-form')?.querySelector('.sticker-editor');
+    if (!editor) return;
+    e.preventDefault();
+    addStickerFiles(editor, files);
   });
 
   // Settings
