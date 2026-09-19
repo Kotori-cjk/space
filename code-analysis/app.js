@@ -1856,7 +1856,6 @@ async function init() {
     } catch (error) {
         console.warn("Background image database is unavailable:", error);
     }
-    initParticles();
     setupEvents();
     renderAll();
 }

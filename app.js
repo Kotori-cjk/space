@@ -1210,12 +1210,10 @@ async function init() {
   imageCache = await idbGetAll();
   load();
   await migrateImages();
-  initParticles();
   updateObsidianLink();
   applyBackground();
   renderMusic();
   setupEvents();
-  setupSidebarToggle();
   renderAll();
   window.addEventListener('beforeunload', () => save());
   setInterval(save, 30000);

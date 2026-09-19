@@ -1622,7 +1622,6 @@ function setupEvents() {
 /* ===== Init ===== */
 function init() {
   load();
-  initParticles();
   updateHeaderLinks();
   applyBackground();
   renderMusic();
