@@ -168,6 +168,21 @@
                     <div id="music-manage-list" class="music-manage-list"></div>
                 </div>
                 <div class="settings-group">
+                    <h3>☁️ 跨设备同步</h3>
+                    <div class="sync-panel">
+                        <strong id="sync-account">尚未登录同步账号</strong>
+                        <p id="sync-status">正在初始化同步功能…</p>
+                        <div class="data-actions sync-actions">
+                            <button id="sync-connect-btn" class="btn btn-primary" type="button">使用 GitHub 登录并同步</button>
+                            <button id="sync-now-btn" class="btn btn-secondary" type="button" hidden>立即同步</button>
+                            <button id="sync-pull-btn" class="btn btn-secondary" type="button" hidden>使用云端数据</button>
+                            <button id="sync-push-btn" class="btn btn-secondary" type="button" hidden>使用本机数据</button>
+                            <button id="sync-pause-btn" class="btn btn-secondary" type="button" hidden>暂停同步</button>
+                        </div>
+                        <small>登录同一个 GitHub 账号的设备会同步笔记、任务、链接、音乐、背景和笔记图片。门禁状态和凭据不会上传。</small>
+                    </div>
+                </div>
+                <div class="settings-group">
                     <h3>💾 数据管理</h3>
                     <div class="data-actions">
                         <button id="export-btn" class="btn btn-secondary">📤 导出数据</button>
@@ -183,6 +198,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="sync-config.js"></script>
+    <script src="sync/supabase-sync.bundle.js"></script>
     <button class="bg-view-exit" id="bg-view-exit">🖼️ 点击或按 Esc 退出观赏</button>
     <div class="save-toast" id="save-toast"></div>
     <script src="app.js"></script>

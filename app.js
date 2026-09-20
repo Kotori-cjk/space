@@ -82,10 +82,11 @@ let state = {
 };
 let editingTaskId = null;
 
-function save() {
+function save(options = {}) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     updateSaveStatus(true);
+    if (options.sync !== false) window.spaceSync?.schedule();
   } catch(e) {
     console.warn('Save failed', e);
     updateSaveStatus(false);
@@ -781,57 +782,89 @@ async function exportData() {
   a.download='kotori-seika-backup.json'; a.click(); URL.revokeObjectURL(a.href);
   showToast('📤 导出成功（含全部图片）');
 }
+async function applyImportedData(rawData, options = {}) {
+  const d = structuredClone(rawData || {});
+  // Restore images to IndexedDB
+  if (d._images) {
+    for (const [key, data] of Object.entries(d._images)) {
+      await idbPut(key, data);
+      imageCache[key] = data;
+    }
+    delete d._images;
+  }
+  state={...state,...d,settings:{...state.settings,...(d.settings||{})},
+    subjectLinks:{...state.subjectLinks,...(d.subjectLinks||{})},
+    notes:{...state.notes,...(d.notes||{})}};
+  if(!state.tasks) state.tasks=[];
+  const importedSubjectMigrations = {
+    'math-probability':'math-ode', 'math-analysis':'math-ode', 'math-linalg':'math-ode', 'physics-elec':'physics-general', 'cs':'cs-ics', 'ai':'ai-cv'
+  };
+  Object.entries(importedSubjectMigrations).forEach(([oldKey,newKey]) => {
+    ['notes','subjectLinks'].forEach(field => {
+      if (d[field]?.[oldKey] && !d[field]?.[newKey]) state[field][newKey] = d[field][oldKey];
+    });
+    if (d.settings?.obsidianFolders?.[oldKey] && !d.settings?.obsidianFolders?.[newKey]) {
+      state.settings.obsidianFolders[newKey] = d.settings.obsidianFolders[oldKey];
+    }
+    if (state.currentView === oldKey) state.currentView = newKey;
+  });
+  const importedTaskSubjectMigrations = { math:'math-ode', 'math-probability':'math-ode', 'math-analysis':'math-ode', physics:'physics-mech', cs:'cs-ics', ai:'ai-cv' };
+  state.tasks.forEach(task => {
+    if (!task.id) task.id = uid();
+    if (importedTaskSubjectMigrations[task.subject]) task.subject = importedTaskSubjectMigrations[task.subject];
+    if (!Array.isArray(task.steps)) task.steps = [];
+    task.steps = task.steps.map(step => typeof step === 'string'
+      ? { id:uid(), text:step, done:false, ddl:'' }
+      : { id:step.id || uid(), text:step.text || '', done:!!step.done, ddl:step.ddl || '' });
+    task.ddl = task.ddl || '';
+  });
+  SUBJECT_KEYS.forEach(key => {
+    if (!state.notes[key]) state.notes[key] = {};
+    if (!state.subjectLinks[key]) state.subjectLinks[key] = { notebookLM:'' };
+    if (!state.settings.obsidianFolders[key]) state.settings.obsidianFolders[key] = '';
+  });
+  if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-ode';
+  save({ sync: options.sync !== false });
+  applyBackground(); renderMusic(); updateObsidianLink(); renderAll();
+  if (options.notify !== false) alert('导入成功！');
+}
+
 async function importData(file) {
   const reader = new FileReader();
   reader.onload = async e => {
     try {
-      const d=JSON.parse(e.target.result);
-      // Restore images to IndexedDB
-      if (d._images) {
-        for (const [key, data] of Object.entries(d._images)) {
-          await idbPut(key, data);
-          imageCache[key] = data;
-        }
-        delete d._images;
-      }
-      state={...state,...d,settings:{...state.settings,...(d.settings||{})},
-        subjectLinks:{...state.subjectLinks,...(d.subjectLinks||{})},
-        notes:{...state.notes,...(d.notes||{})}};
-      if(!state.tasks) state.tasks=[];
-      const importedSubjectMigrations = {
-        'math-probability':'math-ode', 'math-analysis':'math-ode', 'math-linalg':'math-ode', 'physics-elec':'physics-general', 'cs':'cs-ics', 'ai':'ai-cv'
-      };
-      Object.entries(importedSubjectMigrations).forEach(([oldKey,newKey]) => {
-        ['notes','subjectLinks'].forEach(field => {
-          if (d[field]?.[oldKey] && !d[field]?.[newKey]) state[field][newKey] = d[field][oldKey];
-        });
-        if (d.settings?.obsidianFolders?.[oldKey] && !d.settings?.obsidianFolders?.[newKey]) {
-          state.settings.obsidianFolders[newKey] = d.settings.obsidianFolders[oldKey];
-        }
-        if (state.currentView === oldKey) state.currentView = newKey;
-      });
-      const importedTaskSubjectMigrations = { math:'math-ode', 'math-probability':'math-ode', 'math-analysis':'math-ode', physics:'physics-mech', cs:'cs-ics', ai:'ai-cv' };
-      state.tasks.forEach(task => {
-        if (!task.id) task.id = uid();
-        if (importedTaskSubjectMigrations[task.subject]) task.subject = importedTaskSubjectMigrations[task.subject];
-        if (!Array.isArray(task.steps)) task.steps = [];
-        task.steps = task.steps.map(step => typeof step === 'string'
-          ? { id:uid(), text:step, done:false, ddl:'' }
-          : { id:step.id || uid(), text:step.text || '', done:!!step.done, ddl:step.ddl || '' });
-        task.ddl = task.ddl || '';
-      });
-      SUBJECT_KEYS.forEach(key => {
-        if (!state.notes[key]) state.notes[key] = {};
-        if (!state.subjectLinks[key]) state.subjectLinks[key] = { notebookLM:'' };
-        if (!state.settings.obsidianFolders[key]) state.settings.obsidianFolders[key] = '';
-      });
-      if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-ode';
-      save(); applyBackground(); renderMusic(); updateObsidianLink(); renderAll();
-      alert('导入成功！');
+      await applyImportedData(JSON.parse(e.target.result));
     } catch(err) { alert('导入失败：文件格式不正确'); }
   };
   reader.readAsText(file);
 }
+
+window.SpaceDataBridge = Object.freeze({
+  async exportSnapshot() {
+    return {
+      data: {
+        notes: structuredClone(state.notes),
+        tasks: structuredClone(state.tasks),
+        subjectLinks: structuredClone(state.subjectLinks),
+        settings: {
+          musicIds: structuredClone(state.settings.musicIds || []),
+          backgrounds: structuredClone(state.settings.backgrounds || []),
+          currentBg: Number.isInteger(state.settings.currentBg) ? state.settings.currentBg : -1
+        }
+      },
+      images: await idbGetAll()
+    };
+  },
+  async importSnapshot(snapshot) {
+    if (snapshot?.kind !== 'kotori-seika-space' || snapshot?.schemaVersion !== 1 || !snapshot?.data) {
+      throw new Error('云端同步数据格式不受支持。');
+    }
+    const data = structuredClone(snapshot.data);
+    data._images = snapshot.images || {};
+    await applyImportedData(data, { notify: false, sync: false });
+    showToast('☁️ 已载入云端同步数据');
+  }
+});
 
 /* ===== Events ===== */
 function setupEvents() {
@@ -1215,7 +1248,8 @@ async function init() {
   renderMusic();
   setupEvents();
   renderAll();
-  window.addEventListener('beforeunload', () => save());
-  setInterval(save, 30000);
+  await window.spaceSync?.init();
+  window.addEventListener('beforeunload', () => save({ sync:false }));
+  setInterval(() => save({ sync:false }), 30000);
 }
 document.addEventListener('DOMContentLoaded', () => init());

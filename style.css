@@ -285,6 +285,13 @@ body.sidebar-collapsed #main-content { width:min(100%,1240px); max-width:1240px;
 .music-manage-item { display:flex; align-items:center; justify-content:space-between; padding:8px 12px; background:var(--bg); border-radius:var(--radius-xs); font-size:13px; }
 .music-manage-item button { background:none; border:none; color:var(--danger); cursor:pointer; font-size:14px; }
 .data-actions { display:flex; gap:8px; }
+.sync-panel { display:grid; gap:8px; }
+.sync-panel strong { color:var(--text); font-size:14px; }
+.sync-panel p { margin:0; color:var(--text-light); font-size:13px; }
+.sync-panel p[data-kind="ok"] { color:var(--mint); }
+.sync-panel p[data-kind="error"], .sync-panel p[data-kind="conflict"] { color:var(--danger); }
+.sync-panel small { color:var(--text-light); line-height:1.6; }
+.sync-actions { flex-wrap:wrap; }
 
 /* BUTTONS */
 .btn { padding:9px 18px; border:none; border-radius:var(--radius-xs); font-family:var(--font-body); font-size:13px; font-weight:500; cursor:pointer; transition:all .25s; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }

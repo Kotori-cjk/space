@@ -1,0 +1,17 @@
+{
+  "name": "kotori-seika-space",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-sync.mjs",
+    "preview": "node scripts/preview.mjs",
+    "test": "node --test sync/sync-core.test.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "2.57.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.9"
+  }
+}
