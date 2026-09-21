@@ -40,6 +40,11 @@ function setStatus(message, kind = '') {
   ui.status.dataset.kind = kind;
 }
 
+function setSynced(message, version) {
+  const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  setStatus(`${message} · 云端版本 v${version} · ${time}`, 'ok');
+}
+
 function accountLabel() {
   const metadata = session?.user?.user_metadata || {};
   return metadata.user_name || metadata.preferred_username || session?.user?.email || '已登录 GitHub 账号';
@@ -140,14 +145,14 @@ async function syncNow() {
       lastLocalHash: meta.localHash || ''
     });
     if (action === 'noop') {
-      setStatus(`已同步 · ${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`, 'ok');
+      setSynced('已同步', meta.version);
     } else if (action === 'upload') {
       const version = await uploadRemote(snapshot, remote?.version || '');
       writeMeta({ version, localHash, lastSyncedAt: new Date().toISOString() });
-      setStatus('本机修改已同步。', 'ok');
+      setSynced('本机修改已同步', version);
     } else if (action === 'pull') {
       await applyRemote(remote);
-      setStatus('已载入另一台设备的更新。', 'ok');
+      setSynced('已载入另一台设备的更新', remote.version);
     } else {
       pendingRemote = remote;
       setStatus('检测到本机与云端都有数据，请选择保留哪一份。', 'conflict');
@@ -167,9 +172,10 @@ async function forcePull() {
   busy = true;
   setStatus('正在使用云端数据…');
   try {
+    const version = pendingRemote.version;
     await applyRemote(pendingRemote);
     pendingRemote = null;
-    setStatus('已使用云端数据。', 'ok');
+    setSynced('已使用云端数据', version);
   } catch (error) {
     console.error(error);
     setStatus('载入云端数据失败。', 'error');
@@ -187,7 +193,7 @@ async function forcePush() {
     const version = await uploadRemote(snapshot, pendingRemote.version);
     writeMeta({ version, localHash, lastSyncedAt: new Date().toISOString() });
     pendingRemote = null;
-    setStatus('已使用本机数据更新云端。', 'ok');
+    setSynced('已使用本机数据更新云端', version);
   } catch (error) {
     console.error(error);
     pendingRemote = null;
