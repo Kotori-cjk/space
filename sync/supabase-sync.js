@@ -9,6 +9,7 @@ let session;
 let busy = false;
 let timer;
 let pendingRemote = null;
+let channel;
 
 const ui = {};
 
@@ -157,7 +158,7 @@ async function syncNow() {
       setSynced('已载入另一台设备的更新', remote.updatedAt);
     } else {
       pendingRemote = remote;
-      setStatus('检测到本机与云端都有数据，请选择保留哪一份。', 'conflict');
+      setStatus('此设备首次同步：为避免覆盖本机内容，请选择“使用云端数据（下载）”或“使用本机数据（覆盖云端）”。', 'conflict');
     }
   } catch (error) {
     console.error('Supabase sync failed', error);
@@ -230,6 +231,18 @@ function pause() {
   render();
 }
 
+function subscribeToRemoteChanges() {
+  if (channel) client.removeChannel(channel);
+  channel = null;
+  if (!session) return;
+  channel = client
+    .channel(`space-sync-${session.user.id}`)
+    .on('postgres_changes', {
+      event: '*', schema: 'public', table: 'space_snapshots', filter: `user_id=eq.${session.user.id}`
+    }, () => syncNow())
+    .subscribe();
+}
+
 async function init() {
   Object.assign(ui, {
     account: document.getElementById('sync-account'),
@@ -246,6 +259,7 @@ async function init() {
   session = (await client.auth.getSession()).data.session;
   client.auth.onAuthStateChange((_event, nextSession) => {
     session = nextSession;
+    subscribeToRemoteChanges();
     render();
     if (session && !isPaused()) syncNow();
   });
@@ -257,6 +271,7 @@ async function init() {
   window.addEventListener('online', syncNow);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) syncNow(); });
   setStatus('');
+  subscribeToRemoteChanges();
   render();
   if (session && !isPaused()) await syncNow();
 }

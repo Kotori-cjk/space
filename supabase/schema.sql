@@ -7,6 +7,17 @@ create table if not exists public.space_snapshots (
 );
 
 alter table public.space_snapshots enable row level security;
+alter table public.space_snapshots replica identity full;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables
+    where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'space_snapshots'
+  ) then
+    alter publication supabase_realtime add table public.space_snapshots;
+  end if;
+end $$;
 
 drop policy if exists "Users read their Space snapshot" on public.space_snapshots;
 create policy "Users read their Space snapshot"
