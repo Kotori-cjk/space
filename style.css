@@ -293,6 +293,9 @@ body.sidebar-collapsed #main-content { width:min(100%,1240px); max-width:1240px;
 .sync-panel small { color:var(--text-light); line-height:1.6; }
 .sync-actions { flex-wrap:wrap; }
 .sync-actions [hidden] { display:none !important; }
+.sync-confirm { padding:10px 12px; border:1px solid var(--border); border-radius:var(--radius-xs); background:var(--bg); }
+.sync-confirm[hidden] { display:none !important; }
+.sync-confirm p { margin:0 0 8px; color:var(--text); line-height:1.55; }
 
 /* BUTTONS */
 .btn { padding:9px 18px; border:none; border-radius:var(--radius-xs); font-family:var(--font-body); font-size:13px; font-weight:500; cursor:pointer; transition:all .25s; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }

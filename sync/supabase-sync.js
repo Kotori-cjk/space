@@ -10,6 +10,7 @@ let busy = false;
 let timer;
 let pendingRemote = null;
 let channel;
+let pendingAction = null;
 
 const ui = {};
 
@@ -148,7 +149,7 @@ async function applyRemote(remote) {
 }
 
 async function syncNow() {
-  if (busy || isPaused() || !clientConfigured() || !session || !navigator.onLine) return;
+  if (busy || pendingAction || isPaused() || !clientConfigured() || !session || !navigator.onLine) return;
   busy = true;
   pendingRemote = null;
   render();
@@ -186,17 +187,27 @@ async function syncNow() {
   }
 }
 
+function showConfirmation(action, message) {
+  pendingAction = action;
+  ui.confirmMessage.textContent = message;
+  ui.confirm.hidden = false;
+}
+
+function clearConfirmation(message = '') {
+  pendingAction = null;
+  ui.confirm.hidden = true;
+  if (message) setStatus(message);
+}
+
 async function downloadRemote() {
-  if (busy) return;
+  if (busy || pendingAction) return;
   busy = true;
   setStatus('正在读取云端数据…');
   try {
     const remote = await readRemote();
     if (!remote) throw new Error('云端还没有同步数据，请先在有数据的设备上传。');
-    if (!window.confirm(`${snapshotSummary(remote.payload)} 将替换本机当前同步内容。建议先导出本机备份。确定下载吗？`)) return;
-    await applyRemote(remote);
-    pendingRemote = null;
-    setSynced('已从云端下载数据', remote.updatedAt, remote.payload);
+    showConfirmation({ type: 'download', remote }, `${snapshotSummary(remote.payload)} 将替换本机当前同步内容。建议先导出本机备份，再确认下载。`);
+    setStatus('请确认是否从云端下载数据。');
   } catch (error) {
     console.error(error);
     setStatus(error.message || '载入云端数据失败。', 'error');
@@ -204,19 +215,14 @@ async function downloadRemote() {
 }
 
 async function uploadLocal() {
-  if (busy) return;
+  if (busy || pendingAction) return;
   busy = true;
   setStatus('正在准备上传本机数据…');
   try {
     const snapshot = await localSnapshot();
     const size = snapshotSize(snapshot);
-    if (!window.confirm(`将本机 ${snapshotSummary(snapshot).replace('云端含 ', '')}（同步包约 ${size}）上传到云端，并覆盖当前云端数据。确定上传吗？`)) return;
-    const localHash = await snapshotHash(snapshot);
-    const remote = await readRemote();
-    const remoteState = await uploadRemote(snapshot, remote?.version || '');
-    writeMeta({ ...remoteState, localHash, lastSyncedAt: new Date().toISOString() });
-    pendingRemote = null;
-    setSynced('已上传本机数据', remoteState.updatedAt, snapshot);
+    showConfirmation({ type: 'upload', snapshot }, `将本机 ${snapshotSummary(snapshot).replace('云端含 ', '')}（同步包约 ${size}）上传到云端，并覆盖当前云端数据。请确认执行。`);
+    setStatus('请确认是否上传本机数据。');
   } catch (error) {
     console.error(error);
     pendingRemote = null;
@@ -224,8 +230,37 @@ async function uploadLocal() {
   } finally { busy = false; render(); }
 }
 
+async function confirmAction() {
+  const action = pendingAction;
+  if (!action || busy) return;
+  clearConfirmation();
+  busy = true;
+  try {
+    if (action.type === 'download') {
+      setStatus('正在从云端下载数据…');
+      await applyRemote(action.remote);
+      pendingRemote = null;
+      setSynced('已从云端下载数据', action.remote.updatedAt, action.remote.payload);
+    } else {
+      setStatus('正在上传本机数据…');
+      const localHash = await snapshotHash(action.snapshot);
+      const remote = await readRemote();
+      const remoteState = await uploadRemote(action.snapshot, remote?.version || '');
+      writeMeta({ ...remoteState, localHash, lastSyncedAt: new Date().toISOString() });
+      pendingRemote = null;
+      setSynced('已上传本机数据', remoteState.updatedAt, action.snapshot);
+    }
+  } catch (error) {
+    console.error(error);
+    pendingRemote = null;
+    setStatus(action.type === 'upload'
+      ? `上传本机数据失败：${errorText(error, '未知原因')}`
+      : `从云端下载数据失败：${errorText(error, '未知原因')}`, 'error');
+  } finally { busy = false; render(); }
+}
+
 function schedule() {
-  if (!session || isPaused() || busy) return;
+  if (!session || isPaused() || busy || pendingAction) return;
   clearTimeout(timer);
   timer = setTimeout(syncNow, 1800);
 }
@@ -271,7 +306,11 @@ async function init() {
     sync: document.getElementById('sync-now-btn'),
     pull: document.getElementById('sync-pull-btn'),
     push: document.getElementById('sync-push-btn'),
-    pause: document.getElementById('sync-pause-btn')
+    pause: document.getElementById('sync-pause-btn'),
+    confirm: document.getElementById('sync-confirm'),
+    confirmMessage: document.getElementById('sync-confirm-message'),
+    confirmYes: document.getElementById('sync-confirm-yes'),
+    confirmNo: document.getElementById('sync-confirm-no')
   });
   if (!ui.connect) return;
   if (!clientConfigured()) { render(); return; }
@@ -288,6 +327,8 @@ async function init() {
   ui.pull.addEventListener('click', downloadRemote);
   ui.push.addEventListener('click', uploadLocal);
   ui.pause.addEventListener('click', pause);
+  ui.confirmYes.addEventListener('click', confirmAction);
+  ui.confirmNo.addEventListener('click', () => clearConfirmation('已取消，本机和云端数据均未修改。'));
   window.addEventListener('online', syncNow);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) syncNow(); });
   setStatus('');
