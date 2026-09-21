@@ -41,11 +41,21 @@ function setStatus(message, kind = '') {
   ui.status.dataset.kind = kind;
 }
 
+function errorText(error, fallback) {
+  const details = [error?.code && `[${error.code}]`, error?.message, error?.hint].filter(Boolean).join(' · ');
+  return details ? details.slice(0, 220) : fallback;
+}
+
 function snapshotSummary(snapshot) {
   const data = snapshot?.data || {};
   const taskCount = Array.isArray(data.tasks) ? data.tasks.length : 0;
   const noteCount = Object.values(data.notes || {}).reduce((total, notes) => total + Object.keys(notes || {}).length, 0);
   return `云端含 ${taskCount} 条任务、${noteCount} 篇笔记`;
+}
+
+function snapshotSize(snapshot) {
+  const bytes = new TextEncoder().encode(JSON.stringify(snapshot)).byteLength;
+  return bytes < 1024 * 1024 ? `${Math.ceil(bytes / 1024)} KB` : `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
 function setSynced(message, updatedAt, snapshot) {
@@ -169,7 +179,7 @@ async function syncNow() {
     }
   } catch (error) {
     console.error('Supabase sync failed', error);
-    setStatus(error.code === 'sync_conflict' ? error.message : '同步失败，请稍后重试。', 'error');
+    setStatus(error.code === 'sync_conflict' ? error.message : `同步失败：${errorText(error, '请稍后重试。')}`, 'error');
   } finally {
     busy = false;
     render();
@@ -199,7 +209,8 @@ async function uploadLocal() {
   setStatus('正在准备上传本机数据…');
   try {
     const snapshot = await localSnapshot();
-    if (!window.confirm(`将本机 ${snapshotSummary(snapshot).replace('云端含 ', '')} 上传到云端，并覆盖当前云端数据。确定上传吗？`)) return;
+    const size = snapshotSize(snapshot);
+    if (!window.confirm(`将本机 ${snapshotSummary(snapshot).replace('云端含 ', '')}（同步包约 ${size}）上传到云端，并覆盖当前云端数据。确定上传吗？`)) return;
     const localHash = await snapshotHash(snapshot);
     const remote = await readRemote();
     const remoteState = await uploadRemote(snapshot, remote?.version || '');
@@ -209,7 +220,7 @@ async function uploadLocal() {
   } catch (error) {
     console.error(error);
     pendingRemote = null;
-    setStatus(error.code === 'sync_conflict' ? '云端刚刚变化，请再点一次上传。' : '上传本机数据失败。', 'error');
+    setStatus(error.code === 'sync_conflict' ? '云端刚刚变化，请再点一次上传。' : `上传本机数据失败：${errorText(error, '未知原因')}`, 'error');
   } finally { busy = false; render(); }
 }
 
