@@ -41,11 +41,18 @@ function setStatus(message, kind = '') {
   ui.status.dataset.kind = kind;
 }
 
-function setSynced(message, updatedAt) {
+function snapshotSummary(snapshot) {
+  const data = snapshot?.data || {};
+  const taskCount = Array.isArray(data.tasks) ? data.tasks.length : 0;
+  const noteCount = Object.values(data.notes || {}).reduce((total, notes) => total + Object.keys(notes || {}).length, 0);
+  return `云端含 ${taskCount} 条任务、${noteCount} 篇笔记`;
+}
+
+function setSynced(message, updatedAt, snapshot) {
   const time = new Date(updatedAt).toLocaleString('zh-CN', {
     year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
   });
-  setStatus(`${message} · 云端更新于 ${time}`, 'ok');
+  setStatus(`${message} · ${snapshotSummary(snapshot)} · 云端更新于 ${time}`, 'ok');
 }
 
 function accountLabel() {
@@ -62,8 +69,8 @@ function render() {
   ui.connect.textContent = session && isPaused() ? '恢复同步' : '使用 GitHub 登录并同步';
   ui.sync.hidden = !connected;
   ui.pause.hidden = !connected;
-  ui.pull.hidden = !pendingRemote;
-  ui.push.hidden = !pendingRemote;
+  ui.pull.hidden = !connected;
+  ui.push.hidden = !connected;
   if (!configured) setStatus('同步服务尚未完成配置，本地保存不受影响。');
   else if (isPaused()) setStatus('跨设备同步已暂停。');
   else if (!session) setStatus('使用 GitHub 登录后，其他登录同一账号的设备会同步。');
@@ -148,17 +155,17 @@ async function syncNow() {
       lastLocalHash: meta.localHash || ''
     });
     if (action === 'noop') {
-      setSynced('已同步', meta.updatedAt || new Date().toISOString());
+      setSynced('已同步', meta.updatedAt || new Date().toISOString(), remote?.payload || snapshot);
     } else if (action === 'upload') {
       const remoteState = await uploadRemote(snapshot, remote?.version || '');
       writeMeta({ ...remoteState, localHash, lastSyncedAt: new Date().toISOString() });
-      setSynced('本机修改已同步', remoteState.updatedAt);
+      setSynced('本机修改已同步', remoteState.updatedAt, snapshot);
     } else if (action === 'pull') {
       await applyRemote(remote);
-      setSynced('已载入另一台设备的更新', remote.updatedAt);
+      setSynced('已载入另一台设备的更新', remote.updatedAt, remote.payload);
     } else {
       pendingRemote = remote;
-      setStatus('此设备首次同步：为避免覆盖本机内容，请选择“使用云端数据（下载）”或“使用本机数据（覆盖云端）”。', 'conflict');
+      setStatus(`此设备本机有 ${snapshotSummary(snapshot).replace('云端含 ', '')}；请明确选择“从云端下载数据”或“上传本机数据到云端”。`, 'conflict');
     }
   } catch (error) {
     console.error('Supabase sync failed', error);
@@ -169,38 +176,40 @@ async function syncNow() {
   }
 }
 
-async function forcePull() {
-  if (!pendingRemote || busy) return;
-  if (!window.confirm('云端数据将替换本机当前的同步内容。建议先导出本机备份。确定继续吗？')) return;
+async function downloadRemote() {
+  if (busy) return;
   busy = true;
-  setStatus('正在使用云端数据…');
+  setStatus('正在读取云端数据…');
   try {
-    const updatedAt = pendingRemote.updatedAt;
-    await applyRemote(pendingRemote);
+    const remote = await readRemote();
+    if (!remote) throw new Error('云端还没有同步数据，请先在有数据的设备上传。');
+    if (!window.confirm(`${snapshotSummary(remote.payload)} 将替换本机当前同步内容。建议先导出本机备份。确定下载吗？`)) return;
+    await applyRemote(remote);
     pendingRemote = null;
-    setSynced('已使用云端数据', updatedAt);
+    setSynced('已从云端下载数据', remote.updatedAt, remote.payload);
   } catch (error) {
     console.error(error);
-    setStatus('载入云端数据失败。', 'error');
+    setStatus(error.message || '载入云端数据失败。', 'error');
   } finally { busy = false; render(); }
 }
 
-async function forcePush() {
-  if (!pendingRemote || busy) return;
-  if (!window.confirm('本机数据将替换云端当前的同步内容。确定继续吗？')) return;
+async function uploadLocal() {
+  if (busy) return;
   busy = true;
-  setStatus('正在使用本机数据更新云端…');
+  setStatus('正在准备上传本机数据…');
   try {
     const snapshot = await localSnapshot();
+    if (!window.confirm(`将本机 ${snapshotSummary(snapshot).replace('云端含 ', '')} 上传到云端，并覆盖当前云端数据。确定上传吗？`)) return;
     const localHash = await snapshotHash(snapshot);
-    const remoteState = await uploadRemote(snapshot, pendingRemote.version);
+    const remote = await readRemote();
+    const remoteState = await uploadRemote(snapshot, remote?.version || '');
     writeMeta({ ...remoteState, localHash, lastSyncedAt: new Date().toISOString() });
     pendingRemote = null;
-    setSynced('已使用本机数据更新云端', remoteState.updatedAt);
+    setSynced('已上传本机数据', remoteState.updatedAt, snapshot);
   } catch (error) {
     console.error(error);
     pendingRemote = null;
-    setStatus(error.code === 'sync_conflict' ? '云端再次变化，请重新同步后选择。' : '上传本机数据失败。', 'error');
+    setStatus(error.code === 'sync_conflict' ? '云端刚刚变化，请再点一次上传。' : '上传本机数据失败。', 'error');
   } finally { busy = false; render(); }
 }
 
@@ -265,8 +274,8 @@ async function init() {
   });
   ui.connect.addEventListener('click', connect);
   ui.sync.addEventListener('click', syncNow);
-  ui.pull.addEventListener('click', forcePull);
-  ui.push.addEventListener('click', forcePush);
+  ui.pull.addEventListener('click', downloadRemote);
+  ui.push.addEventListener('click', uploadLocal);
   ui.pause.addEventListener('click', pause);
   window.addEventListener('online', syncNow);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) syncNow(); });

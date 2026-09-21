@@ -292,6 +292,7 @@ body.sidebar-collapsed #main-content { width:min(100%,1240px); max-width:1240px;
 .sync-panel p[data-kind="error"], .sync-panel p[data-kind="conflict"] { color:var(--danger); }
 .sync-panel small { color:var(--text-light); line-height:1.6; }
 .sync-actions { flex-wrap:wrap; }
+.sync-actions [hidden] { display:none !important; }
 
 /* BUTTONS */
 .btn { padding:9px 18px; border:none; border-radius:var(--radius-xs); font-family:var(--font-body); font-size:13px; font-weight:500; cursor:pointer; transition:all .25s; display:inline-flex; align-items:center; gap:4px; white-space:nowrap; }
