@@ -170,10 +170,13 @@
                 <div class="settings-group">
                     <h3>☁️ 跨设备同步</h3>
                     <div class="sync-panel">
-                        <strong id="sync-account">尚未登录同步账号</strong>
+                        <strong id="sync-account">尚未连接 GitHub Gist</strong>
                         <p id="sync-status">正在初始化同步功能…</p>
+                        <div id="sync-token-row" class="sync-token-row">
+                            <input id="sync-token-input" type="password" autocomplete="off" placeholder="粘贴仅含 gist 权限的 GitHub Token">
+                        </div>
                         <div class="data-actions sync-actions">
-                            <button id="sync-connect-btn" class="btn btn-primary" type="button">使用 GitHub 登录并同步</button>
+                            <button id="sync-connect-btn" class="btn btn-primary" type="button">连接 GitHub Gist</button>
                             <button id="sync-now-btn" class="btn btn-secondary" type="button" hidden>立即同步</button>
                             <button id="sync-pull-btn" class="btn btn-secondary" type="button" hidden>从云端下载数据</button>
                             <button id="sync-push-btn" class="btn btn-secondary" type="button" hidden>上传本机数据到云端</button>
@@ -186,7 +189,7 @@
                                 <button id="sync-confirm-no" class="btn btn-secondary" type="button">取消</button>
                             </div>
                         </div>
-                        <small>登录同一个 GitHub 账号的设备会同步笔记、任务、链接、音乐、背景和笔记图片。门禁状态和凭据不会上传。</small>
+                        <small>同一 GitHub 账号的 Gist 会同步笔记、任务、链接、音乐与背景设置。Token 只保存在当前浏览器，不写入 Space 或云端；请勿在公用设备使用。</small>
                     </div>
                 </div>
                 <div class="settings-group">
@@ -206,7 +209,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="sync-config.js"></script>
-    <script src="sync/supabase-sync.bundle.js"></script>
+    <script src="sync/github-gist-sync.bundle.js"></script>
     <button class="bg-view-exit" id="bg-view-exit">🖼️ 点击或按 Esc 退出观赏</button>
     <div class="save-toast" id="save-toast"></div>
     <script src="app.js"></script>

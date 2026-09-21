@@ -840,7 +840,7 @@ async function importData(file) {
 }
 
 window.SpaceDataBridge = Object.freeze({
-  async exportSnapshot() {
+  async exportSnapshot({ includeImages = true } = {}) {
     return {
       data: {
         notes: structuredClone(state.notes),
@@ -852,7 +852,7 @@ window.SpaceDataBridge = Object.freeze({
           currentBg: Number.isInteger(state.settings.currentBg) ? state.settings.currentBg : -1
         }
       },
-      images: await idbGetAll()
+      images: includeImages ? await idbGetAll() : {}
     };
   },
   async importSnapshot(snapshot) {

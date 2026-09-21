@@ -12,17 +12,16 @@ GitHub Pages 上的学习空间，包含学习主页、算法计划、Code Analy
 
 在线地址：<https://kotori-cjk.github.io/space/>
 
-学习数据会先保存在当前域名的浏览器 `localStorage`/IndexedDB；设置面板支持 JSON 导入导出，并可在登录 GitHub 账号后同步主 Space 的笔记、任务、链接、音乐、背景和笔记图片。
+学习数据会先保存在当前域名的浏览器 `localStorage`/IndexedDB；设置面板支持 JSON 导入导出，并可通过 GitHub secret Gist 同步主 Space 的笔记、任务、链接、音乐和背景设置。
 
-## Supabase 同步开发配置
+## GitHub Gist 同步开发配置
 
-1. 创建 Supabase 免费项目，在 SQL Editor 执行 `supabase/schema.sql`。
-2. 在 Authentication 的 URL Configuration 中添加生产地址 `https://kotori-cjk.github.io/space/` 与本地地址 `http://localhost:8000/`。
-3. 在 Authentication 的 GitHub Provider 中填入 GitHub OAuth App 的 Client ID 与 Client Secret。
-4. 将项目 URL 和 Publishable key 写入 `sync-config.js`。该 key 可公开；不要写入或提交 `service_role` key。
-5. 运行 `npm ci`、`npm test`、`npm run build`，生成浏览器端 `sync/supabase-sync.bundle.js`。
+1. 创建一个 Classic personal access token，仅勾选 `gist` scope。
+2. 在每台设备的 Space 设置中粘贴该 Token 并连接；页面会在该 GitHub 账号下创建一个固定的 secret Gist。
+3. Token 仅保留在该设备浏览器的 `localStorage`，不写入 Git 仓库、Space 数据或 Gist。
+4. 运行 `npm ci`、`npm test`、`npm run build`，生成浏览器端 `sync/github-gist-sync.bundle.js`。
 
-同步采用本地优先保存和版本冲突保护。首次在第二台设备连接，或两台设备都产生修改时，页面会要求明确选择“使用云端数据”或“使用本机数据”，不会静默覆盖。门禁状态、GitHub 会话和其他凭据不包含在同步快照中。
+同步采用本地优先保存和修订冲突保护。首次在第二台设备连接，或两台设备都产生修改时，页面会要求明确选择“从云端下载数据”或“上传本机数据到云端”，不会静默覆盖。门禁状态、Token 和其他凭据不包含在同步快照中。
 
 ## 前端门禁
 

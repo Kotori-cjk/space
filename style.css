@@ -288,6 +288,7 @@ body.sidebar-collapsed #main-content { width:min(100%,1240px); max-width:1240px;
 .sync-panel { display:grid; gap:8px; }
 .sync-panel strong { color:var(--text); font-size:14px; }
 .sync-panel p { margin:0; color:var(--text-light); font-size:13px; }
+.sync-token-row input { width:100%; box-sizing:border-box; padding:9px 11px; border:1px solid var(--border); border-radius:var(--radius-xs); color:var(--text); background:var(--bg); font:inherit; }
 .sync-panel p[data-kind="ok"] { color:var(--mint); }
 .sync-panel p[data-kind="error"], .sync-panel p[data-kind="conflict"] { color:var(--danger); }
 .sync-panel small { color:var(--text-light); line-height:1.6; }
