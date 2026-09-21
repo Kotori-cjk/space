@@ -40,9 +40,11 @@ function setStatus(message, kind = '') {
   ui.status.dataset.kind = kind;
 }
 
-function setSynced(message, version) {
-  const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-  setStatus(`${message} · 云端版本 v${version} · ${time}`, 'ok');
+function setSynced(message, updatedAt) {
+  const time = new Date(updatedAt).toLocaleString('zh-CN', {
+    year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+  setStatus(`${message} · 云端更新于 ${time}`, 'ok');
 }
 
 function accountLabel() {
@@ -75,11 +77,11 @@ async function localSnapshot() {
 async function readRemote() {
   const { data, error } = await client
     .from('space_snapshots')
-    .select('payload, version')
+    .select('payload, version, updated_at')
     .eq('user_id', session.user.id)
     .maybeSingle();
   if (error) throw error;
-  return data ? { version: String(data.version), payload: data.payload } : null;
+  return data ? { version: String(data.version), updatedAt: data.updated_at, payload: data.payload } : null;
 }
 
 async function uploadRemote(snapshot, version = '') {
@@ -93,7 +95,7 @@ async function uploadRemote(snapshot, version = '') {
     const { data, error } = await client
       .from('space_snapshots')
       .insert({ user_id: session.user.id, payload })
-      .select('version')
+      .select('version, updated_at')
       .single();
     if (error) {
       if (error.code === '23505') {
@@ -103,14 +105,14 @@ async function uploadRemote(snapshot, version = '') {
       }
       throw error;
     }
-    return String(data.version);
+    return { version: String(data.version), updatedAt: data.updated_at };
   }
   const { data, error } = await client
     .from('space_snapshots')
     .update({ payload, version: Number(version) + 1, updated_at: new Date().toISOString() })
     .eq('user_id', session.user.id)
     .eq('version', Number(version))
-    .select('version')
+    .select('version, updated_at')
     .maybeSingle();
   if (error) throw error;
   if (!data) {
@@ -118,13 +120,13 @@ async function uploadRemote(snapshot, version = '') {
     conflict.code = 'sync_conflict';
     throw conflict;
   }
-  return String(data.version);
+  return { version: String(data.version), updatedAt: data.updated_at };
 }
 
 async function applyRemote(remote) {
   await window.SpaceDataBridge.importSnapshot(remote.payload);
   const localHash = await snapshotHash(await localSnapshot());
-  writeMeta({ version: remote.version, localHash, lastSyncedAt: new Date().toISOString() });
+  writeMeta({ version: remote.version, updatedAt: remote.updatedAt, localHash, lastSyncedAt: new Date().toISOString() });
 }
 
 async function syncNow() {
@@ -145,14 +147,14 @@ async function syncNow() {
       lastLocalHash: meta.localHash || ''
     });
     if (action === 'noop') {
-      setSynced('已同步', meta.version);
+      setSynced('已同步', meta.updatedAt || new Date().toISOString());
     } else if (action === 'upload') {
-      const version = await uploadRemote(snapshot, remote?.version || '');
-      writeMeta({ version, localHash, lastSyncedAt: new Date().toISOString() });
-      setSynced('本机修改已同步', version);
+      const remoteState = await uploadRemote(snapshot, remote?.version || '');
+      writeMeta({ ...remoteState, localHash, lastSyncedAt: new Date().toISOString() });
+      setSynced('本机修改已同步', remoteState.updatedAt);
     } else if (action === 'pull') {
       await applyRemote(remote);
-      setSynced('已载入另一台设备的更新', remote.version);
+      setSynced('已载入另一台设备的更新', remote.updatedAt);
     } else {
       pendingRemote = remote;
       setStatus('检测到本机与云端都有数据，请选择保留哪一份。', 'conflict');
@@ -172,10 +174,10 @@ async function forcePull() {
   busy = true;
   setStatus('正在使用云端数据…');
   try {
-    const version = pendingRemote.version;
+    const updatedAt = pendingRemote.updatedAt;
     await applyRemote(pendingRemote);
     pendingRemote = null;
-    setSynced('已使用云端数据', version);
+    setSynced('已使用云端数据', updatedAt);
   } catch (error) {
     console.error(error);
     setStatus('载入云端数据失败。', 'error');
@@ -190,10 +192,10 @@ async function forcePush() {
   try {
     const snapshot = await localSnapshot();
     const localHash = await snapshotHash(snapshot);
-    const version = await uploadRemote(snapshot, pendingRemote.version);
-    writeMeta({ version, localHash, lastSyncedAt: new Date().toISOString() });
+    const remoteState = await uploadRemote(snapshot, pendingRemote.version);
+    writeMeta({ ...remoteState, localHash, lastSyncedAt: new Date().toISOString() });
     pendingRemote = null;
-    setSynced('已使用本机数据更新云端', version);
+    setSynced('已使用本机数据更新云端', remoteState.updatedAt);
   } catch (error) {
     console.error(error);
     pendingRemote = null;
