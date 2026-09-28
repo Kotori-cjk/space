@@ -384,6 +384,20 @@ function insertImageAtCursor(ta, ref) {
   ta.value = before + (before.endsWith('\n')||!before?'':'\n') + `![image](${ref})\n` + after;
   ta.dispatchEvent(new Event('input',{bubbles:true}));
 }
+
+function attachmentImageKeys() {
+  const keys = new Set();
+  const collect = item => {
+    (item?.stickers || []).forEach(key => keys.add(key));
+    const matches = String(item?.content || '').matchAll(/\(idb:([^)]+)\)/g);
+    for (const match of matches) keys.add(match[1]);
+  };
+  state.tasks.forEach(collect);
+  Object.values(state.notes).forEach(days => {
+    Object.values(days || {}).forEach(notes => notes.forEach(collect));
+  });
+  return keys;
+}
 function stickerKeys(editor) {
   try { return JSON.parse(editor?.dataset.stickers || '[]'); }
   catch { return []; }
@@ -428,6 +442,27 @@ function pasteStickerImage(e) {
   e.preventDefault();
   addStickerFiles(editor, files);
   return true;
+}
+
+function setupImageLightbox() {
+  const lightbox = document.createElement('div');
+  lightbox.id = 'image-lightbox';
+  lightbox.className = 'image-lightbox';
+  lightbox.hidden = true;
+  lightbox.innerHTML = '<button type="button" class="image-lightbox-close" aria-label="关闭原图预览">✕</button><img alt="贴图原图">';
+  document.body.append(lightbox);
+  const close = () => { lightbox.hidden = true; lightbox.querySelector('img').removeAttribute('src'); };
+  document.addEventListener('click', e => {
+    const image = e.target.closest?.('.sticker-preview img, .sticker-strip img');
+    if (image) {
+      lightbox.querySelector('img').src = image.currentSrc || image.src;
+      lightbox.querySelector('img').alt = image.alt || '贴图原图';
+      lightbox.hidden = false;
+      return;
+    }
+    if (e.target === lightbox || e.target.closest?.('.image-lightbox-close')) close();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !lightbox.hidden) close(); });
 }
 
 /* ===== Particles ===== */
@@ -841,6 +876,13 @@ async function importData(file) {
 
 window.SpaceDataBridge = Object.freeze({
   async exportSnapshot({ includeImages = true } = {}) {
+    const allImages = includeImages ? await idbGetAll() : {};
+    const images = {};
+    if (includeImages) {
+      attachmentImageKeys().forEach(key => {
+        if (allImages[key]) images[key] = allImages[key];
+      });
+    }
     return {
       data: {
         notes: structuredClone(state.notes),
@@ -852,7 +894,7 @@ window.SpaceDataBridge = Object.freeze({
           currentBg: Number.isInteger(state.settings.currentBg) ? state.settings.currentBg : -1
         }
       },
-      images: includeImages ? await idbGetAll() : {}
+      images
     };
   },
   async importSnapshot(snapshot) {
@@ -868,6 +910,7 @@ window.SpaceDataBridge = Object.freeze({
 
 /* ===== Events ===== */
 function setupEvents() {
+  setupImageLightbox();
   // Subject navigation
   document.getElementById('sidebar').addEventListener('click', e => {
     const btn = e.target.closest('.subject-btn[data-subject]');

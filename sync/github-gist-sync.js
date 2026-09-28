@@ -6,6 +6,7 @@ const META_KEY = 'kotori-seika-gist-sync-v1';
 const GIST_ID_KEY = 'kotori-seika-gist-id-v1';
 const PAUSED_KEY = 'kotori-seika-gist-paused-v1';
 const SYNC_DELAY = 10000;
+const IMAGE_FILE_LIMIT = 700 * 1024;
 
 let account = null;
 let busy = false;
@@ -55,7 +56,8 @@ function snapshotSummary(snapshot) {
   const data = snapshot?.data || {};
   const taskCount = Array.isArray(data.tasks) ? data.tasks.length : 0;
   const noteCount = Object.values(data.notes || {}).reduce((total, notes) => total + Object.keys(notes || {}).length, 0);
-  return `含 ${taskCount} 条任务、${noteCount} 篇笔记`;
+  const imageCount = Object.keys(snapshot?.images || {}).length;
+  return `含 ${taskCount} 条任务、${noteCount} 篇笔记、${imageCount} 张附件图片`;
 }
 
 function snapshotSize(snapshot) {
@@ -111,7 +113,50 @@ async function github(path, options = {}, accessToken = token()) {
 
 async function localSnapshot() {
   if (!window.SpaceDataBridge) throw new Error('Space 数据接口尚未初始化。');
-  return window.SpaceDataBridge.exportSnapshot({ includeImages: false });
+  return window.SpaceDataBridge.exportSnapshot({ includeImages: true });
+}
+
+function imageFilePrefix() {
+  return config().githubGistFileName.replace(/\.json$/, '') + '-images-';
+}
+
+function isImageFile(name) {
+  return name.startsWith(imageFilePrefix()) && name.endsWith('.json');
+}
+
+function imageFileName(index) {
+  return `${imageFilePrefix()}${String(index).padStart(3, '0')}.json`;
+}
+
+function imageFiles(images = {}) {
+  const files = {};
+  let chunk = {};
+  let index = 1;
+  const flush = () => {
+    if (!Object.keys(chunk).length) return;
+    files[imageFileName(index++)] = { content: JSON.stringify({ images: chunk }) };
+    chunk = {};
+  };
+  for (const [key, value] of Object.entries(images).sort(([a], [b]) => a.localeCompare(b))) {
+    const single = JSON.stringify({ images: { [key]: value } });
+    if (new TextEncoder().encode(single).byteLength > IMAGE_FILE_LIMIT) {
+      throw new Error(`附件图片 ${key} 过大，无法写入 GitHub Gist；请重新上传或压缩后再同步。`);
+    }
+    const candidate = { ...chunk, [key]: value };
+    if (Object.keys(chunk).length && new TextEncoder().encode(JSON.stringify({ images: candidate })).byteLength > IMAGE_FILE_LIMIT) flush();
+    chunk[key] = value;
+  }
+  flush();
+  return files;
+}
+
+function readImageFiles(gist) {
+  const images = {};
+  for (const [name, imageFile] of Object.entries(gist.files || {}).filter(([name]) => isImageFile(name)).sort(([a], [b]) => a.localeCompare(b))) {
+    if (imageFile.truncated) throw new Error(`附件图片分片 ${name} 超过 GitHub Gist 的单文件读取上限。`);
+    Object.assign(images, JSON.parse(imageFile.content).images || {});
+  }
+  return images;
 }
 
 function storedGistId() {
@@ -151,18 +196,24 @@ async function readRemote() {
   const file = gist.files?.[config().githubGistFileName];
   if (!file || file.truncated) throw new Error('同步文件超过 GitHub Gist 的单文件读取上限。');
   const payload = JSON.parse(file.content);
+  const images = { ...(payload.images || {}), ...readImageFiles(gist) };
+  payload.images = images;
   return { revision: gist.updated_at, updatedAt: gist.updated_at, payload };
 }
 
 async function uploadRemote(snapshot) {
+  const { images = {}, ...snapshotData } = snapshot;
+  const gist = await findGist();
   const payload = {
     kind: 'kotori-seika-space',
     schemaVersion: 1,
     updatedAt: new Date().toISOString(),
-    ...snapshot
+    ...snapshotData
   };
-  const content = JSON.stringify(payload);
-  const gist = await findGist();
+  const files = {
+    [config().githubGistFileName]: { content: JSON.stringify(payload) },
+    ...imageFiles({ ...(gist ? readImageFiles(gist) : {}), ...images })
+  };
   let response;
   if (!gist) {
     response = await github('/gists', {
@@ -170,13 +221,13 @@ async function uploadRemote(snapshot) {
       body: {
         description: config().githubGistDescription,
         public: false,
-        files: { [config().githubGistFileName]: { content } }
+        files
       }
     });
   } else {
     response = await github(`/gists/${encodeURIComponent(gist.id)}`, {
       method: 'PATCH',
-      body: { files: { [config().githubGistFileName]: { content } } }
+      body: { files }
     });
   }
   const updated = await response.json();

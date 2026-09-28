@@ -12,7 +12,7 @@ GitHub Pages 上的学习空间，包含学习主页、算法计划、Code Analy
 
 在线地址：<https://kotori-cjk.github.io/space/>
 
-学习数据会先保存在当前域名的浏览器 `localStorage`/IndexedDB；设置面板支持 JSON 导入导出，并可通过 GitHub secret Gist 同步主 Space 的笔记、任务、链接、音乐和背景设置。
+学习数据会先保存在当前域名的浏览器 `localStorage`/IndexedDB；设置面板支持 JSON 导入导出，并可通过 GitHub secret Gist 同步主 Space 的笔记、任务、任务/笔记贴图、链接、音乐和背景设置。贴图会被分片写入同一个 Gist，背景原图仍仅保存在本地，避免单个同步文件过大。
 
 ## GitHub Gist 同步开发配置
 
