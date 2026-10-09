@@ -449,19 +449,37 @@ function setupImageLightbox() {
   lightbox.id = 'image-lightbox';
   lightbox.className = 'image-lightbox';
   lightbox.hidden = true;
-  lightbox.innerHTML = '<button type="button" class="image-lightbox-close" aria-label="关闭原图预览">✕</button><img alt="贴图原图">';
+  lightbox.innerHTML = '<div class="image-lightbox-toolbar"><button type="button" data-image-zoom="out" aria-label="缩小图片">－</button><button type="button" data-image-zoom="reset" aria-label="适应窗口">适应</button><button type="button" data-image-zoom="in" aria-label="放大图片">＋</button><button type="button" class="image-lightbox-close" aria-label="关闭原图预览">✕</button></div><div class="image-lightbox-stage"><img alt="贴图原图"></div>';
   document.body.append(lightbox);
-  const close = () => { lightbox.hidden = true; lightbox.querySelector('img').removeAttribute('src'); };
+  const image = lightbox.querySelector('img');
+  let scale = 1;
+  const fit = () => Math.min(1, (innerWidth - 96) / image.naturalWidth, (innerHeight - 120) / image.naturalHeight);
+  const renderZoom = () => { image.style.width = `${Math.round(image.naturalWidth * scale)}px`; };
+  const reset = () => { scale = fit(); renderZoom(); };
+  const close = () => { lightbox.hidden = true; image.removeAttribute('src'); image.removeAttribute('style'); };
   document.addEventListener('click', e => {
-    const image = e.target.closest?.('.sticker-preview img, .sticker-strip img');
-    if (image) {
-      lightbox.querySelector('img').src = image.currentSrc || image.src;
-      lightbox.querySelector('img').alt = image.alt || '贴图原图';
+    const source = e.target.closest?.('.sticker-preview img, .sticker-strip img');
+    if (source) {
+      image.src = source.currentSrc || source.src;
+      image.alt = source.alt || '贴图原图';
       lightbox.hidden = false;
+      return;
+    }
+    const zoom = e.target.closest?.('[data-image-zoom]')?.dataset.imageZoom;
+    if (zoom && image.complete) {
+      scale = zoom === 'in' ? Math.min(scale * 1.25, 4) : zoom === 'out' ? Math.max(scale / 1.25, fit()) : fit();
+      renderZoom();
       return;
     }
     if (e.target === lightbox || e.target.closest?.('.image-lightbox-close')) close();
   });
+  image.addEventListener('load', reset);
+  lightbox.addEventListener('wheel', e => {
+    if (lightbox.hidden || !image.complete) return;
+    e.preventDefault();
+    scale = e.deltaY < 0 ? Math.min(scale * 1.15, 4) : Math.max(scale / 1.15, fit());
+    renderZoom();
+  }, { passive:false });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !lightbox.hidden) close(); });
 }
 
