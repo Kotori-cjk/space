@@ -51,7 +51,10 @@
         toc.className = 'seika-article-toc';
         toc.setAttribute('aria-label', '文章目录');
         toc.innerHTML = `<strong>文章目录</strong><div>${headings.map(heading => `<a class="toc-level-${heading.tagName.slice(1)}" href="#${encodeURIComponent(heading.id)}">${heading.textContent.trim() || '未命名章节'}</a>`).join('')}</div>`;
-        banner.after(toc);
+        const layout = document.createElement('div');
+        layout.className = 'seika-article-layout';
+        article.before(layout);
+        layout.append(toc, article);
       }
     }
     const bg = document.getElementById('bg-layer');
