@@ -701,10 +701,24 @@ function renderTaskView() {
 
   if (!dates.length) {
     html += `<div class="task-empty"><div class="big-icon">✅</div><p>还没有任务~</p></div>`;
+  } else {
+    html += `<div class="catalog-card task-catalog-card">
+      <div class="catalog-header" id="task-catalog-toggle">
+        <h4>📅 任务日期索引 (${state.tasks.length})</h4>
+        <span class="catalog-caret">▼</span>
+      </div>
+      <div class="catalog-body" id="task-catalog-body">`;
+    dates.forEach(date => {
+      const tasks = byDate[date];
+      const pending = tasks.filter(task => !task.done).length;
+      const label = date === todayStr ? `今天 (${date})` : date;
+      html += `<button type="button" class="catalog-entry task-catalog-entry" data-task-date-scroll="${date}">→ ${label}<span>${pending ? `${pending} 未完成` : '已完成'}</span></button>`;
+    });
+    html += `</div></div>`;
   }
   dates.forEach(date => {
     const label = date===todayStr ? `📅 今天 (${date})` : `📅 ${date}`;
-    html += `<div class="task-date-group"><div class="task-date-label">${label}</div>`;
+    html += `<div class="task-date-group" id="task-date-anchor-${date}"><div class="task-date-label">${label}</div>`;
     byDate[date].forEach(t => {
       const tagCls = taskTagClass(t.subject);
       const tagName = SUBJECTS[t.subject]?.name || '通用';
@@ -1118,6 +1132,25 @@ function setupEvents() {
     if (stickerRemove) {
       const editor = stickerRemove.closest('.sticker-editor');
       updateStickerPicker(editor, stickerKeys(editor).filter(key => key !== stickerRemove.dataset.stickerRemove));
+      return;
+    }
+    const dateIndex = e.target.closest('[data-task-date-scroll]');
+    if (dateIndex) {
+      const target = document.getElementById(`task-date-anchor-${dateIndex.dataset.taskDateScroll}`);
+      if (target) {
+        target.scrollIntoView({ behavior:'smooth', block:'start' });
+        target.classList.remove('task-date-highlight');
+        void target.offsetWidth;
+        target.classList.add('task-date-highlight');
+        setTimeout(() => target.classList.remove('task-date-highlight'), 1700);
+      }
+      return;
+    }
+    if (e.target.closest('#task-catalog-toggle')) {
+      const body = document.getElementById('task-catalog-body');
+      const caret = document.querySelector('#task-catalog-toggle .catalog-caret');
+      const collapsed = body.classList.toggle('collapsed');
+      if (caret) caret.textContent = collapsed ? '▶' : '▼';
       return;
     }
     if (e.target.id === 'task-add-btn') {

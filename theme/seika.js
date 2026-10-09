@@ -35,6 +35,25 @@
     banner.innerHTML = '<div class="seika-banner-copy"><small>KOTORI’S LEARNING SPACE</small><p>风经过的地方，<br>知识也在慢慢生长。</p><span>日々、少しずつ。</span></div>';
     toolbar.after(banner);
     if (area !== 'space') banner.classList.add('compact');
+    if (pathname.includes('/algorithm/notes/')) {
+      const article = document.querySelector('.markdown-preview');
+      const headings = article ? [...article.querySelectorAll('h1, h2, h3')] : [];
+      if (headings.length) {
+        const usedIds = new Set();
+        headings.forEach((heading, index) => {
+          const base = heading.id || `section-${index + 1}`;
+          let id = base, suffix = 2;
+          while (usedIds.has(id)) id = `${base}-${suffix++}`;
+          usedIds.add(id);
+          heading.id = id;
+        });
+        const toc = document.createElement('nav');
+        toc.className = 'seika-article-toc';
+        toc.setAttribute('aria-label', '文章目录');
+        toc.innerHTML = `<strong>文章目录</strong><div>${headings.map(heading => `<a class="toc-level-${heading.tagName.slice(1)}" href="#${encodeURIComponent(heading.id)}">${heading.textContent.trim() || '未命名章节'}</a>`).join('')}</div>`;
+        banner.after(toc);
+      }
+    }
     const bg = document.getElementById('bg-layer');
     if (bg) {
       const sync = () => { if (bg.style.backgroundImage && bg.style.backgroundImage !== 'none') banner.style.backgroundImage = `linear-gradient(90deg,#e3f4eef2,#e3f4ee8a 48%,transparent),${bg.style.backgroundImage}`; else banner.style.removeProperty('background-image'); };
