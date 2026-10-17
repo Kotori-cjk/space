@@ -7,7 +7,7 @@
   window.SpaceGate = Object.freeze({
     logout() {
       localStorage.removeItem(accessKey);
-      location.replace(new URL('login.html?logout=1', rootUrl).href);
+      location.replace(new URL('../', rootUrl).href);
     }
   });
 
