@@ -11,6 +11,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Yusei+Magic&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <style>
+    .dsa-entry-link{display:inline-flex;align-items:center;justify-content:center;margin-top:18px;padding:9px 14px;border-radius:9px;background:var(--sage);color:#fff;font-size:13px;font-weight:700;text-decoration:none;box-shadow:5px 5px 0 rgba(82,125,112,.12);transition:transform .2s,background .2s}
+    .dsa-entry-link:hover{background:#41695d;transform:translateY(-2px)}
+  </style>
 <link rel="stylesheet" href="../theme/seika.css">
 <script src="../theme/seika.js" defer></script>
 </head>
@@ -26,10 +30,10 @@
       <div class="hero-copy">
         <p class="eyebrow">NOTES FROM THE MACHINE ROOM</p>
         <h1>在系统与算法之间，<span>慢慢搭起自己的知识架。</span></h1>
-        <p class="hero-lead">这里先收录 ICS 和数算。每一章以一篇小型博客为入口：留下本章的核心概念、练习与复盘；新的课程之后也可以按相同结构加入。</p>
-        <nav class="hero-actions" aria-label="课程分区"><a class="primary-link" href="#ics">浏览 ICS</a><a class="secondary-link" href="#dsa">查看数算</a></nav>
+        <p class="hero-lead">这里收录 ICS 和数算。ICS 按章节沉淀笔记、练习与复盘；数算则以完整的逐课学习目录展开。</p>
+        <nav class="hero-actions" aria-label="课程分区"><a class="primary-link" href="#ics">浏览 ICS</a><a class="secondary-link" href="dsa/">进入数算</a></nav>
       </div>
-      <aside class="hero-note" aria-label="学习索引摘要"><span class="tape" aria-hidden="true"></span><p>LEARNING INDEX</p><strong>ICS · 12 chapters</strong><small>数算 · 即将整理</small><i>✦</i></aside>
+      <aside class="hero-note" aria-label="学习索引摘要"><span class="tape" aria-hidden="true"></span><p>LEARNING INDEX</p><strong>ICS · 12 chapters</strong><small>数算 · 12 lessons</small><i>✦</i></aside>
     </section>
 
     <section id="ics" class="course-section" aria-labelledby="ics-title">
@@ -51,8 +55,8 @@
     </section>
 
     <section id="dsa" class="course-section dsa-section" aria-labelledby="dsa-title">
-      <div class="section-heading"><span>02</span><div><small>DATA STRUCTURES AND ALGORITHMS</small><h2 id="dsa-title">数算</h2></div><p>作为第二条课程线预留。后续章节会沿用同一篇章式博客索引。</p></div>
-      <article class="coming-card"><div><p>NEW COURSE TRACK</p><h3>数算学习档案</h3><span>目录将在课程内容确定后逐章展开。</span></div><i>⌛</i></article>
+      <div class="section-heading"><span>02</span><div><small>DATA STRUCTURES AND ALGORITHMS</small><h2 id="dsa-title">数算</h2></div><p>从零开始的数算：按课串起知识点、C++ 板子、题型与正式练习。</p></div>
+      <article class="coming-card"><div><p>COMPLETE COURSE TRACK</p><h3>从零开始的数算</h3><span>12 课逐课复习，含知识点、板子、题型、练习状态与大纲覆盖检查。</span><a class="dsa-entry-link" href="dsa/">进入数算课程 →</a></div><i aria-hidden="true">📚</i></article>
     </section>
   </main>
 
