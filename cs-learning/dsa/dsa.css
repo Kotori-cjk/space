@@ -24,3 +24,6 @@
 .dsa-quick-reference summary{cursor:pointer;font-weight:600}
 .dsa-quick-reference h4{font-size:1rem;margin-bottom:8px}
 @media(max-width:700px){.dsa-reading{font-size:16px}.dsa-walkthrough,.dsa-reading-compare{padding:14px}.dsa-figures figure{padding:8px}.dsa-reading-unit{padding:20px 0 28px}}
+
+/* Use the same code face for inline snippets and complete templates. */
+.dsa-page pre,.dsa-page code,.dsa-page kbd,.dsa-page samp,.dsa-page pre *{font-family:Consolas,"Courier New",monospace}
