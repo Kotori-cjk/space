@@ -1,0 +1,1019 @@
+[
+  {
+    "file": "assets/01-farmer-state-graph.png",
+    "caption": "农夫过河的状态图与邻接矩阵",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A6%82%E8%AE%BA/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/01-farmer-state-graph.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "b6d5f33f1d59a616403bb4fb9bdb5f9dc2f10787cc72ee4aa4eeeb162eb1d9ee",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/01-growth-rates.png",
+    "caption": "常见函数随输入规模增长时的数量级差异",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A6%82%E8%AE%BA/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/01-growth-rates.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "24a12d3e35099061cdd2c54f863ccc586697a859f94b3294153d792537ba8a26",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/01-logical-organization.png",
+    "caption": "线性结构、树结构与图结构的逻辑关系对照",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A6%82%E8%AE%BA/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/01-logical-organization.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "0cf65cb6b1aedcc1606a493b119ec24b07a63df713d2c45057e5beae47b85641",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/01-nqueens-state-tree.png",
+    "caption": "四皇后问题按照放置顺序展开的状态空间树",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A6%82%E8%AE%BA/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/01-nqueens-state-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "cad7caf41a1cd3b5badf6b20eb307f6ed8da5bdad1b4ca69170bdef9af1caae5",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/02-array-delete.png",
+    "caption": "顺序表删除元素时从前向后填补空位",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%BA%BF%E6%80%A7%E8%A1%A8/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/02-array-delete.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "dbaa4acfaabdaa0bbec48700530720354ef69ed5a1ef1f1cecfdadad907edf33",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/02-array-insert.png",
+    "caption": "顺序表插入元素时从尾端向后搬移后缀",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%BA%BF%E6%80%A7%E8%A1%A8/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/02-array-insert.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "ce12b4d82a2236c70e660f29adda4ed404f19d9dc0b58fb3e0eafd6632ccb784",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/02-doubly-linked-delete.png",
+    "caption": "双向链表删除结点时同时接回前驱与后继",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%BA%BF%E6%80%A7%E8%A1%A8/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/02-doubly-linked-delete.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "f505c5f189a407d11969e652763ce523aacd806fe26afc4ac50d35e20a8e5790",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/02-doubly-linked-insert.png",
+    "caption": "双向链表插入结点时的四次指针修改",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%BA%BF%E6%80%A7%E8%A1%A8/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/02-doubly-linked-insert.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "426841f1625a381960bedba720ed54ed6dc9e48b120a13d5c16a60ca51826c88",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/02-singly-linked-delete.png",
+    "caption": "单链表删除结点时让前驱越过待删结点",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%BA%BF%E6%80%A7%E8%A1%A8/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/02-singly-linked-delete.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "3a2cc474871c6882c728fcd4ca1c037b33ecc622e8badf50a748e7e873e59a81",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/02-singly-linked-insert.png",
+    "caption": "单链表在已知前驱后插入结点的链接变化",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%BA%BF%E6%80%A7%E8%A1%A8/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/02-singly-linked-insert.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "dc2d783857a77665d234f3b73a6397fc8912db6166a403f31bbe165d3d5ec1e9",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/03-circular-queue-transitions.png",
+    "caption": "循环队列中 front 与 rear 随入队出队发生的回绕",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%88%E4%B8%8E%E9%98%9F%E5%88%97/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/03-circular-queue-transitions.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "c1ca050fdbf145da31f168a45e57930ee0e57b497bb3bf56003260d75026eff5",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/03-expression-tree.png",
+    "caption": "中缀表达式按照运算优先级形成的表达式树",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%88%E4%B8%8E%E9%98%9F%E5%88%97/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/03-expression-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "a8eee460a0c5c49287e2d80378d128e7a29b67a5aafabe89eb298544f0feb277",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/03-hanoi-stack.png",
+    "caption": "汉诺塔递归调用在运行栈中的展开与返回",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%88%E4%B8%8E%E9%98%9F%E5%88%97/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/03-hanoi-stack.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "e0a4c34a298954cc19fe60446f7579e8128e24fe2b9eb50fef598c5119139d55",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/03-infix-to-postfix.png",
+    "caption": "中缀表达式转换为后缀表达式时的扫描规则",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%88%E4%B8%8E%E9%98%9F%E5%88%97/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/03-infix-to-postfix.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "47357fcbe8de344d2bf70701b3d9e2f14ae91d1e03a68858aa18e84fa74f8731",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/03-linked-queue.png",
+    "caption": "链式队列用队头和队尾指针维护首尾操作",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%88%E4%B8%8E%E9%98%9F%E5%88%97/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/03-linked-queue.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "fea4254381f4b571cf92bd65f226d3ab65c23bf94e387c945c31a83866b64d44",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/04-kmp-match-trace.png",
+    "caption": "普通 KMP 在失配后保留可复用前后缀并移动模式串",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%AD%97%E7%AC%A6%E4%B8%B2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/04-kmp-match-trace.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "89ebaa8c10a4006c217d1ec60d54597f07ca8f88b9abd3f2eae9f842ef526984",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/04-naive-matching.png",
+    "caption": "朴素模式匹配在每次失配后把模式串向后移动一位",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%AD%97%E7%AC%A6%E4%B8%B2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/04-naive-matching.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "947c176e4a0736ef50253f4ac338a4e917ba836156cb8f4a160f7d75f0eba795",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/04-next-array.png",
+    "caption": "以 -1 为初值计算模式串的普通 next 数组",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%AD%97%E7%AC%A6%E4%B8%B2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/04-next-array.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "5b49bcf85ba1e61b0427c943e22df1a51027c190af4fa70dc6e6d075e7d6dfb6",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/04-next-nextval-comparison.png",
+    "caption": "同一模式串的普通 next 与优化 nextval 对照",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%AD%97%E7%AC%A6%E4%B8%B2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/04-next-nextval-comparison.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "0baec4219ddc398694b129c87156850246e1950afc9becc5a7b1f5ba3226dd6a",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/05-bst-delete-leaf.png",
+    "caption": "二叉搜索树直接删除叶结点",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E4%BA%8C%E5%8F%89%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/05-bst-delete-leaf.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "f3a818139bc88f3ca36f18e68e68ed757a8109a0a9a65d169dff2d9da6d2e7ee",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/05-bst-delete-one-child.png",
+    "caption": "二叉搜索树删除单孩子结点并由孩子顶替",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E4%BA%8C%E5%8F%89%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/05-bst-delete-one-child.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "a7eebbe9727c9fd4c9f046d8fb4e3fe8451242d36e3229887ed20f18bc845a65",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/05-bst-delete-two-children.png",
+    "caption": "二叉搜索树删除双孩子结点时寻找替代结点",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E4%BA%8C%E5%8F%89%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/05-bst-delete-two-children.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "61c1e004fd2c8231e1398bfd3d0eadcb1947c142f926266dde3e9097d9b4b6da",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/05-complete-tree-array.png",
+    "caption": "完全二叉树的层序编号与数组下标关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E4%BA%8C%E5%8F%89%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/05-complete-tree-array.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "24ed530fc68fbbc0dcd6f63a56b9f06bb353236ec01108b41ae402aa9cda7279",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/05-heap-insert.png",
+    "caption": "最小堆插入新元素后沿父链向上调整",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E4%BA%8C%E5%8F%89%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/05-heap-insert.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "c6873103b6d84e6dfa22e8625159d0dcac719b8062124d12cc754158fddf12ca",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/05-heap-siftdown.png",
+    "caption": "最小堆的根被替换后沿较小孩子向下调整",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E4%BA%8C%E5%8F%89%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/05-heap-siftdown.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "ccf79a173f985bd73091d9ca7403298bc2ce4d2216ef31884b6d473681f19702",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/05-huffman-build.png",
+    "caption": "Huffman 树的逐步合并过程",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E4%BA%8C%E5%8F%89%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/05-huffman-build.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "adc0139dc1e0309a4b04c881b03d44f0f9300211b34575398d1b22be5245d01b",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/05-traversal-orders.png",
+    "caption": "同一棵二叉树的前序、中序与后序遍历序列",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E4%BA%8C%E5%8F%89%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/05-traversal-orders.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "68a43bd4da944c263dafdaa28e3ba8cdc129d355ea7061e7dd02bf3e3bbd50d2",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/06-child-list.png",
+    "caption": "子结点表通过数组项与孩子链表保存树形关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/06-child-list.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "bce5fa51ed637829329163e4891254bea6a99baea3c5412cc4350e6277a578ce",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/06-forest-binary-tree.png",
+    "caption": "森林与左孩子右兄弟二叉树的对应关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/06-forest-binary-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "5483dfe4f299500d8656399e1b470ae5d5dcb46b6b94022f5ad1f5f230914844",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/06-forest-traversal.png",
+    "caption": "森林的先根遍历与转换后二叉树前序遍历的对应关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/06-forest-traversal.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "af338a93fcea9d64898e27e9d83c8e276dcd4f4b8e4447bcd47246d3fe31144b",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/06-parenthesized-tree.png",
+    "caption": "树形结构与嵌套括号表示之间的对应关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/06-parenthesized-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "bc329f34d65da3a2f898354ac672bf63f0edd1800bde757d0fbc78386bd57aeb",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/06-union-find-merge.png",
+    "caption": "并查集使用父指针树合并两个等价类",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/06-union-find-merge.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "c7fa24fdf812b4f0f5d88b525cd820f1c21a8920c803391c8498909ac9eab6b4",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/06-union-find-path-compression.png",
+    "caption": "并查集执行查找后把路径上的结点直接接到根",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%91/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/06-union-find-path-compression.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "8193a68955a572f953d646af76285d4ad3f208681910e5def94d3aa00339de3d",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/07-adjacency-list.png",
+    "caption": "无向图的每条边在两个端点邻接表中分别出现",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/07-adjacency-list.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "9a204c24c6f965048dc136279fcd0cc285ee74dfe0e648a68e13d7c8a99e86ba",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/07-adjacency-matrix.png",
+    "caption": "有向图与其邻接矩阵中的行列关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/07-adjacency-matrix.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "ab63ac7e24328ccfca760b53f093cb51abc4697cc62d49a9033bed1f6cca76d1",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/07-critical-path.png",
+    "caption": "AOE 网中事件时间与关键活动的对应关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/07-critical-path.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "3364b8e321591450ed695cb52b311435e80b60703422a16eccc8e53f907dcf90",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/07-dfs-bfs-traversal.png",
+    "caption": "同一张图采用深度优先与广度优先得到的不同访问次序",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/07-dfs-bfs-traversal.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "b8088c5d825fb18118f4d702e1688e6f68eacea9ffa41404845f3d59d7224f59",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/07-dijkstra-iterations.png",
+    "caption": "Dijkstra 算法的距离与前驱迭代过程",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/07-dijkstra-iterations.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "8a02bdb52d4bf06c56dfcdb5d7de34bfe54b70ec7be1af18639ed1aac0758dd0",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/07-floyd-iteration.png",
+    "caption": "Floyd 算法加入一个中间点后更新距离矩阵与路径矩阵",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/07-floyd-iteration.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "8c32095bada882dc7d1cacaed3b4c35b717ae619a7a17a8088e05c29551fa97f",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/07-kruskal-demo.png",
+    "caption": "Kruskal 按边权逐步合并等价类",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/07-kruskal-demo.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "88572a9e5b839c9c5d73f7862c1578d58a5a1147d3b92588edf1ad5b61b308b7",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/07-prim-cut.png",
+    "caption": "Prim 算法选择跨越当前割的最轻边",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/07-prim-cut.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "2d605dc5fe5fcb850343fa76a73c7826e8f3ce687fb5444440057b3a1cb6f2a0",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/07-topological-sort.png",
+    "caption": "课程依赖图按照入度变化逐步得到拓扑序",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/07-topological-sort.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "e1758cbc193a4f505ed573760e1c4c4b07a3a0487e44f41023d9c12ee7994417",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-comparison-lower-bound.png",
+    "caption": "三个元素的比较排序决策树必须区分全部排列",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-comparison-lower-bound.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "a6b29fac0acdad0d9f0f9dd7f6195f41b53c396fb73d97134e6171dec15029c8",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-counting-sort.png",
+    "caption": "计数排序由频数计算起始位置并稳定收集记录",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-counting-sort.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "97dcef5f8361f4cdb62a1909fe183b6f1ac0ac00ad810e02d04e5e1174626616",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-heap-sort-process.png",
+    "caption": "最大元素换到末尾后，对剩余堆重新向下筛选",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-heap-sort-process.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "e021c54f06ad4b9bffb9763d8c62a8fdc370c5611f5825ea445f66d8f304548d",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-index-reorder.png",
+    "caption": "由下标排列沿置换环把记录搬到最终位置",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-index-reorder.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "9d69d4cc998b346a3b41d7f756176f4196eab1dc741efb2904f69e9a0da4df20",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-insertion-sort.png",
+    "caption": "直接插入排序把当前记录插入已经有序的前缀",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-insertion-sort.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "2af6e502bd4a11a2f19917827a43a3d4e5a5404ba0cb9bf59fd28579bd6332d3",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-merge-sort-process.png",
+    "caption": "归并排序从单元素段逐层合并为完整有序序列",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-merge-sort-process.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "75807060b7102348d9ed74f2be8a222e0f7fc5b43434fa7d753adf8164813b18",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-quicksort-partition.png",
+    "caption": "快速排序围绕枢轴递归划分区间",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-quicksort-partition.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "3a89a91073ff4d15e47fc7951efb582d3b3bac47a437537ea8cf1f9d9b8decf2",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-radix-pass.png",
+    "caption": "一轮基数分配中计数、起始位置与稳定收集的对应关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-radix-pass.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "f48a0060381627c2570a4b67128bb0adc305c2516b968c3ebaa134b327f0d4c6",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-selection-sort.png",
+    "caption": "直接选择排序每轮从未排序区间选择最小记录",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-selection-sort.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "fc9fe04cc363059700fbafebc893fefde67bf8081257062e8a238ace50afc45f",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/08-shell-sort.png",
+    "caption": "Shell 排序按增量划分子序列并分别执行插入排序",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/08-shell-sort.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "e531633fe0d1ca38769eb7896063767845c38d35315b8a99fa8c7d237cf381a3",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/09-loser-tree.png",
+    "caption": "败者树的叶结点与内部结点布局",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%A4%96%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/09-loser-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "7edc44350453f6516936cfd983cb61e19699e0837b73e0d303113d78b113043a",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/09-optimal-merge-tree.png",
+    "caption": "不同归并次序形成的带权路径长度对比",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%A4%96%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/09-optimal-merge-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "65794f590d2a50671784e210a11b687c4309df66d4723062c5795dcb13e5f56c",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/09-replacement-selection.png",
+    "caption": "置换选择在输入、内存候选堆与初始顺串之间持续替换记录",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%A4%96%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/09-replacement-selection.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "30852002347eb455a982c517153033fca6404f53eaca458ceb9f71d8d7cb7d92",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/09-run-merge-levels.png",
+    "caption": "初始顺串逐轮归并为完整有序文件",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%A4%96%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/09-run-merge-levels.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "cd93cbc04d5082c592e0fcd67ea31529d119943ffcb99840cf33534760cfe174",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/09-winner-tree.png",
+    "caption": "一路记录变化后，赢者树只沿对应路径重新比较",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%A4%96%E6%8E%92%E5%BA%8F/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/09-winner-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "2ca6e89c7c88e1650654b60ab1a6e2edd9f0e6ade63140327b405209b04ed9d6",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-binary-search-decision-tree.png",
+    "caption": "二分检索判定树中，结点层数对应成功比较次数",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-binary-search-decision-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "00e08b91895baa7b5dfa71f5e3903fa5313bbf8922087e1cebc32c6255f794c5",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-binary-search-trace.png",
+    "caption": "二分检索逐轮收缩左右边界并定位关键码",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-binary-search-trace.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "4aebf1d0a181f3cc6e4298169ac648a27ae97d8e38329ae506521336060150c1",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-bit-vector-primes.png",
+    "caption": "位向量用不同位标记区间内的奇数与素数集合",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-bit-vector-primes.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "9da8bff42898c2abe4b95376dc1449fd65d94c00e806d73f55b238f1f8f17fdf",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-block-search-index.png",
+    "caption": "索引项记录各数据块的起始位置、最大键和元素数",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-block-search-index.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "12c2c5187eaf262f38485e6142357f782532ffe6a7074b4e3fd365ee508d2e3c",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-bloom-filter.png",
+    "caption": "Bloom Filter 中插入元素与排除查询的位映射",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-bloom-filter.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "62266ec61246db854d6b2a91e2960c80bf6531e099192e554c16897a587f81a3",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-digit-analysis.png",
+    "caption": "数字分析法比较关键码各数位的取值分布",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-digit-analysis.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "57c92eacf967dcfa43986055e9e35c1253d58b032cb78368efd2810b05f8a38d",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-double-hashing.png",
+    "caption": "双重散列使用第二个散列函数产生与表长互素的探查步长",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-double-hashing.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "f808c2a415ffb5031325b66ff97e90ba601c59f3f873663cc7679e2cc966d007",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-folding.png",
+    "caption": "折叠法通过移位叠加或分界叠加合并关键码分段",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-folding.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "b027a43a5d215f6c6dd58bf1ea4672d64c2ad7da047bb6bcc926443d3864de44",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-hash-probe-cost.png",
+    "caption": "不同冲突处理方法的平均探查次数随负载因子上升",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-hash-probe-cost.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "c3b1359aa47ff3b2bb5b52cd01186fb797df4ad15e2e4ced93bf8f8afd93db25",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-linear-probing.png",
+    "caption": "线性探查发生冲突后沿连续槽位寻找空位",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-linear-probing.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "85089e310161e39008d88b5cde64ba3bd776b8d57b6596525e726fcf222daf4e",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-modulo-table-size.png",
+    "caption": "表长与关键码周期存在公因子时，除余法只会使用少数槽位",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-modulo-table-size.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "e83b3f6cad556077bb233ad2ed099ff1e3bb53b847f0b1098b17ed7538c57554",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-open-hashing.png",
+    "caption": "冲突键挂接到同一散列地址的桶链中",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-open-hashing.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "be05a179d696d5d446d1a1b0102c4a2e0648460d334284050ad142a7f42cb57f",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/10-tombstone-deletion.png",
+    "caption": "墓碑在开放寻址表中区分从未使用与已经删除的槽位",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/10-tombstone-deletion.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "3e4e0feb1a2523779b3364ef077075a481e2be1a0994e7e084289cd044a1c41d",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-bitmap-index.png",
+    "caption": "数据库低基数属性按取值拆成多条位向量",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-bitmap-index.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "cc7c6354ad888b4ae40e6b58be3eea5907576d4f7372a5e1c7dd305e39552507",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-bplus-deletion-rebalanced.png",
+    "caption": "混合型 B 树删除 33 并完成内部结点借位后的结构",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-bplus-deletion-rebalanced.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "4962103df19378175ae5d39e1ce03155fbecf12eb9af9a2d255ebad00ed4d877",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-bplus-deletion-underflow.png",
+    "caption": "混合型 B 树删除 33 时的叶层合并位置",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-bplus-deletion-underflow.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "1e9e16c2badbd5644c2d5ed11cc19172fa5305e2eb55bb4696c6fc24cd1680e2",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-bplus-insertion.png",
+    "caption": "B+ 树插入记录后在叶层分裂并更新父结点分隔键",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-bplus-insertion.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "b8767f151dfc678eec09a1c861ceb727ef3cdfbf8444cad18e92cbbd1a9f9092",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-btree-delete-merge.png",
+    "caption": "B 树删除发生下溢时，兄弟结点与父分隔键合并",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-btree-delete-merge.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "1d318f06677cd24013edf62e24c5c2975ad435b1e2cfff796df7b0e31678a606",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-btree-leaf-split.png",
+    "caption": "三阶 B 树叶结点溢出后向父结点提升分隔键",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-btree-leaf-split.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "b45156b633e3d2d75d031b4d486172cf67299bf9bd996d7f4414fbac30970da3",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-btree-node-layout.png",
+    "caption": "B 树结点中的关键码划分孩子指针所覆盖的键值区间",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-btree-node-layout.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "801cffe5fb4e541a91eded597d26536509aa16654d7837b99be2ff8be2570269",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-btree-root-split.png",
+    "caption": "B 树根结点溢出后分裂并产生新的根",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-btree-root-split.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "0a75cb8c66ce1f36026c470510b1a5dbdefb0f590baf865d0bd1619dff1bc82f",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-inverted-index.png",
+    "caption": "正文中的词项被整理为文档编号与位置组成的倒排表",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-inverted-index.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "847a1d9bf7503b5b59dac84b69f5b3018dd35c6132061d7965ef5a30ca8b3b0a",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-isam-layout.png",
+    "caption": "ISAM 由主索引、柱面索引和磁道索引逐级定位记录",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-isam-layout.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "c536d46b9e81d544f16e5ba947b27d97f95da9d0f8f819b4a31c6d192e1017a1",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-linear-index-file.png",
+    "caption": "线性索引项通过关键码指针定位主文件中的记录",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-linear-index-file.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "9cf7f7f817a48ac17ba376c3bc8e43cfac1381211d051cc0731baed01dd7dc99",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-red-black-delete-cases.png",
+    "caption": "红黑树删除根据双黑结点兄弟及其孩子颜色分类处理",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-red-black-delete-cases.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "15d33c98f376695083eb9a953a6cc43cbcfe17fef3e7521ac518eb0cc0fb4905",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-red-black-insert-cases.png",
+    "caption": "红黑树插入遇到黑叔父时的四种对称结构调整",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-red-black-insert-cases.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "9435ae6276b86fd6fd23157ea936a11847587c11c6420c97d4cad5ac9b7fc9f9",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-red-black-tree.png",
+    "caption": "红黑树用结点颜色和黑色空叶约束路径长度",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-red-black-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "a760b1a641e2a64d9a53cfc9f203fa1a977352d912ace52602027822c29b1fcc",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/11-secondary-linear-index.png",
+    "caption": "二级线性索引先定位一级索引块，再进入对应磁盘块",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/11-secondary-linear-index.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "1700a9dcdef6b77411e5d7c061aa5c66533fccb2940687b4ea4e5681bc4443c8",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-array-cache-locality.png",
+    "caption": "行优先与列优先遍历通过缓存局部性影响数组访问性能",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-array-cache-locality.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "fa18b110e9960295c3132ddeddcd9940dce539be879a0a9c0523c6a5a76ec61a",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-avl-balance-factor.png",
+    "caption": "AVL 树以左右子树高度差定义每个结点的平衡因子",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-avl-balance-factor.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "e46a162c0771e2075311eefa739fc80b39de8ef6f76efa4b07f5e20977bc2b6f",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-avl-delete-finish.png",
+    "caption": "AVL 删除后的高度下降继续向上传播，经过多次旋转恢复平衡",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-avl-delete-finish.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "ab62ddcd71299fe75dd692a73d6b7ff8878f2d9f0f7ec87bd5ad27bba1f82efc",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-avl-delete-start.png",
+    "caption": "AVL 删除先按 BST 规则替换目标，再从实际删除位置向上检查",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-avl-delete-start.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "ad4785d22922f66dd553a6131de5d5193d74c82a2da8264605cd99d4a765696e",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-avl-double-rotation.png",
+    "caption": "AVL 树 LR 与 RL 双旋的结构关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-avl-double-rotation.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "6a36396d3710823dffa6dcdc823982061602d7bfdf1cde0eb803d6d6b2e893e0",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-avl-single-rotation.png",
+    "caption": "AVL 树通过一次左旋或右旋修复 LL 与 RR 型失衡",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-avl-single-rotation.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "86fb68519e42cb29f33d8c3246eb87afb4b2c4d137caade405a144f519b3e163",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-binary-trie.png",
+    "caption": "整数按二进制位逐层插入并压缩形成二进制 Trie",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-binary-trie.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "bf2894d2a24a6dd011ac117d644950abe25595d7cb041779feb1867cfaf76b1a",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-boundary-tags.png",
+    "caption": "空闲块与已分配块的边界标记布局",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-boundary-tags.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "a5a8cbfc7580ba9d887f71d04163d4d8c7d28955e9a105bf1404fe8548fe7582",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-first-fit-allocation.png",
+    "caption": "首次适配从空闲块序列中选择第一个能够满足请求的块",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-first-fit-allocation.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "1c8ce6f48f606213bb4fc98c43b04cddbfc7d08709e6676f826fae74f62b1e9f",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-free-block-coalescing.png",
+    "caption": "释放中间块时与相邻空闲块合并为更大的连续区域",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-free-block-coalescing.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "7a361b52b16edc2e54a1883c2ec90aff0273a5ad316002e1e47e6e02f99b6c39",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-free-list.png",
+    "caption": "定长块由可利用空间表串联并在分配时从表中取出",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-free-list.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "93a607baaed1219863f95b6436eea05eca9ff7207fa38f32581539949862dab1",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-generalized-list-kinds.png",
+    "caption": "纯表、可重入表与循环表对应的结点结构",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-generalized-list-kinds.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "69a2e721109481a099d62f0f0d298c45c6371f5d3a534a760b9e5b67746c679a",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-generalized-list-storage.png",
+    "caption": "带虚拟表头的广义表通过引用连接原子和子表",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-generalized-list-storage.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "0aa33a2e423dad825dd812c6e2d00a29a4b987e26800ccd370edbfc26f63f40c",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-lower-triangular-layout.png",
+    "caption": "下三角矩阵按行压缩到一维数组中的位置关系",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-lower-triangular-layout.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "3a65bdcbf46bdb3928547250bd4d478c503ae5142ce713c3046ba1c284fb829f",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-memory-compaction.png",
+    "caption": "存储整理把分散的存活对象压缩到连续区域并集中空闲空间",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-memory-compaction.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "985c76553e695befb11d973a601faefcfb55dcc88e250368e2e5b10f7772cdf0",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-sparse-cross-list.png",
+    "caption": "稀疏矩阵中非零结点同时接入行链与列链",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-sparse-cross-list.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "76a3ba2153e66dfff99e1d3de62685488d616c6934d77c56161ec19826a3aa11",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-sparse-matrix-multiplication.png",
+    "caption": "稀疏矩阵乘法沿左矩阵行链与右矩阵列链寻找共同下标",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-sparse-matrix-multiplication.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "2b352f331ece77ebe1a2c76d0cc35e306be1d181358afb83baf93d0f63d1c2fa",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-splay-delete-finish.png",
+    "caption": "移除根后伸展左树最大结点并接回右子树",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-splay-delete-finish.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "fb8f0120c4623333dad2955c9aba8c18980b53d6822a2a756cfb296852fc2346",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-splay-delete-start.png",
+    "caption": "伸展树删除前先把目标结点伸展到根",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-splay-delete-start.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "ea1bcf1142920145b604e33c6d4cd46b6296a11246a3e1c27b3342a49cd97119",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-splay-single-rotation.png",
+    "caption": "伸展结点的父亲为根时，通过一次 Zig 或 Zag 单旋提升到根",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-splay-single-rotation.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "e4147735b77554f07e4814ff705f9ce84c69e28570a85c51d685244f0a3d7f9f",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-splay-zigzag-cases.png",
+    "caption": "伸展树在折线路径上围绕访问结点执行两次反向旋转",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-splay-zigzag-cases.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "777fa8fe64cea78e523b1d7bb0ff8f1b8c934fed710caad67c7b036905841a76",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-splay-zigzig.png",
+    "caption": "伸展树在同向路径上依次旋转祖父与父结点",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-splay-zigzig.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "aeddbdfd78da68f2b49e9a7be45b45aad6961e75a5e43edb8645b58ec4060ef6",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-suffix-array-lcp.png",
+    "caption": "有序后缀、后缀数组与相邻最长公共前缀数组",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-suffix-array-lcp.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "d898cb3fab5b425a73061ee90eb4b5d4a6d1f2ec1899af05cbead5e17959cb22",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-suffix-tree.png",
+    "caption": "字符串全部后缀形成的普通 Trie 与压缩后缀树",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-suffix-tree.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "ccd3c24c4cb18b68c7bc466117885f75441dc9bdab6061932a6f38a9e9759598",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-trie-example.png",
+    "caption": "英文关键码共享字符前缀后形成二十六叉 Trie",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-trie-example.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "558ab70c5fd7eab0863a92751f8324aef2a02a4ecf0d7ced95a52e4e5b5407d2",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/12-trie-path-compression.png",
+    "caption": "Trie 中靠近叶结点的单孩子路径被压缩为带标签的边",
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "imageUrl": "https://www.elainafan.one/post/%e4%bb%8e%e9%9b%b6%e5%bc%80%e5%a7%8b%e7%9a%84%e6%95%b0%e7%ae%97/assets/12-trie-path-compression.png",
+    "credit": "Elainafan · 从零开始的数算",
+    "sha256": "d32d9be3fa731f784b9ad2a76d8eb0430f994dc638892f5c4a4ecaa70ce9dd2e",
+    "acquisition": "downloaded"
+  },
+  {
+    "file": "assets/repo-内排序算法.png",
+    "caption": "仓库中的内排序对照表；复杂度须连同适用前提理解，Shell尤其依赖步长。",
+    "sourceUrl": "https://github.com/ICUlizhi/Data-Structure-and-Algorithm-A-of-pku/blob/main/image/%E5%86%85%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95.png",
+    "imageUrl": "https://raw.githubusercontent.com/ICUlizhi/Data-Structure-and-Algorithm-A-of-pku/main/image/%E5%86%85%E6%8E%92%E5%BA%8F%E7%AE%97%E6%B3%95.png",
+    "credit": "ICUlizhi 等 · DSA-PKU",
+    "sha256": "af43e952483c5457004768c0165707b273b6eda80eee8260d47a5df84af34895",
+    "acquisition": "repository source asset"
+  },
+  {
+    "file": "assets/repo-12-1.png",
+    "caption": "仓库中的广义表引用关系图；本图与上方独立例子不是同一张表，注意共享与循环引用。",
+    "sourceUrl": "https://github.com/ICUlizhi/Data-Structure-and-Algorithm-A-of-pku/blob/main/image/12-1.png",
+    "imageUrl": "https://raw.githubusercontent.com/ICUlizhi/Data-Structure-and-Algorithm-A-of-pku/main/image/12-1.png",
+    "credit": "ICUlizhi 等 · DSA-PKU",
+    "sha256": "8ffee9d42474460839015a88780dcf2f622ceb0310310cd430aa3099400dce17",
+    "acquisition": "repository source asset"
+  }
+]

@@ -1,11 +1,15 @@
 {
   "lessons": 12,
-  "knowledge": 139,
+  "knowledge": 72,
   "templates": 77,
   "types": 121,
   "placements": 255,
   "unique": 211,
   "bailian": 110,
   "luogu": 101,
-  "minimumPerType": 2
+  "minimumPerType": 2,
+  "readingSections": 72,
+  "quickReference": 139,
+  "localFigures": 113,
+  "outlineItems": 195
 }
