@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <script src="../../gate-config.js"></script>
+  <script src="../../gate.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Kotori 的数算逐课复习。">
+  <title>数算复习 · CS Learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Yusei+Magic&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="dsa.css">
+  <link rel="stylesheet" href="../../theme/seika.css">
+  <script src="../../theme/seika.js" defer></script>
+  <script src="content/lessons.js" defer></script>
+  <script src="dsa.js" defer></script>
+</head>
+<body class="dsa-page" data-dsa-view="lesson">
+  <header id="header" class="dsa-header">
+    <a class="dsa-brand" href="../">Kotori's CS Learning</a>
+    <a class="dsa-back-link" href="index.html">← 数算目录</a>
+  </header>
+
+  <main class="dsa-shell">
+    <aside class="dsa-sidebar" data-dsa-sidebar>
+      <div class="dsa-sidebar-heading"><span>课程目录</span><button type="button" class="dsa-sidebar-toggle" data-sidebar-toggle aria-expanded="true" aria-controls="course-outline">收起</button></div>
+      <nav id="course-outline" class="dsa-course-outline" aria-label="数算课程目录" data-course-outline></nav>
+      <nav class="dsa-page-outline" aria-label="本课目录" data-page-outline></nav>
+    </aside>
+
+    <article class="dsa-main dsa-lesson" data-lesson aria-live="polite"></article>
+  </main>
+</body>
+</html>

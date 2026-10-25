@@ -1,0 +1,8625 @@
+/* Original study guide; source-checked 2026-10-25. C++17 snippets. */
+window.DSA_LESSONS = [
+  {
+    "id": "01-intro",
+    "order": 1,
+    "title": "概论",
+    "summary": "先把题意写成状态、操作与不变量，再用约束筛选算法。",
+    "prerequisites": [
+      "C++ 输入输出、循环、函数、vector"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A6%82%E8%AE%BA/",
+    "repoPaths": [
+      "notes-上机/stl and c++.md"
+    ],
+    "knowledge": [
+      {
+        "title": "从问题到抽象数据类型",
+        "body": "数据元素是被处理的对象；逻辑结构说明元素关系，存储结构说明在机器上如何表示。ADT 写清取值集合、允许操作及前后条件，同一种 ADT 可以有数组和链式等多种实现。"
+      },
+      {
+        "title": "算法正确性与不变量",
+        "body": "证明包括初始化、保持和终止三部分。模拟题先明确一步操作前后状态；递归题先给函数语义和规模严格下降的理由。样例通过只说明样例符合，不能代替证明。"
+      },
+      {
+        "title": "时间复杂度",
+        "body": "顺序执行求和，嵌套循环按实际次数计数。每次减半常见 O(log n)，枚举所有子集常见 O(2^n)，全排列有 n! 个结果。O 是渐近上界，Θ 是同阶；最好、最坏、平均和均摊是不同问题。"
+      },
+      {
+        "title": "空间与递归栈",
+        "body": "统计输入存储、辅助结构和调用栈。深度为 n 的递归即使每层只存常数变量，也要 O(n) 栈空间；输出所有答案时，还应计入输出规模。"
+      },
+      {
+        "title": "状态空间与回溯",
+        "body": "状态必须足以决定后续合法转移。路径搜索的 visited 在回溯时撤销，连通分量遍历的 visited 通常不撤销；剪枝只能剔除不可能产生新合法解的分支。"
+      },
+      {
+        "title": "复杂度的计数方法与摊还",
+        "body": "双指针虽然有嵌套while，但每个指针总计只前进n次，常为O(n)。动态数组扩容单次可能O(n)，翻倍扩容的前n次追加总移动量O(n)，因此追加均摊O(1)。说明结论时同时交代单次最坏和序列均摊。"
+      },
+      {
+        "title": "递归式与输出规模",
+        "body": "T(n)=T(n/2)+O(1)给出O(log n)，T(n)=2T(n/2)+O(n)给出O(n log n)。如果要输出n!个长度n的排列，时间下界已经是Ω(n·n!)；剪枝不能让“输出全部答案”突破输出量下界。"
+      },
+      {
+        "title": "枚举的三种去重约束",
+        "body": "排列按位置选未用对象；组合强制所选下标递增；整数划分强制各部分非降序。对象有重复值时，还需在同一决策层跳过等价值；这些约束分别消除不同对称性。"
+      },
+      {
+        "title": "递推、搜索、贪心与DP的分界",
+        "body": "递推给定依赖公式，搜索显式枚举状态空间，贪心只保留有证明的局部选择，DP合并相同状态的重复子问题。不能仅因题目写“最大/最小”就判断使用贪心或DP。"
+      },
+      {
+        "title": "输入边界与数值模型",
+        "body": "规模分析同时决定时间、栈深、下标范围和答案类型。先估计乘积与计数上界，再选long long或高精度；先转long long再乘，不能在int溢出后才赋给long long。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "perm",
+        "title": "按字典序枚举全排列",
+        "when": "字符串已排序、字符互异；在函数内直接输出每个排列。",
+        "complexity": "O(n·n!) 时间，O(n) 参数副本空间",
+        "code": "void printPermutations(string s) {\n    sort(s.begin(), s.end());\n    do { cout << s << '\\n'; }\n    while (next_permutation(s.begin(), s.end()));\n}",
+        "notes": "next_permutation 会原地改写序列；do-while 保证初始排列也输出。若有重复字符，这种写法输出不同的字典序排列。"
+      },
+      {
+        "id": "dfs",
+        "title": "选择—递归—撤销：排列回溯",
+        "when": "n 较小，需要掌握回溯状态；返回 0..n-1 的全部排列。",
+        "complexity": "O(n·n!) 时间，O(n·n!) 结果空间，O(n) 递归深度",
+        "code": "vector<vector<int>> permutations(int n) {\n    vector<vector<int>> ans;\n    vector<int> path, used(n);\n    function<void()> dfs = [&] {\n        if ((int)path.size() == n) { ans.push_back(path); return; }\n        for (int x = 0; x < n; ++x) if (!used[x]) {\n            used[x] = 1; path.push_back(x);\n            dfs();\n            path.pop_back(); used[x] = 0;\n        }\n    };\n    dfs(); return ans;\n}",
+        "notes": "只需统计或逐个输出时，不存 ans，可把辅助空间降为 O(n)。棋盘路径还需判断越界、不可达和字典序。"
+      },
+      {
+        "id": "combinations",
+        "title": "递增下标的组合枚举",
+        "when": "从0..n-1选r个，返回所有组合；0<=r<=n。",
+        "complexity": "O(r·C(n,r))时间与结果空间，递归深度O(r)",
+        "code": "vector<vector<int>> combinations(int n,int r) {\n    vector<vector<int>> ans;vector<int> path;\n    function<void(int)> dfs=[&](int start){\n        if((int)path.size()==r){ans.push_back(path);return;}\n        int need=r-path.size();\n        for(int x=start;x<=n-need;++x){path.push_back(x);dfs(x+1);path.pop_back();}\n    };\n    dfs(0);return ans;\n}",
+        "notes": "只计数时直接累加而不保存ans；重复数值的组合还需要排序和同层去重。"
+      },
+      {
+        "id": "big-add",
+        "title": "非负十进制高精度加法",
+        "when": "a、b为非空数字串，可带前导零；返回规范数字串。",
+        "complexity": "O(max(|a|,|b|))时间和空间",
+        "code": "string bigAdd(string a,string b){\n    string c;int i=(int)a.size()-1,j=(int)b.size()-1,carry=0;\n    while(i>=0||j>=0||carry){\n        int s=carry;if(i>=0)s+=a[i--]-'0';if(j>=0)s+=b[j--]-'0';\n        c+=char('0'+s%10);carry=s/10;\n    }\n    while(c.size()>1&&c.back()=='0')c.pop_back();\n    reverse(c.begin(),c.end());return c;\n}",
+        "notes": "负数需另外处理符号与绝对值比较；不要把此接口当作带符号大整数库。"
+      },
+      {
+        "id": "mod-pow",
+        "title": "二进制快速幂",
+        "when": "0<=a、e，1<=mod<=1e9；返回a^e mod mod。",
+        "complexity": "O(log e)时间，O(1)空间",
+        "code": "long long modPow(long long a,long long e,long long mod){\n    a%=mod;long long ans=1%mod;\n    while(e){if(e&1)ans=ans*a%mod;a=a*a%mod;e>>=1;}\n    return ans;\n}",
+        "notes": "上界mod保证long long乘积不溢出。若mod接近64位上限，必须换安全模乘；不能继续原样套用。"
+      },
+      {
+        "id": "knapsack",
+        "title": "0/1背包：每件物品最多一次",
+        "when": "容量cap>=0，重量为正，价值非负；返回容量内最大价值。",
+        "complexity": "O(n·cap)时间，O(cap)空间",
+        "code": "long long knapsack(int cap,const vector<pair<int,int>>& items){\n    vector<long long> dp(cap+1);\n    for(auto [w,v]:items)for(int c=cap;c>=w;--c)dp[c]=max(dp[c],dp[c-w]+v);\n    return dp[cap];\n}",
+        "notes": "初值0表示“不必恰好装满”。恰好装满时除dp[0]外应设负无穷，且转移前检查可达。"
+      }
+    ],
+    "types": [
+      {
+        "id": "simulate",
+        "title": "按规则模拟与规模估算",
+        "category": "基础篇 · 第8章 模拟与高精度",
+        "features": "规则能逐步执行；先用最小状态得到可靠基线。",
+        "steps": [
+          "写清输入结束条件。",
+          "列出状态变量及一次更新。",
+          "估算循环次数，选择类型。",
+          "用最小输入和临界输入检查输出。"
+        ],
+        "pitfalls": [
+          "多测结束标志不是一组普通数据。",
+          "整数除法用于浮点累加会丢失小数。"
+        ],
+        "practice": [
+          {
+            "id": "1000",
+            "title": "A+B Problem",
+            "url": "http://bailian.openjudge.cn/practice/1000/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "熟悉评测输入输出，区分程序结果与提示语。",
+            "hint": "只输出和，不输出“请输入”。",
+            "warning": "提交语言及整数读取格式保持一致。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1003",
+            "title": "Hangover",
+            "url": "http://bailian.openjudge.cn/practice/1003/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "用逐项累加连接循环次数与问题规模。",
+            "hint": "从 1/2 开始累加到达到目标，维护使用张数。",
+            "warning": "0.00 是结束标志；使用浮点除法。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "permutation",
+        "title": "排列枚举与字典序",
+        "category": "基础篇 · 第10章 暴力枚举",
+        "features": "对象逐个放入位置，顺序不同算不同方案。",
+        "steps": [
+          "定义位置和已用集合。",
+          "按字典序枚举候选。",
+          "放入后递归下一位置。",
+          "撤销选择；按题意停止或输出。"
+        ],
+        "pitfalls": [
+          "重复字符需要按值去重。",
+          "next_permutation执行前应先排序。"
+        ],
+        "practice": [
+          {
+            "id": "2748",
+            "title": "全排列",
+            "url": "http://bailian.openjudge.cn/practice/2748/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "掌握排列树。",
+            "hint": "用used标记每个字符位置。",
+            "warning": "输入字符次序及输出字典序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1833",
+            "title": "排列",
+            "url": "http://bailian.openjudge.cn/practice/1833/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "练习排列后继及循环。",
+            "hint": "重复执行next_permutation，抵达末排列时按题意回到首排列。",
+            "warning": "不要把第k个后继误算成包含初始状态。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "combination",
+        "title": "组合、子集与不重不漏枚举",
+        "category": "基础篇 · 第10章 暴力枚举",
+        "features": "选择若干元素且选取顺序无关，需避免同一集合的排列重复。",
+        "steps": [
+          "用start限制下一候选。",
+          "选满目标数量时处理。",
+          "剩余元素不足时剪枝。",
+          "按题意筛选和输出。"
+        ],
+        "pitfalls": [
+          "组合与排列的递归参数不同。",
+          "子集中的重复值与重复下标需分开。"
+        ],
+        "practice": [
+          {
+            "id": "P1157",
+            "title": "组合的输出",
+            "url": "https://www.luogu.com.cn/problem/P1157",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "输出有序组合。",
+            "hint": "下一位置只从上次下标后继续。",
+            "warning": "输出元素宽度按题面。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1036",
+            "title": "[NOIP 2002 普及组] 选数",
+            "url": "https://www.luogu.com.cn/problem/P1036",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "组合后检验素数。",
+            "hint": "枚举k个数之和，试除到平方根。",
+            "warning": "1不是素数；不要对同一组合计k!次。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "board-dfs",
+        "title": "棋盘约束回溯与路径搜索",
+        "category": "基础篇 · 第14章 搜索",
+        "features": "局部选择受行、列、格子访问状态限制。",
+        "steps": [
+          "定义深度和占用标记。",
+          "逐个尝试合法位置。",
+          "递归前后成对修改标记。",
+          "终止时计数或保存字典序最优方案。"
+        ],
+        "pitfalls": [
+          "放置问题与路径问题的visited含义不同。",
+          "一旦返回仍要正确撤销状态。"
+        ],
+        "practice": [
+          {
+            "id": "1321",
+            "title": "棋盘问题",
+            "url": "http://bailian.openjudge.cn/practice/1321/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "棋盘放k枚互不同行列棋子。",
+            "hint": "按行递归，列标记占用，并允许跳过行。",
+            "warning": "只允许#位置；空行跳过不能漏。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2488",
+            "title": "A Knight's Journey",
+            "url": "http://bailian.openjudge.cn/practice/2488/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "骑士全覆盖路径。",
+            "hint": "格子visited配合法走法，按坐标字典序扩展。",
+            "warning": "成功路径与失败后清理要区分。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1219",
+            "title": "[USACO1.5] 八皇后 Checker Challenge",
+            "url": "https://www.luogu.com.cn/problem/P1219",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "练对角线约束。",
+            "hint": "记录列、行列和、行列差。",
+            "warning": "只输出前3方案但总计数必须继续。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "partition-pruning",
+        "title": "划分、拼接与对称性剪枝",
+        "category": "基础篇 · 第14章 搜索",
+        "features": "把所有材料分成若干等价组，搜索规模需靠重复状态消除。",
+        "steps": [
+          "排序让大元素优先。",
+          "枚举可能的目标组值。",
+          "组内跳过重复候选。",
+          "用总量、剩余量及对称性证明剪枝。"
+        ],
+        "pitfalls": [
+          "剪枝必须有证明，不能因样例巧合删除分支。",
+          "组内起点和新组起点不要混用。"
+        ],
+        "practice": [
+          {
+            "id": "1011",
+            "title": "Sticks",
+            "url": "http://bailian.openjudge.cn/practice/1011/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "经典拼棍剪枝。",
+            "hint": "目标长度只试总长因子；新棍固定首段破除组对称。",
+            "warning": "相同段长的失败分支去重。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1025",
+            "title": "[NOIP 2001 提高组] 数的划分",
+            "url": "https://www.luogu.com.cn/problem/P1025",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "递增整数划分。",
+            "hint": "下一个数至少为上一个数；剩余最小值给出上界。",
+            "warning": "组无序，不能排列计数。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "big-integer",
+        "title": "高精度整数与数位运算",
+        "category": "基础篇 · 第8章 模拟与高精度",
+        "features": "数值位数超过内置整数，操作本身仍由逐位规则定义。",
+        "steps": [
+          "确定数位方向和进制。",
+          "处理进位或借位。",
+          "乘法分配到结果位。",
+          "去前导零并处理零。"
+        ],
+        "pitfalls": [
+          "字符串按字典序不等于数值大小。",
+          "进位后的最高位不能漏。"
+        ],
+        "practice": [
+          {
+            "id": "P1601",
+            "title": "高精度加法",
+            "url": "https://www.luogu.com.cn/problem/P1601",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "高精度加法。",
+            "hint": "从个位向高位相加并进位。",
+            "warning": "不同长度和最终进位。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1303",
+            "title": "A*B Problem",
+            "url": "https://www.luogu.com.cn/problem/P1303",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "高精度乘法。",
+            "hint": "第i、j位贡献到i+j位，统一进位。",
+            "warning": "全零结果保留一个0。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1001",
+            "title": "Exponentiation",
+            "url": "http://bailian.openjudge.cn/practice/1001/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "扩充到高精度小数幂。",
+            "hint": "去小数点做整数运算，最后恢复小数位。",
+            "warning": "去掉不需要的前导/末尾零，不能用浮点硬算。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "recurrence",
+        "title": "递推、记忆化与状态压缩",
+        "category": "基础篇 · 第11章 递推与递归",
+        "features": "答案由规模更小的同类子问题决定，重复递归会指数增长。",
+        "steps": [
+          "定义状态的完整含义。",
+          "写边界和依赖方向。",
+          "选自底向上或记忆化。",
+          "仅依赖少数层时压缩存储。"
+        ],
+        "pitfalls": [
+          "状态相同才可以缓存。",
+          "滚动更新方向可能覆盖旧层。"
+        ],
+        "practice": [
+          {
+            "id": "P1255",
+            "title": "数楼梯",
+            "url": "https://www.luogu.com.cn/problem/P1255",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "递推计数及大整数。",
+            "hint": "到第i阶来自i-1与i-2阶。",
+            "warning": "n较大答案需高精度。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1028",
+            "title": "[NOIP 2001 普及组] 数的计算",
+            "url": "https://www.luogu.com.cn/problem/P1028",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "递推统计生成数。",
+            "hint": "按首个新增前缀的范围求子问题和。",
+            "warning": "将输入本身计为一种。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "doubling",
+        "title": "分治与快速幂",
+        "category": "基础篇 · 第11章 递推与递归",
+        "features": "规模可按一半拆分，重复使用同一半结果。",
+        "steps": [
+          "给零次幂或最小规模边界。",
+          "递归/迭代处理一半。",
+          "按奇偶合并。",
+          "模乘和溢出单独检查。"
+        ],
+        "pitfalls": [
+          "两次递归计算相同子问题会失去对数复杂度。",
+          "模数为1时结果也是0。"
+        ],
+        "practice": [
+          {
+            "id": "P1226",
+            "title": "【模板】快速幂",
+            "url": "https://www.luogu.com.cn/problem/P1226",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "对数时间模幂。",
+            "hint": "二进制拆指数，累乘当前幂。",
+            "warning": "中间乘法类型与输出格式。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1010",
+            "title": "[NOIP 1998 普及组] 幂次方",
+            "url": "https://www.luogu.com.cn/problem/P1010",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "递归表达指数分解。",
+            "hint": "把整数写为2的幂之和，再递归表示指数。",
+            "warning": "指数0、1、2的格式不同。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "greedy-proof",
+        "title": "局部选择、交换论证与反例意识",
+        "category": "基础篇 · 第12章 贪心",
+        "features": "每步选一个当前最优对象，但须证明不会损失全局最优。",
+        "steps": [
+          "明确目标函数。",
+          "提出排序或选择规则。",
+          "用交换论证或支配关系证明。",
+          "找边界和反例检查适用条件。"
+        ],
+        "pitfalls": [
+          "按开始时间选区间通常错误。",
+          "贪心规则不能只由几组样例猜。"
+        ],
+        "practice": [
+          {
+            "id": "1328",
+            "title": "Radar Installation",
+            "url": "http://bailian.openjudge.cn/practice/1328/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "雷达覆盖转区间选点。",
+            "hint": "每个岛转成可放雷达的区间，按右端点贪心。",
+            "warning": "|y|>d即无解；浮点比较。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1803",
+            "title": "凌乱的yyy / 线段覆盖",
+            "url": "https://www.luogu.com.cn/problem/P1803",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "最多不重叠活动。",
+            "hint": "按结束时间排序，逐个选兼容区间。",
+            "warning": "端点相接是否允许以题面为准。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "dp-baseline",
+        "title": "从暴力到动态规划：最优子结构",
+        "category": "进阶篇 · 动态规划1 动态规划的基本用法",
+        "features": "不同方案汇合到相同状态，目标是最优值而非输出全部方案。",
+        "steps": [
+          "先定义暴力状态。",
+          "提炼可复用的子问题。",
+          "按依赖顺序转移。",
+          "保留足够信息并证明压缩方向。"
+        ],
+        "pitfalls": [
+          "局部最大值不一定给出全局最大值。",
+          "空集合是否允许改变初始化。"
+        ],
+        "practice": [
+          {
+            "id": "P1115",
+            "title": "最大子段和",
+            "url": "https://www.luogu.com.cn/problem/P1115",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "最大连续子段和。",
+            "hint": "以i结尾的最优值只来自重开或接在i-1后。",
+            "warning": "全负数不能输出0。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1049",
+            "title": "[NOIP 2001 普及组] 装箱问题",
+            "url": "https://www.luogu.com.cn/problem/P1049",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "0/1背包最接近容量。",
+            "hint": "每件只用一次，容量倒序更新。",
+            "warning": "正序会变成同一件无限用。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否写出状态与一次转移？",
+      "能否在实现前估算最大执行次数？",
+      "能否区分路径标记与全局访问标记？"
+    ],
+    "coverageNote": "",
+    "outlineCoverage": [
+      {
+        "title": "从问题到程序",
+        "status": "知识与方法",
+        "related": [
+          "知识：从问题到抽象数据类型"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "从问题到程序 / 数据与类型",
+        "status": "知识与方法",
+        "related": [
+          "知识：从问题到抽象数据类型"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "从问题到程序 / 数据结构",
+        "status": "知识与方法",
+        "related": [
+          "知识：从问题到抽象数据类型"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "从问题到程序 / 抽象数据类型",
+        "status": "知识与方法",
+        "related": [
+          "知识：从问题到抽象数据类型"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "从问题到程序 / 算法与程序",
+        "status": "知识与方法",
+        "related": [
+          "知识：算法正确性与不变量"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "状态空间与回溯",
+        "status": "知识与方法",
+        "related": [
+          "知识：状态空间与回溯"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "状态空间与回溯 / 检索示例",
+        "status": "知识与方法",
+        "related": [
+          "知识：状态空间与回溯"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "复杂度分析",
+        "status": "知识与方法",
+        "related": [
+          "知识：时间复杂度",
+          "知识：复杂度的计数方法与摊还"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "复杂度分析 / 渐近复杂度",
+        "status": "知识与方法",
+        "related": [
+          "知识：时间复杂度",
+          "知识：复杂度的计数方法与摊还"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "复杂度分析 / 最好、最坏与平均情况",
+        "status": "知识与方法",
+        "related": [
+          "知识：时间复杂度",
+          "知识：复杂度的计数方法与摊还"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "复杂度分析 / 时间与空间",
+        "status": "知识与方法",
+        "related": [
+          "知识：空间与递归栈",
+          "知识：状态空间与回溯"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  },
+  {
+    "id": "02-linear-list",
+    "order": 2,
+    "title": "线性表",
+    "summary": "把下标、结点身份和相邻关系分开，掌握顺序表、链表和循环表。",
+    "prerequisites": [
+      "第1课；数组、引用与结构体"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%BA%BF%E6%80%A7%E8%A1%A8/",
+    "repoPaths": [
+      "notes-上机/stl and c++.md"
+    ],
+    "knowledge": [
+      {
+        "title": "顺序表的代价",
+        "body": "随机访问 O(1)，按位置插入和删除通常要搬移 O(n) 个元素。vector 的 push_back 均摊 O(1)，扩容可能使旧迭代器和引用失效。"
+      },
+      {
+        "title": "单链表和头结点",
+        "body": "已知前驱时插入、删除为 O(1)；按序号查找仍需 O(n)。头结点不代表有效数据，可把首元素操作统一为普通前驱操作。删除前先保存后继，避免断链。"
+      },
+      {
+        "title": "双向链表",
+        "body": "每条相邻关系同时维护 next 与 prev。删除 x 时更新 next[prev[x]] 和 prev[next[x]]；不能只修改一边。数组模拟链表适合编号固定且需直接定位结点。"
+      },
+      {
+        "title": "循环链表与约瑟夫问题",
+        "body": "逻辑末尾指回开头。输出出圈顺序需维护现存结点；只求最后幸存者可用 f(1)=0，f(i)=(f(i-1)+m) mod i，最终按题意转为1基。"
+      },
+      {
+        "title": "有序表与稀疏多项式",
+        "body": "两个有序表可用双指针线性合并；相同指数的多项式项相加，和为0的项删去。集合去重和多重集合计数的语义不同。"
+      },
+      {
+        "title": "单链表的前驱与头结点",
+        "body": "已知结点的后继不等于已知其前驱。单链表在给定前驱处插入/删除是O(1)，但按值定位前驱通常O(n)。头结点统一首元素操作，头指针改变时必须返回新头或传引用。"
+      },
+      {
+        "title": "双链操作的更新次序",
+        "body": "插入u到x右侧，先保存原后继y，再令x→u→y并同步pre；删除u则连接其前驱和后继。哨兵能合并首尾分支，但不能把哨兵当真实数据输出或删除。"
+      },
+      {
+        "title": "循环表与幸存者递推的能力",
+        "body": "循环链表保留完整出圈轨迹，时间通常O(nm)。只求最后幸存者可用0基f(1)=0，f(i)=(f(i-1)+m)%i在O(n)时间、O(1)空间求得；这不能替代要求输出全过程的题。"
+      },
+      {
+        "title": "稀疏多项式相加与相乘",
+        "body": "项记录指数和系数；相加按指数双指针归并，复杂度O(m+n)，同指数合并后为0的项删去。相乘产生mn对项，再按指数聚合；不能把相加的线性复杂度套到乘法。"
+      },
+      {
+        "title": "迭代器失效与有效长度",
+        "body": "vector删除会移动后续元素，insert/扩容可能使旧迭代器、指针、引用失效。双指针压缩只改有效长度，之后erase尾部；链式删除后继续遍历需预先保存next。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "linked",
+        "title": "数组双链表：在结点右侧插入与删除",
+        "when": "编号为1..n，0与n+1是左右哨兵；返回值包含两个方向链。",
+        "complexity": "每次修改 O(1)，存储 O(n)",
+        "code": "struct LinkedList {\n    vector<int> pre, nxt; vector<bool> live;\n    LinkedList(int n): pre(n+2), nxt(n+2), live(n+2,false) {\n        nxt[0]=n+1; pre[n+1]=0;\n    }\n    void insertRight(int x, int u) {\n        int y=nxt[x];\n        nxt[x]=u; pre[u]=x; nxt[u]=y; pre[y]=u;\n        live[u]=true;\n    }\n    void erase(int u) {\n        if (!live[u]) return;\n        nxt[pre[u]]=nxt[u]; pre[nxt[u]]=pre[u]; live[u]=false;\n    }\n};",
+        "notes": "insertRight 的 x 必须已在链中或为左哨兵，u 必须是未入链的有效编号。左插等价于在 pre[x] 右插；遍历到 n+1 停止。"
+      },
+      {
+        "id": "josephus",
+        "title": "约瑟夫：仅求最终幸存者",
+        "when": "n>=1，m>=1，返回1基编号，不返回完整出圈序列。",
+        "complexity": "O(n) 时间，O(1) 空间",
+        "code": "long long survivor(int n, long long m) {\n    long long f=0;\n    for (int i=2; i<=n; ++i) f=(f+m%i)%i;\n    return f+1;\n}",
+        "notes": "每次模 i 后状态是0基编号。任意起报点 p 时再进行一次环形平移；不要把此函数用于输出所有出圈者。"
+      },
+      {
+        "id": "merge-set",
+        "title": "有序集合的对称差",
+        "when": "a、b 分别严格递增；返回仅在其中一个集合出现的值。",
+        "complexity": "O(n+m) 时间，O(n+m) 结果空间",
+        "code": "vector<int> symmetricDifference(const vector<int>& a,const vector<int>& b) {\n    vector<int> c; size_t i=0,j=0;\n    while(i<a.size() && j<b.size()) {\n        if(a[i]<b[j]) c.push_back(a[i++]);\n        else if(b[j]<a[i]) c.push_back(b[j++]);\n        else {++i; ++j;}\n    }\n    while(i<a.size()) c.push_back(a[i++]);\n    while(j<b.size()) c.push_back(b[j++]);\n    return c;\n}",
+        "notes": "若输入不是集合，应先排序去重或明确多重集合规则。多项式合并时把“相等则跳过”改为系数相加。"
+      },
+      {
+        "id": "compact",
+        "title": "顺序表原地稳定过滤",
+        "when": "保留满足keep(x)的元素，维持原相对顺序并resize。",
+        "complexity": "O(n)时间，O(1)额外空间",
+        "code": "template<class Pred> void compact(vector<int>& a,Pred keep){\n    int w=0;for(int x:a)if(keep(x))a[w++]=x;a.resize(w);\n}",
+        "notes": "逻辑长度必须同步更新；不同于无序删除时用末项覆盖的O(1)技巧。"
+      },
+      {
+        "id": "poly-add",
+        "title": "稀疏多项式按指数归并",
+        "when": "每表按指数严格升序，无0系数；pair=(指数,系数)。",
+        "complexity": "O(m+n)时间，O(m+n)结果空间",
+        "code": "using Term=pair<int,long long>;\nvector<Term> addPolynomial(const vector<Term>& a,const vector<Term>& b){\n    vector<Term> c;size_t i=0,j=0;\n    while(i<a.size()||j<b.size()){\n        if(j==b.size()||(i<a.size()&&a[i].first<b[j].first))c.push_back(a[i++]);\n        else if(i==a.size()||b[j].first<a[i].first)c.push_back(b[j++]);\n        else {long long v=a[i].second+b[j].second;if(v)c.push_back({a[i].first,v});++i;++j;}\n    }\n    return c;\n}",
+        "notes": "链表版只需把追加动作改为尾插；输入未排序或同表存在同指数时先正规化。"
+      }
+    ],
+    "types": [
+      {
+        "id": "sequence",
+        "title": "顺序表、去重与有序合并",
+        "category": "基础篇 · 第15章 线性表；数据结构1-3 集合",
+        "features": "批量数据、频繁遍历；有序输入允许双指针。",
+        "steps": [
+          "确认是否需保留重复值。",
+          "必要时排序，并明确相等分支。",
+          "每次推进至少一个指针。",
+          "补上未耗尽部分并检查输出顺序。"
+        ],
+        "pitfalls": [
+          "unique 只移动元素，不缩小 vector，需配合 erase。",
+          "区间端点和元素个数混为一谈。"
+        ],
+        "practice": [
+          {
+            "id": "4085",
+            "title": "数组去重排序",
+            "url": "http://bailian.openjudge.cn/practice/4085/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "练习排序后唯一化。",
+            "hint": "sort 后 erase(unique(...),end)。",
+            "warning": "输出集合元素，不保留重复次数。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4088",
+            "title": "集合运算",
+            "url": "http://bailian.openjudge.cn/practice/4088/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "用双指针得到对称差。",
+            "hint": "相等时同时跳过；较小值加入答案。",
+            "warning": "不是并集，也不是交集；尾段不能漏。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "sequence-edit",
+        "title": "顺序表区间删除与下标维护",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "修改区间或删除元素后，后续位置会变化。",
+        "steps": [
+          "把值、位置和逻辑顺序分开。",
+          "确定端点是否包含。",
+          "选择标记或双指针压缩。",
+          "统计保留元素或重建序列。"
+        ],
+        "pitfalls": [
+          "erase遍历时迭代器失效。",
+          "闭区间长度应加1。"
+        ],
+        "practice": [
+          {
+            "id": "2808",
+            "title": "校门外的树",
+            "url": "http://bailian.openjudge.cn/practice/2808/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "用位置标记表示被移除区间。",
+            "hint": "树的位置为0..L，先标记再计数。",
+            "warning": "L+1个位置，不是L个。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1047",
+            "title": "[NOIP 2005 普及组] 校门外的树",
+            "url": "https://www.luogu.com.cn/problem/P1047",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "独立完成区间删除与最终统计。",
+            "hint": "合并区间或布尔数组均可。",
+            "warning": "重叠区间不能重复扣减。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "doubly-linked",
+        "title": "双向链表插入、删除与哨兵",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "结点身份固定但相邻关系不断变化，不宜反复搬移数组。",
+        "steps": [
+          "用pre/nxt保存相邻编号。",
+          "增加左右哨兵统一边界。",
+          "插入同时修改四条关系。",
+          "删除时重接相邻结点并标记存活。"
+        ],
+        "pitfalls": [
+          "连续删除同一结点需按题意处理。",
+          "结点编号不是当前位置。"
+        ],
+        "practice": [
+          {
+            "id": "P1160",
+            "title": "队列安排",
+            "url": "https://www.luogu.com.cn/problem/P1160",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "按指定同学左右建立队列。",
+            "hint": "先插入，再删除，最后沿链输出。",
+            "warning": "被删除者重复出现只删一次。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1996",
+            "title": "约瑟夫问题",
+            "url": "https://www.luogu.com.cn/problem/P1996",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "用双向链表维护出圈后的前后邻居。",
+            "hint": "删除时同时重接pre和next。",
+            "warning": "评测不限定存储结构，本类练习指定双链实现。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "circular-list",
+        "title": "循环链表与约瑟夫删除",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "每轮从上次删除后继续报数，首尾相连。",
+        "steps": [
+          "构建循环后继。",
+          "明确报数起点是否计1。",
+          "找到被删结点前驱并断链。",
+          "更新起点直到剩余或输出完。"
+        ],
+        "pitfalls": [
+          "步长m常对应移动m-1次。",
+          "输出全删除顺序不能只用幸存者递推。"
+        ],
+        "practice": [
+          {
+            "id": "2746",
+            "title": "约瑟夫问题",
+            "url": "http://bailian.openjudge.cn/practice/2746/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "练循环删除的基本过程。",
+            "hint": "数组next模拟单循环链表。",
+            "warning": "检查最后剩余人是否需要输出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "3254",
+            "title": "约瑟夫问题No.2",
+            "url": "http://bailian.openjudge.cn/practice/3254/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "处理循环顺序与不同题面规则。",
+            "hint": "照题意确定起点和每轮报数者。",
+            "warning": "不要套用其他约瑟夫题的输出约定。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1996",
+            "title": "约瑟夫问题",
+            "url": "https://www.luogu.com.cn/problem/P1996",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "完整输出出圈顺序。",
+            "hint": "循环队列或链表模拟。",
+            "warning": "全部n个人都要输出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "merge-linear",
+        "title": "两个有序表的归并与集合差",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "输入各自有序，目标要求合并、去重、交并或对称差。",
+        "steps": [
+          "明确是集合还是可重集。",
+          "用双指针比较表头。",
+          "相等时按语义更新两个指针。",
+          "处理一个表耗尽后的尾部。"
+        ],
+        "pitfalls": [
+          "重复元素的计数规则不同。",
+          "每次都从头搜索会退化。"
+        ],
+        "practice": [
+          {
+            "id": "4088",
+            "title": "集合运算",
+            "url": "http://bailian.openjudge.cn/practice/4088/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "练有序集合运算。",
+            "hint": "先去重再做归并式集合操作。",
+            "warning": "题目要求的运算方向和顺序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2792",
+            "title": "集合加法",
+            "url": "http://bailian.openjudge.cn/practice/2792/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "从两个表寻找目标和。",
+            "hint": "排序后双指针，或用哈希补数。",
+            "warning": "此题是双表配对迁移，不是多项式合并。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "polynomial",
+        "title": "稀疏多项式与按指数合并",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "记录包含系数和指数，只保存非零项，按指数归并同类项。",
+        "steps": [
+          "约定指数有序。",
+          "同指数系数相加。",
+          "结果为0则移除该项。",
+          "输出符号、常数项和幂次特例。"
+        ],
+        "pitfalls": [
+          "指数不同不能相加。",
+          "系数±1与0次项格式特殊。"
+        ],
+        "practice": [
+          {
+            "id": "1555",
+            "title": "Polynomial Showdown",
+            "url": "http://bailian.openjudge.cn/practice/1555/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "练稀疏记录与多项式输出规范。",
+            "hint": "按指数扫描系数，跳过0并统一处理符号。",
+            "warning": "该题主要考格式，并不直接要求链表相加。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2527",
+            "title": "Polynomial Remains",
+            "url": "http://bailian.openjudge.cn/practice/2527/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "多项式模x^k+1的项合并。",
+            "hint": "高次项向低k次项转移并变号。",
+            "warning": "等价项可能抵消，最终零多项式也需正确输出。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否指出链表O(1)操作所需的前提？",
+      "能否手画一次首、尾结点的插入删除？",
+      "能否区分出圈序列和最后幸存者两个接口？"
+    ],
+    "coverageNote": "",
+    "outlineCoverage": [
+      {
+        "title": "线性结构",
+        "status": "知识与方法",
+        "related": [
+          "知识：顺序表的代价",
+          "板子：顺序表原地稳定过滤",
+          "题型：顺序表、去重与有序合并",
+          "题型：顺序表区间删除与下标维护"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "顺序表",
+        "status": "知识与方法",
+        "related": [
+          "知识：顺序表的代价",
+          "板子：顺序表原地稳定过滤",
+          "题型：顺序表、去重与有序合并",
+          "题型：顺序表区间删除与下标维护"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "顺序表 / 插入与删除",
+        "status": "知识与方法",
+        "related": [
+          "知识：顺序表的代价",
+          "板子：顺序表原地稳定过滤",
+          "题型：顺序表、去重与有序合并",
+          "题型：顺序表区间删除与下标维护"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "顺序表 / 容量与扩充",
+        "status": "知识与方法",
+        "related": [
+          "知识：迭代器失效与有效长度"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "链表",
+        "status": "知识与方法",
+        "related": [
+          "知识：单链表和头结点",
+          "知识：双向链表",
+          "知识：循环链表与约瑟夫问题",
+          "知识：单链表的前驱与头结点",
+          "板子：数组双链表：在结点右侧插入与删除"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "链表 / 单链表",
+        "status": "知识与方法",
+        "related": [
+          "知识：单链表和头结点",
+          "知识：单链表的前驱与头结点"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "链表 / 单链表 / 头结点与边界",
+        "status": "知识与方法",
+        "related": [
+          "知识：单链表和头结点",
+          "知识：单链表的前驱与头结点"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "链表 / 双向链表",
+        "status": "知识与方法",
+        "related": [
+          "知识：双向链表",
+          "题型：双向链表插入、删除与哨兵"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "链表 / 循环链表",
+        "status": "知识与方法",
+        "related": [
+          "知识：循环链表与约瑟夫问题",
+          "题型：循环链表与约瑟夫删除"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "链表 / 循环链表 / 约瑟夫问题",
+        "status": "知识与方法",
+        "related": [
+          "知识：循环链表与约瑟夫问题"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "结构比较与应用",
+        "status": "知识与方法",
+        "related": [
+          "知识：顺序表的代价",
+          "板子：顺序表原地稳定过滤",
+          "题型：顺序表、去重与有序合并",
+          "题型：顺序表区间删除与下标维护"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "结构比较与应用 / 顺序表与链表",
+        "status": "知识与方法",
+        "related": [
+          "知识：顺序表的代价",
+          "板子：顺序表原地稳定过滤",
+          "题型：顺序表、去重与有序合并",
+          "题型：顺序表区间删除与下标维护"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "结构比较与应用 / 稀疏多项式",
+        "status": "知识与方法",
+        "related": [
+          "知识：有序表与稀疏多项式",
+          "知识：稀疏多项式相加与相乘",
+          "板子：稀疏多项式按指数归并",
+          "题型：稀疏多项式与按指数合并"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  },
+  {
+    "id": "03-stack-queue",
+    "order": 3,
+    "title": "栈与队列",
+    "summary": "用后进先出管理嵌套，用先进先出管理等待与逐层扩展。",
+    "prerequisites": [
+      "第2课；递归调用"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%88%E4%B8%8E%E9%98%9F%E5%88%97/",
+    "repoPaths": [
+      "notes-上机/stl and c++.md"
+    ],
+    "knowledge": [
+      {
+        "title": "栈、递归与共享栈",
+        "body": "栈的插入删除都在同一端。递归帧保存参数、局部状态和返回位置；用显式栈模拟递归时，除结点外往往还需保存处理阶段。共享栈可从数组两端相向生长。"
+      },
+      {
+        "title": "出栈序列",
+        "body": "对给定目标序列，可模拟依次入栈直到栈顶匹配，然后弹出。出栈序列计数满足 Catalan 递推 C0=1，Cn=ΣCi·C(n-1-i)，但序列合法性判定不是计数问题。"
+      },
+      {
+        "title": "表达式",
+        "body": "中缀体现优先级和括号；前缀与后缀通过位置表达树形结构。后缀扫描遇运算符先弹出的为右操作数。浮点题与整数题的除法、输入分隔符分别处理。"
+      },
+      {
+        "title": "循环队列",
+        "body": "采用空槽法时容量为数组长减1：空是 front==rear，满是 (rear+1)%capacity==front；也可记录 size 使用全部槽位。两种约定不要混用。"
+      },
+      {
+        "title": "双端队列与BFS",
+        "body": "deque 允许两端操作。等权图 BFS 首次到达给出最短边数，应在入队时标记；不等权图不满足这一保证。"
+      },
+      {
+        "title": "共享栈与双端队列",
+        "body": "两栈共享一块数组可从两端向中间增长，满的条件是top1+1==top2，而不是任一栈到固定中线。deque允许两端入出；单调队列用它淘汰两端元素，不代表所有双端队列题都是单调队列。"
+      },
+      {
+        "title": "中缀转后缀的优先级不变量",
+        "body": "运算符栈保存尚未完成的操作。遇二元运算符时，先弹出比它优先级高或同级且左结合的操作；左括号作边界，遇右括号弹到左括号并删除括号。数字分词先于优先级处理。"
+      },
+      {
+        "title": "Catalan的合法前缀解释",
+        "body": "入栈视作左括号，出栈视作右括号，每个前缀出栈次数不超过入栈次数。以第一个元素的匹配位置分割左右两段得到Cn=ΣCi·C(n−1−i)，C0=1；括号、二叉树形计数可在相应前提下归入同一模型。"
+      },
+      {
+        "title": "单调栈与单调队列的摊还分析",
+        "body": "虽然每个新元素可能触发多次弹出，每个下标总共入结构一次、出结构至多一次，总时间O(n)。单调栈通常找最近支配关系；单调队列还需要从队首按时间/下标淘汰过期候选。"
+      },
+      {
+        "title": "递归帧不只含一个结点",
+        "body": "调用栈保存参数、局部变量和返回位置。先序可只用结点栈，后序或复杂回溯往往要保存执行阶段、下一孩子索引或迭代器；改成显式栈并不会自动把O(n)空间变成O(1)。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "stack-order",
+        "title": "栈序列合法性判定",
+        "when": "输入目标排列a（值为1..n且互异），返回能否由1..n顺序入栈生成。",
+        "complexity": "O(n) 时间，O(n) 空间",
+        "code": "bool validPopOrder(const vector<int>& a) {\n    stack<int> st; int x=1, n=(int)a.size();\n    for(int y:a) {\n        while((st.empty() || st.top()!=y) && x<=n) st.push(x++);\n        if(st.empty() || st.top()!=y) return false;\n        st.pop();\n    }\n    return true;\n}",
+        "notes": "这是判定接口；4077要求计数，应改用Catalan递推或合法push/pop状态DP，不能枚举n!个排列。"
+      },
+      {
+        "id": "prefix",
+        "title": "前缀表达式递归求值",
+        "when": "合法表达式，空格分词，四则二元运算，除数非0；从输入流消费一个表达式。",
+        "complexity": "O(L) 时间，O(表达式树高) 栈空间",
+        "code": "double evalPrefix(istream& in) {\n    string s; in>>s;\n    if(s==\"+\" || s==\"-\" || s==\"*\" || s==\"/\") {\n        double a=evalPrefix(in), b=evalPrefix(in);\n        if(s==\"+\") return a+b;\n        if(s==\"-\") return a-b;\n        if(s==\"*\") return a*b;\n        return a/b;\n    }\n    return stod(s);\n}",
+        "notes": "中缀不能直接喂入此函数，需中缀转后缀或按 expression/term/factor 分层解析；P1449的点号分词也需单独处理。"
+      },
+      {
+        "id": "circular",
+        "title": "记录size的循环队列",
+        "when": "构造容量cap>=1，接口返回操作是否成功，pop通过引用返回值。",
+        "complexity": "每次 O(1)，空间 O(cap)",
+        "code": "struct RingQueue {\n    vector<int> a; int head=0, tail=0, sz=0;\n    explicit RingQueue(int cap):a(cap){}\n    bool push(int x) {\n        if(sz==(int)a.size()) return false;\n        a[tail]=x; tail=(tail+1)%a.size(); ++sz; return true;\n    }\n    bool pop(int& x) {\n        if(!sz) return false;\n        x=a[head]; head=(head+1)%a.size(); --sz; return true;\n    }\n};",
+        "notes": "4099中一旦某组操作发生非法pop，需按题面输出error，且仍要消费完本组剩余输入。"
+      },
+      {
+        "id": "postfix",
+        "title": "中缀词元转后缀：双栈思想",
+        "when": "词元为非负数、括号和二元+-*/；不含一元负号，语法合法。",
+        "complexity": "O(词元数)时间和空间",
+        "code": "vector<string> toPostfix(const vector<string>& tokens){\n    vector<string> out;stack<string> ops;\n    auto prec=[](const string& s){return s==\"+\"||s==\"-\"?1:s==\"*\"||s==\"/\"?2:0;};\n    for(auto s:tokens){\n        if(s==\"(\")ops.push(s);\n        else if(s==\")\"){\n            while(!ops.empty()&&ops.top()!=\"(\"){out.push_back(ops.top());ops.pop();}\n            ops.pop();\n        }else if(prec(s)){\n            while(!ops.empty()&&prec(ops.top())>=prec(s)){out.push_back(ops.top());ops.pop();}\n            ops.push(s);\n        }else out.push_back(s);\n    }\n    while(!ops.empty()){out.push_back(ops.top());ops.pop();}return out;\n}",
+        "notes": "字符串扫描与多位小数分词需另写。若支持一元负号，必须增加文法/运算符类型，不能直接把每个-都视作二元。"
+      },
+      {
+        "id": "next-greater",
+        "title": "单调栈：右侧第一个严格更大元素",
+        "when": "返回0基下标；不存在为-1。",
+        "complexity": "O(n)时间，O(n)空间",
+        "code": "vector<int> nextGreater(const vector<int>& a){\n    vector<int> ans(a.size(),-1),st;\n    for(int i=0;i<(int)a.size();++i){\n        while(!st.empty()&&a[st.back()]<a[i]){ans[st.back()]=i;st.pop_back();}\n        st.push_back(i);\n    }\n    return ans;\n}",
+        "notes": "要求大于等于时改弹栈比较；存下标才能判断距离、窗口和原位置。"
+      },
+      {
+        "id": "window-min",
+        "title": "单调队列：长度k滑窗最小值",
+        "when": "1<=k<=n；输出n-k+1项。",
+        "complexity": "O(n)时间，O(k)辅助空间",
+        "code": "vector<int> windowMin(const vector<int>& a,int k){\n    deque<int> q;vector<int> out;\n    for(int i=0;i<(int)a.size();++i){\n        while(!q.empty()&&q.front()<=i-k)q.pop_front();\n        while(!q.empty()&&a[q.back()]>=a[i])q.pop_back();\n        q.push_back(i);if(i>=k-1)out.push_back(a[q.front()]);\n    }\n    return out;\n}",
+        "notes": "本段窗口包含当前项；P1440要求当前项之前的窗口，应调整输出和入队顺序。"
+      }
+    ],
+    "types": [
+      {
+        "id": "stack-valid",
+        "title": "栈操作模拟与出栈序列合法性",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "输入顺序固定，唯一可调的是何时压栈与弹栈。",
+        "steps": [
+          "维护下一待压值。",
+          "为当前目标持续压栈至栈顶匹配。",
+          "无法匹配则非法。",
+          "全部消费后检查结果。"
+        ],
+        "pitfalls": [
+          "栈顶不匹配不能从栈中间拿。",
+          "多组数据和结束标记需区分。"
+        ],
+        "practice": [
+          {
+            "id": "1363",
+            "title": "Rails",
+            "url": "http://bailian.openjudge.cn/practice/1363/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "火车出站序列判定。",
+            "hint": "匹配目标，必要时继续压入1..n。",
+            "warning": "n=0和序列首0有不同含义。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4099",
+            "title": "队列和栈",
+            "url": "http://bailian.openjudge.cn/practice/4099/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "比较FIFO与LIFO输出。",
+            "hint": "独立维护栈和队列及错误状态。",
+            "warning": "非法pop后仍需读完输入。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "catalan",
+        "title": "合法栈序列计数与Catalan递推",
+        "category": "基础篇 · 第11章 递推与递归",
+        "features": "只统计有多少合法操作或出栈序列，n增大后不能枚举所有排列。",
+        "steps": [
+          "定义push/pop合法前缀。",
+          "可用状态dp(已入,已出)。",
+          "或按首个匹配区间做Catalan分解。",
+          "估计答案大小再选数值类型。"
+        ],
+        "pitfalls": [
+          "已出不能多于已入。",
+          "操作序列与有重复值输出序列可能不一一对应。"
+        ],
+        "practice": [
+          {
+            "id": "4077",
+            "title": "出栈序列统计",
+            "url": "http://bailian.openjudge.cn/practice/4077/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "直接统计出栈序列。",
+            "hint": "C0=1，Ci=sum(Cj*C(i-1-j))。",
+            "warning": "n<=15，long long足够。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1044",
+            "title": "[NOIP 2003 普及组] 栈",
+            "url": "https://www.luogu.com.cn/problem/P1044",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "独立推导栈计数。",
+            "hint": "从合法前缀状态转移或Catalan递推。",
+            "warning": "边界空序列计1。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "brackets",
+        "title": "括号匹配、标记与最少补全",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "嵌套结构要求最近未闭合的左括号先匹配。",
+        "steps": [
+          "左括号压栈并保存位置。",
+          "右括号匹配栈顶类型。",
+          "结束检查未闭合位置。",
+          "若求最少补全，再使用区间DP。"
+        ],
+        "pitfalls": [
+          "总数相等不代表合法。",
+          "多种括号不能只计一个余额。"
+        ],
+        "practice": [
+          {
+            "id": "2929",
+            "title": "扩号匹配",
+            "url": "http://bailian.openjudge.cn/practice/2929/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "标出未匹配括号位置。",
+            "hint": "栈保存左括号下标，匹配后成对消除。",
+            "warning": "未匹配右括号也要标出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1739",
+            "title": "表达式括号匹配",
+            "url": "https://www.luogu.com.cn/problem/P1739",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "判定简单括号合法性。",
+            "hint": "扫描余额，不能为负，最后为0。",
+            "warning": "输入以@结束。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1141",
+            "title": "Brackets Sequence",
+            "url": "http://bailian.openjudge.cn/practice/1141/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "扩展到最少补全括号串。",
+            "hint": "区间DP选择配对或切分，并重建。",
+            "warning": "只输出最少数量不够，需要合法字符串。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "prefix-eval",
+        "title": "前缀表达式与递归求值",
+        "category": "基础篇 · 第11章 递推与递归",
+        "features": "操作符先于两个操作数出现，每个操作数又可以是表达式。",
+        "steps": [
+          "读取一个完整词元。",
+          "数字直接返回。",
+          "操作符递归读取左、右表达式。",
+          "按顺序计算并返回。"
+        ],
+        "pitfalls": [
+          "负数词元不等于独立减号。",
+          "先递归的结果是左操作数。"
+        ],
+        "practice": [
+          {
+            "id": "2694",
+            "title": "波兰表达式",
+            "url": "http://bailian.openjudge.cn/practice/2694/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "直接练前缀递归。",
+            "hint": "运算符触发两次递归读取。",
+            "warning": "浮点数与输出精度。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4132",
+            "title": "四则运算表达式求值",
+            "url": "http://bailian.openjudge.cn/practice/4132/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "将括号子式视作递归子表达式。",
+            "hint": "子式的值作为父表达式操作数。",
+            "warning": "这是中缀递归解析迁移，不能直接按前缀次序读词元。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "postfix-eval",
+        "title": "后缀表达式与值栈",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "操作数先出现，运算符取最近两个已完成结果。",
+        "steps": [
+          "扫描并正确分词。",
+          "数入栈。",
+          "运算符弹右值再弹左值。",
+          "计算后入栈，最后保留唯一答案。"
+        ],
+        "pitfalls": [
+          "减除次序颠倒。",
+          "多位数不能逐字符当不同操作数。"
+        ],
+        "practice": [
+          {
+            "id": "P1449",
+            "title": "后缀表达式",
+            "url": "https://www.luogu.com.cn/problem/P1449",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "直接练后缀表达式。",
+            "hint": "点号终止数字，@终止表达式。",
+            "warning": "整数除法向0取整。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4132",
+            "title": "四则运算表达式求值",
+            "url": "http://bailian.openjudge.cn/practice/4132/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "中缀转后缀后复用值栈。",
+            "hint": "用运算符栈处理优先级，再求值。",
+            "warning": "括号不进入最终后缀串；此题有浮点数。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "infix-eval",
+        "title": "中缀优先级、括号与语法分层",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "文本按常规算式书写，局部相邻字符不代表计算顺序。",
+        "steps": [
+          "分词识别数。",
+          "按expr/term/factor划分层次。",
+          "括号递归进入expr。",
+          "保证位置正确并按精度输出。"
+        ],
+        "pitfalls": [
+          "一元负号与二元减号不同。",
+          "乘除左结合，不能随意从右递归。"
+        ],
+        "practice": [
+          {
+            "id": "4132",
+            "title": "四则运算表达式求值",
+            "url": "http://bailian.openjudge.cn/practice/4132/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "实现完整四则与括号。",
+            "hint": "分层递归下降或双栈。",
+            "warning": "保留两位小数。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1981",
+            "title": "[NOIP 2013 普及组] 表达式求值",
+            "url": "https://www.luogu.com.cn/problem/P1981",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "受限文法下的优先级。",
+            "hint": "先累计乘法段，再相加取模。",
+            "warning": "只含加乘，不需要强行写完整通用解析器。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1686",
+            "title": "等价表达式",
+            "url": "http://bailian.openjudge.cn/practice/1686/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "表达式等价性扩展。",
+            "hint": "按题面语法求值，可多点代入作筛选。",
+            "warning": "有限随机点不构成严格恒等证明。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "monotonic-stack",
+        "title": "单调栈与最近更大/更小元素",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "每项寻找一侧最近满足大小关系的位置，朴素逐项搜索O(n²)。",
+        "steps": [
+          "决定栈按值递增还是递减。",
+          "新元素使哪些旧元素获得答案就弹出。",
+          "记录下标而非仅存值。",
+          "每项至多进出一次，整体O(n)。"
+        ],
+        "pitfalls": [
+          "相等元素是否弹出依严格关系。",
+          "栈顶下标和值混淆。"
+        ],
+        "practice": [
+          {
+            "id": "P5788",
+            "title": "【模板】单调栈",
+            "url": "https://www.luogu.com.cn/problem/P5788",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "右侧第一个更大元素。",
+            "hint": "扫描时为比当前小的栈顶结算答案。",
+            "warning": "不存在输出0。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1901",
+            "title": "发射站",
+            "url": "https://www.luogu.com.cn/problem/P1901",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "发射能量向最近更高站转移。",
+            "hint": "左右各扫一次找最近严格更高者。",
+            "warning": "等高不能接收；左右贡献累加。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "queue-cache",
+        "title": "FIFO、有限容量与分组队列",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "元素按先来先服务，容量或同组连续性又改变入队规则。",
+        "steps": [
+          "明确队列存什么身份。",
+          "容量满时按规则淘汰。",
+          "缓存存在性与队列顺序分开维护。",
+          "分组时用队号队列套成员队列。"
+        ],
+        "pitfalls": [
+          "命中缓存不一定刷新队尾。",
+          "同一活跃队号不能重复入主队列。"
+        ],
+        "practice": [
+          {
+            "id": "P1540",
+            "title": "[NOIP 2010 提高组] 机器翻译",
+            "url": "https://www.luogu.com.cn/problem/P1540",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "模拟FIFO翻译缓存。",
+            "hint": "集合判命中，队列维护装入次序。",
+            "warning": "命中时不调整顺序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2259",
+            "title": "Team Queue",
+            "url": "http://bailian.openjudge.cn/practice/2259/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "团队队列。",
+            "hint": "外层队号，内层成员；空变非空才入外层。",
+            "warning": "出队至组空才弹队号。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "monotonic-queue",
+        "title": "单调队列与固定滑窗极值",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "窗口左右端单调前进，查询每段最小或最大值。",
+        "steps": [
+          "存可能成为最优的下标。",
+          "从队首淘汰过期项。",
+          "从队尾淘汰被新值支配项。",
+          "从队首读最值。"
+        ],
+        "pitfalls": [
+          "下标过期不能靠值判断。",
+          "窗口未填满时是否输出取决于题面。"
+        ],
+        "practice": [
+          {
+            "id": "P1886",
+            "title": "【模板】单调队列 / 滑动窗口",
+            "url": "https://www.luogu.com.cn/problem/P1886",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "同时练窗口最小和最大。",
+            "hint": "两条单调队列或分别扫。",
+            "warning": "每行输出n-k+1个答案。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1440",
+            "title": "求m区间内的最小值",
+            "url": "https://www.luogu.com.cn/problem/P1440",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "只看前m项的最小值。",
+            "hint": "先输出当前项前方窗口的答案，再将当前项入队。",
+            "warning": "首项前面没有元素，按题面输出0。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "queue-bfs",
+        "title": "队列分层与最少步数",
+        "category": "基础篇 · 第14章 搜索",
+        "features": "每次操作代价相等，第一次到达某状态就是最少步数。",
+        "steps": [
+          "定义状态与转移。",
+          "起点入队即标记。",
+          "按FIFO取出并扩展合法邻居。",
+          "需要方案时记录前驱。"
+        ],
+        "pitfalls": [
+          "出队才标记会造成重复入队。",
+          "步数和经过的格子数不同。"
+        ],
+        "practice": [
+          {
+            "id": "4127",
+            "title": "迷宫问题",
+            "url": "http://bailian.openjudge.cn/practice/4127/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "输出迷宫最短路径。",
+            "hint": "BFS保存每个格子的父格。",
+            "warning": "按起点到终点方向输出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2251",
+            "title": "Dungeon Master",
+            "url": "http://bailian.openjudge.cn/practice/2251/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "三维BFS。",
+            "hint": "状态是层、行、列，六个方向。",
+            "warning": "多组结束标记与Trapped格式。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "explicit-stack",
+        "title": "显式栈模拟递归与非递归DFS",
+        "category": "基础篇 · 第15章 线性表",
+        "features": "递归深度大或需要控制进入、返回时的处理时机。",
+        "steps": [
+          "栈保存结点及执行阶段。",
+          "进入时处理先序动作。",
+          "压入后续阶段再压子任务。",
+          "返回阶段处理后序动作。"
+        ],
+        "pitfalls": [
+          "只存结点未必能复现后序。",
+          "邻居压入顺序与最终访问顺序相反。"
+        ],
+        "practice": [
+          {
+            "id": "P5318",
+            "title": "【深基18.例3】查找文献",
+            "url": "https://www.luogu.com.cn/problem/P5318",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "按指定顺序DFS与BFS。",
+            "hint": "邻接表排序；迭代DFS按递归语义安排栈。",
+            "warning": "重复点要跳过，编号顺序需保证。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1305",
+            "title": "新二叉树",
+            "url": "https://www.luogu.com.cn/problem/P1305",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "用显式阶段栈输出树的遍历。",
+            "hint": "把左右子树任务逆序压入。",
+            "warning": "此题可递归，练习目标是改写为显式栈。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否说明栈和队列分别保留什么顺序？",
+      "能否独立处理表达式的分词与优先级？",
+      "能否说明循环队列的空满约定？"
+    ],
+    "coverageNote": "",
+    "outlineCoverage": [
+      {
+        "title": "栈",
+        "status": "知识与方法",
+        "related": [
+          "知识：栈、递归与共享栈",
+          "知识：出栈序列",
+          "知识：共享栈与双端队列",
+          "知识：单调栈与单调队列的摊还分析",
+          "板子：栈序列合法性判定"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "栈 / 出栈序列",
+        "status": "知识与方法",
+        "related": [
+          "知识：出栈序列",
+          "题型：栈操作模拟与出栈序列合法性"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "栈 / 表达式",
+        "status": "知识与方法",
+        "related": [
+          "知识：表达式",
+          "板子：前缀表达式递归求值",
+          "题型：前缀表达式与递归求值",
+          "题型：后缀表达式与值栈"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "栈 / 表达式 / 中缀转后缀",
+        "status": "知识与方法",
+        "related": [
+          "知识：中缀转后缀的优先级不变量"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "队列",
+        "status": "知识与方法",
+        "related": [
+          "知识：循环队列",
+          "知识：双端队列与BFS",
+          "知识：共享栈与双端队列",
+          "知识：单调栈与单调队列的摊还分析",
+          "板子：记录size的循环队列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "队列 / 循环队列",
+        "status": "知识与方法",
+        "related": [
+          "知识：循环队列",
+          "板子：记录size的循环队列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "队列 / 链式队列",
+        "status": "知识与方法",
+        "related": [
+          "知识：循环队列",
+          "板子：记录size的循环队列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "队列 / 广度优先搜索",
+        "status": "知识与方法",
+        "related": [
+          "知识：双端队列与BFS"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "递归与栈",
+        "status": "知识与方法",
+        "related": [
+          "知识：递归帧不只含一个结点"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "递归与栈 / 运行栈",
+        "status": "知识与方法",
+        "related": [
+          "知识：递归帧不只含一个结点"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "递归与栈 / 显式模拟递归",
+        "status": "知识与方法",
+        "related": [
+          "知识：递归帧不只含一个结点"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "其他受限结构",
+        "status": "知识与方法",
+        "related": [
+          "知识：栈、递归与共享栈",
+          "知识：共享栈与双端队列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "其他受限结构 / 双端队列与共享栈",
+        "status": "知识与方法",
+        "related": [
+          "知识：栈、递归与共享栈",
+          "知识：共享栈与双端队列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  },
+  {
+    "id": "04-strings",
+    "order": 4,
+    "title": "字符串",
+    "summary": "掌握字符串边界、朴素匹配、KMP与前后缀周期关系。",
+    "prerequisites": [
+      "第3课；数组下标"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%AD%97%E7%AC%A6%E4%B8%B2/",
+    "repoPaths": [
+      "notes-上机/stl and c++.md"
+    ],
+    "knowledge": [
+      {
+        "title": "存储与字符",
+        "body": "string.size()不包含结尾空字符，C风格字符串要预留终止符。ASCII字符和UTF-8汉字的字节数不同，按字节比较的题目不能随意当成字符位置。getline与>>混用时注意残留换行。"
+      },
+      {
+        "title": "朴素匹配",
+        "body": "枚举对齐起点，再比较模式字符，最坏O(nm)。小规模先用朴素算法检验思路；重复字符构造最坏数据时不能误认为总是线性。"
+      },
+      {
+        "title": "KMP的pi数组",
+        "body": "pi[i]是s[0..i]的最长真前缀与后缀公共长度；真前缀不能等于整个串。失配时j=pi[j-1]复用已知匹配，文本指针不回退。预处理和匹配均为线性。"
+      },
+      {
+        "title": "next与nextval",
+        "body": "不同资料可能采用0基、1基或-1哨兵。nextval跳过必然再次失配的位置，但它不直接保留所有border长度；求周期应使用普通pi/next。"
+      },
+      {
+        "title": "周期、哈希与其他匹配",
+        "body": "长度L前缀的候选最小周期是p=L-pi[L-1]，只有L%p==0且L/p>1才有重复整块。滚动哈希存在碰撞，不能把哈希值相同当作数学上保证相等。"
+      },
+      {
+        "title": "KMP的两套下标约定",
+        "body": "pi[i]表示s[0..i]最长真前后缀长度，失配时j=pi[j−1]；另一种next[0]=−1的实现保存不同含义。优化nextval在已知下个比较字符相等时跳过无效回退，但数组定义和匹配主循环必须成套使用。"
+      },
+      {
+        "title": "Boyer–Moore、Rabin–Karp与AC的适用范围",
+        "body": "BM从模式右端比较，用坏字符/好后缀跳跃；RK用滚动指纹筛选候选，碰撞需复核；AC把多模式Trie的失配关系连成自动机。它们不是KMP的简单换名，最坏界、预处理量和查询模型不同。"
+      },
+      {
+        "title": "编辑距离、LCS与回文的对象",
+        "body": "编辑距离允许插删改，LCS比较不连续子序列，最长公共子串要求连续。回文子串可以中心扩展或Manacher，回文子序列通常用区间DP；先区分对象，再选择算法。"
+      },
+      {
+        "title": "字符串哈希区间公式",
+        "body": "令H[i+1]=H[i]·base+value(s[i])，半开区间[l,r)的哈希是H[r]−H[l]·base^(r−l)。哈希只是指纹，非数学上无碰撞编码；完整串查询可让标准容器同时保留原串。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "kmp",
+        "title": "0基前缀函数与所有匹配位置",
+        "when": "字节串；空模式在此返回空结果，调用方需自行定义空串语义。返回0基起点。",
+        "complexity": "O(n+m) 时间，O(m+匹配数) 空间",
+        "code": "vector<int> prefixFunction(const string& s) {\n    vector<int> pi(s.size());\n    for(int i=1;i<(int)s.size();++i) {\n        int j=pi[i-1];\n        while(j>0 && s[i]!=s[j]) j=pi[j-1];\n        if(s[i]==s[j]) ++j;\n        pi[i]=j;\n    }\n    return pi;\n}\nvector<int> findAll(const string& text,const string& pat) {\n    vector<int> ans;\n    if(pat.empty()) return ans;\n    auto pi=prefixFunction(pat); int j=0;\n    for(int i=0;i<(int)text.size();++i) {\n        while(j>0 && text[i]!=pat[j]) j=pi[j-1];\n        if(text[i]==pat[j]) ++j;\n        if(j==(int)pat.size()) {\n            ans.push_back(i-j+1); j=pi[j-1];\n        }\n    }\n    return ans;\n}",
+        "notes": "匹配成功后回退pi[j-1]才能找到重叠匹配。周期题只需prefixFunction，不要复制多个不同下标版本。"
+      },
+      {
+        "id": "window",
+        "title": "固定长度滑窗：字母编号和",
+        "when": "s只含a..z；m在1..|s|内；返回所有和为q的窗口起点。",
+        "complexity": "O(n) 时间，O(答案数) 空间",
+        "code": "vector<int> sumWindows(const string& s,int m,int q) {\n    vector<int> ans; int sum=0;\n    for(int i=0;i<(int)s.size();++i) {\n        sum+=s[i]-'a'+1;\n        if(i>=m) sum-=s[i-m]-'a'+1;\n        if(i+1>=m && sum==q) ans.push_back(i-m+1);\n    }\n    return ans;\n}",
+        "notes": "4042虽然题名含Rabin-Karp，实际要求字母编号和为q；这不是模式串精确相等的判定。"
+      },
+      {
+        "id": "edit-dp",
+        "title": "Levenshtein编辑距离：滚动数组",
+        "when": "每次插入、删除、替换代价1，匹配代价0；按字节处理。",
+        "complexity": "O(nm)时间，O(m)空间",
+        "code": "int editDistance(const string& a,const string& b){\n    int m=b.size();vector<int> prev(m+1),cur(m+1);iota(prev.begin(),prev.end(),0);\n    for(int i=1;i<=(int)a.size();++i){\n        cur[0]=i;\n        for(int j=1;j<=m;++j)cur[j]=min({prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]!=b[j-1])});\n        prev.swap(cur);\n    }\n    return prev[m];\n}",
+        "notes": "若需要恢复编辑方案，要保存方向或使用分治恢复；本段只返回代价。UTF-8中文不能按单字节当字符。"
+      },
+      {
+        "id": "hash",
+        "title": "前缀滚动哈希（自然64位溢出）",
+        "when": "使用uint64_t模2^64运算；get(l,r)返回半开区间指纹。",
+        "complexity": "预处理O(n)，查询O(1)，空间O(n)",
+        "code": "struct StringHash{\n    vector<uint64_t> h,power;\n    StringHash(const string& s):h(s.size()+1),power(s.size()+1,1){\n        for(size_t i=0;i<s.size();++i){h[i+1]=h[i]*131+(unsigned char)s[i]+1;power[i+1]=power[i]*131;}\n    }\n    uint64_t get(int l,int r)const{return h[r]-h[l]*power[r-l];}\n};",
+        "notes": "无符号溢出有定义；有符号溢出没有同样保证。需要严格正确判等时比较原串，或用确定性后缀/LCP等结构。"
+      },
+      {
+        "id": "manacher",
+        "title": "Manacher：奇偶回文半径",
+        "when": "返回最长回文子串长度，空串返回0；按字节处理。",
+        "complexity": "O(n)时间，O(n)空间",
+        "code": "int longestPalindrome(const string& s){\n    int n=s.size(),ans=0;vector<int> odd(n),even(n);\n    for(int i=0,l=0,r=-1;i<n;++i){\n        int k=i>r?1:min(odd[l+r-i],r-i+1);\n        while(i-k>=0&&i+k<n&&s[i-k]==s[i+k])++k;\n        odd[i]=k;ans=max(ans,2*k-1);if(i+k-1>r){l=i-k+1;r=i+k-1;}\n    }\n    for(int i=0,l=0,r=-1;i<n;++i){\n        int k=i>r?0:min(even[l+r-i+1],r-i+1);\n        while(i-k-1>=0&&i+k<n&&s[i-k-1]==s[i+k])++k;\n        even[i]=k;ans=max(ans,2*k);if(i+k-1>r){l=i-k;r=i+k-1;}\n    }\n    return ans;\n}",
+        "notes": "odd中心为i，even中心在i-1和i之间，两个镜像下标不同；此版本无需选择特殊分隔符。"
+      },
+      {
+        "id": "aho",
+        "title": "AC自动机：每个模式出现次数",
+        "when": "小写字母；先insert所有模式、build一次，再count一次；返回每个insert对应次数。",
+        "complexity": "建图O(26·结点数)，查询O(文本长+结点数)，空间O(26·结点数)",
+        "code": "struct Aho{\n    struct Node{array<int,26> next{};int fail=0;long long hits=0;};\n    vector<Node> a{Node{}};vector<int> terminal,order;\n    void insert(const string& s){\n        int u=0;for(char c:s){int x=c-'a';if(!a[u].next[x]){int v=a.size();a[u].next[x]=v;a.push_back(Node{});}u=a[u].next[x];}\n        terminal.push_back(u);\n    }\n    void build(){\n        queue<int> q;for(int v:a[0].next)if(v)q.push(v);\n        while(!q.empty()){\n            int u=q.front();q.pop();order.push_back(u);\n            for(int c=0;c<26;++c){int v=a[u].next[c];\n                if(v){a[v].fail=a[a[u].fail].next[c];q.push(v);}\n                else a[u].next[c]=a[a[u].fail].next[c];\n            }\n        }\n    }\n    vector<long long> count(const string& s){\n        for(auto& node:a)node.hits=0;\n        int u=0;for(char c:s){u=a[u].next[c-'a'];++a[u].hits;}\n        for(int i=(int)order.size()-1;i>=0;--i){int v=order[i];a[a[v].fail].hits+=a[v].hits;}\n        vector<long long> out;for(int v:terminal)out.push_back(a[v].hits);return out;\n    }\n};",
+        "notes": "相同模式的多个insert会返回相同出现次数，调用方按题面处理重复模式。build补全了转移，之后不可直接继续insert。"
+      }
+    ],
+    "types": [
+      {
+        "id": "normalize",
+        "title": "字符分类、大小写与规范化",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "外观不同的文本可能按规则视为相同，比较前需要统一表示。",
+        "steps": [
+          "保留完整输入。",
+          "只转换题目允许变化的字符。",
+          "明确比较顺序和相等定义。",
+          "按规范键查询或比较。"
+        ],
+        "pitfalls": [
+          "getline前残留换行。",
+          "tolower等函数应避免带符号char越界。"
+        ],
+        "practice": [
+          {
+            "id": "2721",
+            "title": "忽略大小写比较字符串大小",
+            "url": "http://bailian.openjudge.cn/practice/2721/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "忽略大小写比较。",
+            "hint": "将两串统一小写后按字典序比较。",
+            "warning": "输出指定比较符号。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2743",
+            "title": "字符串判等",
+            "url": "http://bailian.openjudge.cn/practice/2743/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "按规则判等。",
+            "hint": "先读完整行，再处理空格与大小写。",
+            "warning": "只有题目允许忽略的字符才能移除。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "word-token",
+        "title": "单词边界、分词与词频",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "统计对象是完整单词而非任意子串，空格与标点决定边界。",
+        "steps": [
+          "先确定单词字符集。",
+          "扫描词的开始和结束。",
+          "只在完整边界处比较。",
+          "保存原始位置用于输出。"
+        ],
+        "pitfalls": [
+          "把the计入there。",
+          "多空格、首尾空格和末词无分隔。"
+        ],
+        "practice": [
+          {
+            "id": "4030",
+            "title": "统计单词数",
+            "url": "http://bailian.openjudge.cn/practice/4030/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "统计完整单词并找首位置。",
+            "hint": "大小写正规化后，用空格边界筛选匹配。",
+            "warning": "位置相对于原输入，不能trim后直接输出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2880",
+            "title": "句中最长的单词",
+            "url": "http://bailian.openjudge.cn/practice/2880/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "找句中最长单词。",
+            "hint": "逐词记录长度与原串，按题面处理句末符。",
+            "warning": "并列最长取舍依题面。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "string-edit",
+        "title": "字符串插入、替换与受控展开",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "修改规则明确，但新生成的内容是否再次参与扫描必须先约定。",
+        "steps": [
+          "定位触发位置。",
+          "用新结果串或片段拼接避免覆盖。",
+          "原输入指针每步必须推进。",
+          "最后检查长度和空串。"
+        ],
+        "pitfalls": [
+          "替换内容再次被替换会死循环。",
+          "按子串替换误伤完整单词。"
+        ],
+        "practice": [
+          {
+            "id": "2934",
+            "title": "字符串插入",
+            "url": "http://bailian.openjudge.cn/practice/2934/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "在指定字符位置插入。",
+            "hint": "找到最大字符的首次位置后拼接。",
+            "warning": "题面关于相同最大字符的位置规则。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2944",
+            "title": "单词替换",
+            "url": "http://bailian.openjudge.cn/practice/2944/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "完整单词替换。",
+            "hint": "分词后替换相等词，再保持所需空格格式。",
+            "warning": "不要把词内部分匹配替换。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1098",
+            "title": "[NOIP 2007 提高组] 字符串的展开",
+            "url": "https://www.luogu.com.cn/problem/P1098",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "按参数展开连字符。",
+            "hint": "先判断左右同类型且升序，再按p1/p2/p3生成。",
+            "warning": "相邻字符和非法连字符保持原样。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "rotation-match",
+        "title": "朴素匹配、循环串与对齐枚举",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "规模小，可以枚举起点或偏移，将结构问题转成逐字符比较。",
+        "steps": [
+          "限定候选偏移范围。",
+          "避免越界并逐项比较。",
+          "循环串可拼接自身。",
+          "只保留合法长度与起点。"
+        ],
+        "pitfalls": [
+          "循环包含不是任意长度子串。",
+          "只检查一个方向的包含。"
+        ],
+        "practice": [
+          {
+            "id": "3711",
+            "title": "字符串移位包含问题",
+            "url": "http://bailian.openjudge.cn/practice/3711/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "将循环移位包含转成双串查找。",
+            "hint": "短串在长串+长串里搜索，并限制长度。",
+            "warning": "题目允许两串任一成为另一串移位后的子串。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1580",
+            "title": "String Matching",
+            "url": "http://bailian.openjudge.cn/practice/1580/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "枚举两个词的全部相对偏移。",
+            "hint": "每种偏移统计重叠处相同字符数，取最优相似比例。",
+            "warning": "不是编辑距离，也不是必须完全匹配。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "kmp-find",
+        "title": "KMP失配回退与全部匹配",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "固定模式重复搜索，不能在失配后反复扫描已知前缀。",
+        "steps": [
+          "计算模式前缀函数。",
+          "主串扫描时按pi回退。",
+          "完整匹配后记录起点。",
+          "按pi[m-1]继续以保留重叠匹配。"
+        ],
+        "pitfalls": [
+          "匹配后直接清零会漏重叠。",
+          "next的-1约定与pi的长度约定不能混用。"
+        ],
+        "practice": [
+          {
+            "id": "P3375",
+            "title": "【模板】KMP",
+            "url": "https://www.luogu.com.cn/problem/P3375",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "直接输出全部匹配位置及前缀函数。",
+            "hint": "实现0基pi，输出匹配位置时+1。",
+            "warning": "题目还要求输出模式的pi数组。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1226",
+            "title": "Substrings",
+            "url": "http://bailian.openjudge.cn/practice/1226/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "用匹配检查候选公共子串。",
+            "hint": "枚举最短词的子串，检验其或反串是否出现在每个词中。",
+            "warning": "此题允许反向出现；不是只求两串LCS。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "period",
+        "title": "周期、循环节与前缀周期",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "字符串能否由更短片段重复构成，或每个前缀是否有重复结构。",
+        "steps": [
+          "计算pi。",
+          "候选周期p=len-pi[len-1]。",
+          "检验len能否整除p。",
+          "逐前缀输出满足重复次数>1的项。"
+        ],
+        "pitfalls": [
+          "有border不代表能完整重复。",
+          "候选周期不整除长度时，整串最小重复块为自身。"
+        ],
+        "practice": [
+          {
+            "id": "2406",
+            "title": "字符串乘方",
+            "url": "http://bailian.openjudge.cn/practice/2406/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "求整串最大重复次数。",
+            "hint": "若n%p==0，次数n/p，否则1。",
+            "warning": "句点是结束标志。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1961",
+            "title": "前缀中的周期",
+            "url": "http://bailian.openjudge.cn/practice/1961/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "统计每个前缀的周期。",
+            "hint": "对i长度应用同一公式。",
+            "warning": "输出Test case编号与空行格式。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P3435",
+            "title": "[POI 2006] OKR-Periods of Words",
+            "url": "https://www.luogu.com.cn/problem/P3435",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "比较题目定义与整除周期定义。",
+            "hint": "最长border可给平移重复长度n-pi[n-1]。",
+            "warning": "题目定义允许末段不完整，不能强加整除。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "border-chain",
+        "title": "Border链、前后缀限制与前缀计数",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "既是前缀又是后缀的候选沿失配链递减，附加长度限制或计数。",
+        "steps": [
+          "得到pi形成父指针链。",
+          "明确是否允许前后缀重叠。",
+          "利用链跳转或倍增找合法祖先。",
+          "按题意累积计数或乘积。"
+        ],
+        "pitfalls": [
+          "只看最长border会漏其他长度。",
+          "计数中的空串和整串是否包括。"
+        ],
+        "practice": [
+          {
+            "id": "P2375",
+            "title": "[NOI2014] 动物园",
+            "url": "https://www.luogu.com.cn/problem/P2375",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "前缀非重叠border数量。",
+            "hint": "沿pi链寻找长度不超过当前一半的border，可用双指针式KMP或倍增。",
+            "warning": "答案乘积须取模，不能朴素逐链到O(n²)。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1961",
+            "title": "前缀中的周期",
+            "url": "http://bailian.openjudge.cn/practice/1961/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "将前缀函数应用到重复前缀。",
+            "hint": "考察最长border给出的最短周期。",
+            "warning": "这是border链的周期应用，输出并不要求列全部border。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "hash-match",
+        "title": "滚动哈希、去重与碰撞控制",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "需要快速比较大量子串，或用字符串指纹筛选相等对象。",
+        "steps": [
+          "构建前缀哈希和幂。",
+          "统一区间取哈希公式。",
+          "明确溢出或取模运算模型。",
+          "高可靠判等保留原串确认。"
+        ],
+        "pitfalls": [
+          "不同长度键不能只比一个hash。",
+          "取模减法需正规化，单模也可能碰撞。"
+        ],
+        "practice": [
+          {
+            "id": "P3370",
+            "title": "【模板】字符串哈希",
+            "url": "https://www.luogu.com.cn/problem/P3370",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "字符串去重与哈希方案比较。",
+            "hint": "可直接存原串集合，也可比较多重哈希并说明概率界。",
+            "warning": "输出不同串数量。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4042",
+            "title": "Rabin-Karp字符串匹配",
+            "url": "http://bailian.openjudge.cn/practice/4042/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "识别题面真正的窗口指纹。",
+            "hint": "此题定义是字母编号和，用滑窗线性维护。",
+            "warning": "题名Rabin-Karp不能替代题面；相同和不代表相同字符串。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "edit-distance",
+        "title": "编辑距离与近似匹配",
+        "category": "进阶篇 · 第14章 线性状态动态规划；第7章 字符串",
+        "features": "允许插入、删除、替换字符，目标是最少操作而非最长连续匹配。",
+        "steps": [
+          "dp[i][j]表示两前缀的最小代价。",
+          "初始化与空串的距离。",
+          "枚举删、增、改/保持。",
+          "若只允许一次操作可直接枚举检验。"
+        ],
+        "pitfalls": [
+          "子串、子序列与编辑距离不是同一模型。",
+          "相同字符的保持代价为0。"
+        ],
+        "practice": [
+          {
+            "id": "4007",
+            "title": "计算字符串距离",
+            "url": "http://bailian.openjudge.cn/practice/4007/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "直接练编辑距离DP。",
+            "hint": "三种编辑从相邻状态转移。",
+            "warning": "边界第一行和第一列不能全置0。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1035",
+            "title": "拼写检查",
+            "url": "http://bailian.openjudge.cn/practice/1035/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "词典中寻找一次编辑可达词。",
+            "hint": "先精确查找，再检验插删改一次。",
+            "warning": "建议词保持词典原顺序，不能随意排序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "palindrome",
+        "title": "回文识别、中心扩展与回文DP",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "正反读相同，问题可能要求单个判定、最长子串或最少分割。",
+        "steps": [
+          "明确是连续子串还是子序列。",
+          "奇偶中心分别处理。",
+          "批量判断可用区间递推或Manacher。",
+          "分割问题再做前缀DP。"
+        ],
+        "pitfalls": [
+          "偶数回文中心在两个字符之间。",
+          "最长回文子序列不能用中心扩展。"
+        ],
+        "practice": [
+          {
+            "id": "4122",
+            "title": "切割回文",
+            "url": "http://bailian.openjudge.cn/practice/4122/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "回文区间预处理后最少切分。",
+            "hint": "预先判pal[l][r]，再由可回文后缀更新前缀最少分段。",
+            "warning": "分段数与切割次数差1。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P3805",
+            "title": "【模板】Manacher",
+            "url": "https://www.luogu.com.cn/problem/P3805",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "大型文本最长回文。",
+            "hint": "Manacher维护右边界和镜像半径。",
+            "warning": "分隔符、哨兵与原串长度换算。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "multi-pattern",
+        "title": "多模式匹配与AC自动机（扩充）",
+        "category": "基础篇 · 第6章 字符串与文件操作；进阶篇 · 第7章 字符串",
+        "features": "许多模式在同一文本中查询，逐个KMP的总成本过高。",
+        "steps": [
+          "建Trie并记录终止结点。",
+          "BFS构建fail和转移。",
+          "扫描文本累积访问次数。",
+          "按fail树逆BFS传播或处理去重出现。"
+        ],
+        "pitfalls": [
+          "终止数量与结点访问次数含义不同。",
+          "P3808与P5357的重复模式统计要求不同。"
+        ],
+        "practice": [
+          {
+            "id": "P3808",
+            "title": "AC 自动机（简单版）",
+            "url": "https://www.luogu.com.cn/problem/P3808",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "统计出现过的模式数量。",
+            "hint": "访问到终止链时按题意避免同一模式重复计。",
+            "warning": "相同模式输入的计数语义需保留。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P5357",
+            "title": "【模板】AC 自动机",
+            "url": "https://www.luogu.com.cn/problem/P5357",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "对每个模式统计出现次数。",
+            "hint": "文本扫到结点计数，fail树逆序向父汇总。",
+            "warning": "不能每次沿fail链逐个加而退化。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否解释失配为何回退j而不回退文本指针？",
+      "能否独立写出pi数组并检查重叠匹配？",
+      "能否区分周期与仅存在border？"
+    ],
+    "coverageNote": "",
+    "outlineCoverage": [
+      {
+        "title": "字符串",
+        "status": "知识与方法",
+        "related": [
+          "知识：字符串哈希区间公式",
+          "题型：字符串插入、替换与受控展开"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "字符串 / 字符与编码",
+        "status": "知识与方法",
+        "related": [
+          "知识：存储与字符",
+          "知识：字符串哈希区间公式",
+          "题型：字符分类、大小写与规范化",
+          "题型：字符串插入、替换与受控展开"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "字符串 / 存储与基本操作",
+        "status": "知识与方法",
+        "related": [
+          "知识：存储与字符"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "模式匹配",
+        "status": "知识与方法",
+        "related": [
+          "知识：朴素匹配",
+          "知识：周期、哈希与其他匹配",
+          "板子：0基前缀函数与所有匹配位置",
+          "题型：朴素匹配、循环串与对齐枚举",
+          "题型：KMP失配回退与全部匹配"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "模式匹配 / 朴素匹配",
+        "status": "知识与方法",
+        "related": [
+          "知识：朴素匹配",
+          "题型：朴素匹配、循环串与对齐枚举"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "模式匹配 / 普通 KMP",
+        "status": "知识与方法",
+        "related": [
+          "知识：KMP的pi数组",
+          "知识：KMP的两套下标约定",
+          "题型：KMP失配回退与全部匹配"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "模式匹配 / 优化 KMP",
+        "status": "知识与方法",
+        "related": [
+          "知识：next与nextval"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "模式匹配 / 其他匹配方法",
+        "status": "知识与方法",
+        "related": [
+          "知识：Boyer–Moore、Rabin–Karp与AC的适用范围"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  },
+  {
+    "id": "05-binary-tree",
+    "order": 5,
+    "title": "二叉树",
+    "summary": "串起性质、遍历、重建、BST、堆与Huffman。",
+    "prerequisites": [
+      "第3课；递归与队列"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E4%BA%8C%E5%8F%89%E6%A0%91/",
+    "repoPaths": [
+      "notes-理论-期中前/5-二叉树.md"
+    ],
+    "knowledge": [
+      {
+        "title": "结点、度与高度",
+        "body": "规定根深度0、空树高度-1、叶子高度0。非空二叉树n0=n2+1；n个结点共有n-1条边。完全二叉树1基编号时孩子为2i、2i+1，普通稀疏二叉树用数组位置可能浪费空间。"
+      },
+      {
+        "title": "遍历与唯一性",
+        "body": "先序根左右，中序左根右，后序左右根，层序用队列。结点标识互异时，先序+中序或后序+中序可唯一重建；先序+后序通常不能唯一确定。"
+      },
+      {
+        "title": "非递归与线索",
+        "body": "显式栈可保存“访问到哪一步”；中序线索用原本为空的指针指向前驱/后继，需tag区分孩子指针和线索，遍历时不能当普通子树递归。"
+      },
+      {
+        "title": "二叉搜索树",
+        "body": "左小右大，中序有序；重复值策略必须事先确定。删除双孩子结点可用后继替换，再删后继。普通BST可能退化成链，单次O(n)，不能直接宣称O(log n)。"
+      },
+      {
+        "title": "堆与优先队列",
+        "body": "堆只保证父子偏序，不保证整层或全局有序。自底向上建堆O(n)，插入/弹出O(log n)。priority_queue默认最大堆，greater得到最小堆。"
+      },
+      {
+        "title": "Huffman",
+        "body": "每次合并最小的两个权值。所有合并代价之和等于叶子的带权路径长度；编码不唯一但最小WPL相同。单个叶子的树边数深度为0，实际编码系统的最短码长约定需另看题面。"
+      },
+      {
+        "title": "线索二叉树的tag与后继",
+        "body": "把原本为空的左/右指针分别指向中序前驱/后继，并用tag区分真实孩子与线索。找中序后继：若右指针为线索直接跟随，否则进入真实右子树并沿真实左孩子走到最左。修改树结构后必须维护线索，普通递归不能误沿线索形成环。"
+      },
+      {
+        "title": "遍历序列的唯一性条件",
+        "body": "结点互异时，中序配先序或后序可唯一重建；先序配后序一般不能决定单孩子在左还是右。满二叉树的额外条件可能消除歧义。出现重复标签时，位置映射不再唯一，需要题目额外信息。"
+      },
+      {
+        "title": "BST删除与前驱后继",
+        "body": "无孩子直接删，单孩子用孩子接替，双孩子可用右子树最小键或左子树最大键替换，再删替换来源。维护重数时通常先减重数；维护size、高度或线索时，每一步结构变动还需同步信息。"
+      },
+      {
+        "title": "堆与锦标赛树",
+        "body": "二叉堆把最值放根，非根记录不是全序；锦标赛树把候选放叶，内部保存胜者/败者，更新一条根叶路径O(log k)。两者都能多路选择，和最佳归并树“决定先合并哪些段”的问题不同。"
+      },
+      {
+        "title": "二叉树计数与遍历综合",
+        "body": "n0=n2+1适用于非空二叉树按度分类，不要求完全或满。以根分割的树形数满足Catalan递推。淘汰赛可视为固定完全树：每个内部结点保存两孩子胜者，决赛失败者是亚军。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "rebuild",
+        "title": "先序+中序直接生成后序",
+        "when": "结点字符互异且两序列合法，返回后序字符串。",
+        "complexity": "平均O(n) 时间，O(n) 位置表与O(h)栈，结果空间O(n)",
+        "code": "string postorder(const string& pre,const string& in) {\n    unordered_map<char,int> pos;\n    for(int i=0;i<(int)in.size();++i) pos[in[i]]=i;\n    string ans;\n    function<void(int,int,int)> build=[&](int pl,int il,int len) {\n        if(len==0) return;\n        char root=pre[pl]; int left=pos.at(root)-il;\n        build(pl+1,il,left);\n        build(pl+1+left,il+left+1,len-left-1);\n        ans+=root;\n    };\n    build(0,0,(int)pre.size()); return ans;\n}",
+        "notes": "每组重建都重新构造pos；不要在递归中反复substr/find造成O(n²)。极深树需改显式栈。"
+      },
+      {
+        "id": "bst",
+        "title": "普通BST插入（重复值忽略）",
+        "when": "root为0表示空树，节点数组0为哨兵，返回更新后的根编号。",
+        "complexity": "单次O(h)，最坏O(n)；新增结点O(1)空间",
+        "code": "struct BST {\n    struct Node { int key,l=0,r=0; };\n    vector<Node> a{{0,0,0}};\n    int insert(int root,int x) {\n        if(!root) { a.push_back({x,0,0}); return (int)a.size()-1; }\n        int u=root;\n        while(true) {\n            if(x==a[u].key) break;\n            bool right=x>a[u].key;\n            int v=right?a[u].r:a[u].l;\n            if(v) {u=v; continue;}\n            int id=(int)a.size(); a.push_back({x,0,0});\n            if(right) a[u].r=id; else a[u].l=id;\n            break;\n        }\n        return root;\n    }\n};",
+        "notes": "push_back可能触发扩容，不能拿vector内部成员的引用跨push_back使用。4079重复值不再插入；输出前序而不是中序。"
+      },
+      {
+        "id": "huffman",
+        "title": "二叉Huffman最小WPL",
+        "when": "非负权值，返回最小带权路径长度；单结点返回0。",
+        "complexity": "O(n log n) 时间，O(n) 空间",
+        "code": "long long huffmanCost(const vector<long long>& w) {\n    priority_queue<long long,vector<long long>,greater<long long>> q;\n    for(long long x:w) q.push(x);\n    long long ans=0;\n    while(q.size()>1) {\n        long long x=q.top(); q.pop();\n        long long y=q.top(); q.pop();\n        ans+=x+y; q.push(x+y);\n    }\n    return ans;\n}",
+        "notes": "求具体编码需保存新建内部结点和左右孩子。求最优BST不可用这个贪心：BST额外要求中序顺序。"
+      },
+      {
+        "id": "iterative-traversal",
+        "title": "显式栈：先序、中序、后序统一阶段机",
+        "when": "left/right为孩子下标数组，0为空，结点1..n；返回三种结点编号序列。",
+        "complexity": "O(n)时间，O(h)栈空间和O(n)结果空间",
+        "code": "array<vector<int>,3> traversals(int root,const vector<int>& left,const vector<int>& right){\n    array<vector<int>,3> ans;vector<pair<int,int>> st;if(root)st.push_back({root,0});\n    while(!st.empty()){\n        auto [u,stage]=st.back();st.pop_back();\n        if(stage==0){ans[0].push_back(u);st.push_back({u,1});if(left[u])st.push_back({left[u],0});}\n        else if(stage==1){ans[1].push_back(u);st.push_back({u,2});if(right[u])st.push_back({right[u],0});}\n        else ans[2].push_back(u);\n    }\n    return ans;\n}",
+        "notes": "stage记录递归的返回位置；普通图若有环，还必须增加访问标记，不能直接套树遍历。"
+      },
+      {
+        "id": "threaded-inorder",
+        "title": "建立中序线索并O(1)辅助空间遍历",
+        "when": "输入合法二叉树，编号1..n，0空；只可在线索化前调用build一次。",
+        "complexity": "建立O(n)时间、O(h)递归栈；遍历O(n)时间、O(1)额外空间",
+        "code": "struct ThreadedTree{\n    struct Node{int l=0,r=0;bool lt=false,rt=false;};\n    vector<Node> a;\n    ThreadedTree(int n):a(n+1){}\n    void build(int root){\n        int prev=0;\n        function<void(int)> visit=[&](int u){\n            if(!u)return;visit(a[u].l);\n            if(!a[u].l){a[u].l=prev;a[u].lt=true;}\n            if(prev&&!a[prev].r){a[prev].r=u;a[prev].rt=true;}\n            prev=u;visit(a[u].r);\n        };\n        visit(root);if(prev)a[prev].rt=true;\n    }\n    vector<int> inorder(int root)const{\n        vector<int> out;int u=root;\n        while(u&&!a[u].lt)u=a[u].l;\n        while(u){out.push_back(u);if(a[u].rt)u=a[u].r;\n            else {u=a[u].r;while(u&&!a[u].lt)u=a[u].l;}}\n        return out;\n    }\n};",
+        "notes": "先按真实孩子构建a，再build。结点最后一个后继为0；修改孩子或再次build前必须先拆除线索，不能重复沿线索递归。结果vector的空间另计O(n)。"
+      },
+      {
+        "id": "min-heap",
+        "title": "手写最小堆：上浮、下沉与线性建堆",
+        "when": "0基vector，允许重复；top/pop要求非空。",
+        "complexity": "建堆O(n)，push/pop O(log n)，top O(1)，空间O(n)",
+        "code": "struct MinHeap{\n    vector<int> a;\n    void down(int u){int n=a.size();\n        while(2*u+1<n){int v=2*u+1;if(v+1<n&&a[v+1]<a[v])++v;\n            if(a[u]<=a[v])break;swap(a[u],a[v]);u=v;}}\n    void build(vector<int> v){a=move(v);for(int u=(int)a.size()/2-1;u>=0;--u)down(u);}\n    void push(int x){a.push_back(x);int u=a.size()-1;\n        while(u&&a[(u-1)/2]>a[u]){int p=(u-1)/2;swap(a[p],a[u]);u=p;}}\n    int top()const{return a[0];}\n    void pop(){a[0]=a.back();a.pop_back();if(!a.empty())down(0);}\n};",
+        "notes": "build中的起点必须以有符号int计算，避免空vector的size_t下溢。pop前由调用方判空。"
+      }
+    ],
+    "types": [
+      {
+        "id": "binary-properties",
+        "title": "二叉树顺序编号、深度与子树区间",
+        "category": "基础篇 · 第16章 二叉树",
+        "features": "完全二叉树编号有父子算术关系，可以不显式建树。",
+        "steps": [
+          "先约定1基编号。",
+          "父亲i/2，孩子2i和2i+1。",
+          "每层子树后代形成连续区间。",
+          "用long long避免区间倍增溢出。"
+        ],
+        "pitfalls": [
+          "任意二叉树不能套完全树下标。",
+          "边高和结点层数差1。"
+        ],
+        "practice": [
+          {
+            "id": "2756",
+            "title": "二叉树",
+            "url": "http://bailian.openjudge.cn/practice/2756/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "完全二叉树编号求公共祖先。",
+            "hint": "不断让较大编号除以2。",
+            "warning": "两点之一就是祖先也要处理。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2788",
+            "title": "二叉树",
+            "url": "http://bailian.openjudge.cn/practice/2788/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "统计编号树的截断子树规模。",
+            "hint": "逐层扩展区间[l,r]并与[1,n]求交。",
+            "warning": "最后一层不完整，不能直接套2^h-1。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "traversal",
+        "title": "先中后序与结点访问时机",
+        "category": "基础篇 · 第16章 二叉树",
+        "features": "同一树结构，进入、左右子树处理完的时机决定遍历序列。",
+        "steps": [
+          "解析左右孩子。",
+          "确定根。",
+          "递归或显式栈按目标时机访问。",
+          "检查空孩子与输出顺序。"
+        ],
+        "pitfalls": [
+          "左右孩子顺序不可交换。",
+          "叶子和空孩子不是同一结点。"
+        ],
+        "practice": [
+          {
+            "id": "P1305",
+            "title": "新二叉树",
+            "url": "https://www.luogu.com.cn/problem/P1305",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "从孩子关系输出遍历。",
+            "hint": "记录谁被作为孩子，找未被引用的根。",
+            "warning": "*表示空，不应输出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "3720",
+            "title": "文本二叉树",
+            "url": "http://bailian.openjudge.cn/practice/3720/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "文本树的三种遍历。",
+            "hint": "按层深和*占位还原左右关系。",
+            "warning": "输出先序、后序、中序这个特定顺序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "reconstruct",
+        "title": "遍历序列重建与直接生成另一序列",
+        "category": "基础篇 · 第16章 二叉树",
+        "features": "结点互异，已知中序和先/后序，可递归切出左右区间。",
+        "steps": [
+          "定位根在中序的位置。",
+          "由左区间长度划分另一序列。",
+          "递归左右子区间。",
+          "按需要输出或建立结点。"
+        ],
+        "pitfalls": [
+          "只有先序和后序通常不唯一。",
+          "切片区间错1会让后续全部错位。"
+        ],
+        "practice": [
+          {
+            "id": "2255",
+            "title": "重建二叉树",
+            "url": "http://bailian.openjudge.cn/practice/2255/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "先中序转后序。",
+            "hint": "先序首为根，用中序位置切左右子树。",
+            "warning": "多组直到EOF。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1030",
+            "title": "[NOIP 2001 普及组] 求先序排列",
+            "url": "https://www.luogu.com.cn/problem/P1030",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "中后序转先序。",
+            "hint": "后序末是根，输出根再递归左右。",
+            "warning": "不能照搬先序根下标。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1827",
+            "title": "[USACO3.4] 美国血统 American Heritage",
+            "url": "https://www.luogu.com.cn/problem/P1827",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "独立练中先序重建。",
+            "hint": "预处理字符到中序位置。",
+            "warning": "输入顺序按题面，不要交换先序中序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "encoded-tree",
+        "title": "区间编码、文本与隐式树建立",
+        "category": "基础篇 · 第16章 二叉树",
+        "features": "树未直接给出边，须从文本深度、区间性质或编码规则恢复。",
+        "steps": [
+          "先读出一个完整结构单位。",
+          "定义结点对应的区间或层级。",
+          "按规则分成左右孩子。",
+          "在指定遍历时机输出结点类型。"
+        ],
+        "pitfalls": [
+          "输入文本深度与树层次偏移。",
+          "编码结束符可能也是合法字符，需按语法判定。"
+        ],
+        "practice": [
+          {
+            "id": "P1087",
+            "title": "[NOIP 2004 普及组] FBI 树",
+            "url": "https://www.luogu.com.cn/problem/P1087",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "01串递归分半生成FBI树。",
+            "hint": "区间全0为B、全1为I，否则F；后序输出。",
+            "warning": "叶区间长度1；不是先输出根。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "3720",
+            "title": "文本二叉树",
+            "url": "http://bailian.openjudge.cn/practice/3720/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "层级文本还原。",
+            "hint": "-个数表示深度，用最近浅一层结点作父。",
+            "warning": "无左有右时*占位不可丢。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "tree-path",
+        "title": "树高、根叶路径与递归返回值",
+        "category": "基础篇 · 第16章 二叉树",
+        "features": "每个结点的答案可由左右孩子返回信息合并。",
+        "steps": [
+          "给空树边界。",
+          "分别求左右结果。",
+          "结合本结点维护高度、和或路径。",
+          "根处取最终答案。"
+        ],
+        "pitfalls": [
+          "空孩子不能当作合法根叶路径。",
+          "负权路径不能随意截断为0。"
+        ],
+        "practice": [
+          {
+            "id": "P4913",
+            "title": "【深基16.例3】二叉树深度",
+            "url": "https://www.luogu.com.cn/problem/P4913",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "二叉树最大深度。",
+            "hint": "返回1+max(左右深度)。",
+            "warning": "题目按结点层数计，空树为0。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1145",
+            "title": "Tree Summing",
+            "url": "http://bailian.openjudge.cn/practice/1145/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "根叶路径和判定。",
+            "hint": "递归解析括号树并累加路径和。",
+            "warning": "只能在叶子检查，内部结点达标不算。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "bst-build",
+        "title": "BST插入、查找与重复键规则",
+        "category": "基础篇 · 第16章 二叉树",
+        "features": "按输入先后建立有序树，树形由插入顺序决定。",
+        "steps": [
+          "明确定义重复键。",
+          "小于向左、大于向右下降。",
+          "在空位置创建结点。",
+          "用中序有序性验证不变量。"
+        ],
+        "pitfalls": [
+          "有序输入可能退化为链。",
+          "排序后再建树会改变题目要求的形状。"
+        ],
+        "practice": [
+          {
+            "id": "4079",
+            "title": "二叉搜索树",
+            "url": "http://bailian.openjudge.cn/practice/4079/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "插入后输出先序。",
+            "hint": "重复值忽略，按原序插入。",
+            "warning": "输出不是排序结果。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P5076",
+            "title": "【深基16.例7】普通二叉树（简化版）",
+            "url": "https://www.luogu.com.cn/problem/P5076",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "BST基础查询与顺序统计。",
+            "hint": "维护重数与size，定义rank和kth。",
+            "warning": "普通BST最坏O(n)，仅适合该题较小限制。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "heap-basic",
+        "title": "二叉堆建堆、插入与删除最值",
+        "category": "进阶篇 · 第5章 二叉堆与树状数组",
+        "features": "只要求动态取最小/最大，不要求全部元素有序。",
+        "steps": [
+          "数组表示完全二叉树。",
+          "插入向上调整。",
+          "删除根后用末项填根并下沉。",
+          "批量建堆从末个非叶向前。"
+        ],
+        "pitfalls": [
+          "堆只保证父子关系，不保证左右有序。",
+          "逐个插入建堆O(n log n)，Floyd建堆O(n)。"
+        ],
+        "practice": [
+          {
+            "id": "P3378",
+            "title": "【模板】堆",
+            "url": "https://www.luogu.com.cn/problem/P3378",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "完整实现最小堆接口。",
+            "hint": "数组手写或先用priority_queue对拍。",
+            "warning": "取最小与删除是两个操作。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2676",
+            "title": "[USACO07DEC] Bookshelf B",
+            "url": "https://www.luogu.com.cn/problem/P2676",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "最大值逐个取出达到目标。",
+            "hint": "可最大堆弹出，也可排序后累计。",
+            "warning": "此题评测不强制堆，需主动练手写堆。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "heap-median",
+        "title": "双堆、在线中位数与第k小",
+        "category": "进阶篇 · 第5章 二叉堆与树状数组",
+        "features": "不断插入并查询某个动态分界，左右两部分分别只需边界最值。",
+        "steps": [
+          "大根堆存较小部分。",
+          "小根堆存较大部分。",
+          "插入后按大小与目标容量平衡。",
+          "查询边界堆顶。"
+        ],
+        "pitfalls": [
+          "偶数长度的中位数定义。",
+          "GET次数变化意味着目标左堆大小变化。"
+        ],
+        "practice": [
+          {
+            "id": "P1168",
+            "title": "中位数",
+            "url": "https://www.luogu.com.cn/problem/P1168",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "在线奇数前缀中位数。",
+            "hint": "左堆比右堆多1或等长，输出左顶。",
+            "warning": "只在奇数次插入后输出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1801",
+            "title": "黑匣子",
+            "url": "https://www.luogu.com.cn/problem/P1801",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "动态第i小黑匣子。",
+            "hint": "每次GET让左堆规模增加到i。",
+            "warning": "同一插入位置可以多次GET。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "huffman-binary",
+        "title": "二叉Huffman与最优合并",
+        "category": "基础篇 · 第12章 贪心",
+        "features": "自由选两项合并，代价等于新权重，或构造二进制前缀编码。",
+        "steps": [
+          "最小堆装入叶权。",
+          "取最小两项相加。",
+          "代价累加并放回。",
+          "剩一项时停止。"
+        ],
+        "pitfalls": [
+          "相邻合并约束会破坏此贪心。",
+          "单个叶子理论WPL为0，编码约定另看题。"
+        ],
+        "practice": [
+          {
+            "id": "4080",
+            "title": "Huffman编码树",
+            "url": "http://bailian.openjudge.cn/practice/4080/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "直接求编码树WPL。",
+            "hint": "每次合并权重总和等于WPL。",
+            "warning": "中间和与答案用long long。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1090",
+            "title": "[NOIP 2004 提高组] 合并果子",
+            "url": "https://www.luogu.com.cn/problem/P1090",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "等价的合并果子。",
+            "hint": "最小两堆先合并。",
+            "warning": "不能先排序后一次线性随意合并。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "huffman-kary",
+        "title": "k叉Huffman与最长码长次目标",
+        "category": "基础篇 · 第16章 二叉树",
+        "features": "编码字母表大小k，且总代价最优后还要控制最长码。",
+        "steps": [
+          "补零使(n-1)能被k-1整除。",
+          "堆键为权重、树高。",
+          "每轮合并k棵树。",
+          "累计WPL与根高度。"
+        ],
+        "pitfalls": [
+          "补叶数量是模意义下的最小非负数。",
+          "同权重只任意取会损害次目标。"
+        ],
+        "practice": [
+          {
+            "id": "P2168",
+            "title": "[NOI2015] 荷马史诗",
+            "url": "https://www.luogu.com.cn/problem/P2168",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "完整练多叉与双目标。",
+            "hint": "同权优先低高度子树。",
+            "warning": "输出两行，WPL和最长码长。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1261",
+            "title": "Huffman Trees",
+            "url": "http://bailian.openjudge.cn/practice/1261/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "研究Huffman编码的实际文件开销。",
+            "hint": "严格读取题面关于码表、头部和整体长度的定义。",
+            "warning": "本题不是k叉双目标的直接模板，练编码总代价建模。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否说明两种遍历什么时候唯一确定树？",
+      "能否区分BST、堆和Huffman的约束？",
+      "能否指出普通BST的最坏复杂度？"
+    ],
+    "coverageNote": "",
+    "outlineCoverage": [
+      {
+        "title": "二叉树",
+        "status": "知识与方法",
+        "related": [
+          "知识：线索二叉树的tag与后继",
+          "知识：二叉树计数与遍历综合",
+          "题型：二叉树顺序编号、深度与子树区间"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "二叉树 / 基本性质",
+        "status": "知识与方法",
+        "related": [
+          "知识：结点、度与高度"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "二叉树 / 结点与遍历",
+        "status": "知识与方法",
+        "related": [
+          "知识：遍历与唯一性",
+          "知识：遍历序列的唯一性条件",
+          "知识：二叉树计数与遍历综合",
+          "板子：建立中序线索并O(1)辅助空间遍历",
+          "题型：遍历序列重建与直接生成另一序列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "二叉树 / 遍历序列与树形",
+        "status": "知识与方法",
+        "related": [
+          "知识：遍历与唯一性",
+          "知识：遍历序列的唯一性条件"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "二叉树 / 非递归遍历",
+        "status": "知识与方法",
+        "related": [
+          "知识：线索二叉树的tag与后继",
+          "知识：二叉树计数与遍历综合",
+          "题型：二叉树顺序编号、深度与子树区间"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "二叉树 / 顺序存储",
+        "status": "知识与方法",
+        "related": [
+          "知识：结点、度与高度"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "二叉树 / 线索二叉树",
+        "status": "知识与方法",
+        "related": [
+          "知识：非递归与线索",
+          "知识：线索二叉树的tag与后继",
+          "板子：建立中序线索并O(1)辅助空间遍历"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "二叉搜索树",
+        "status": "知识与方法",
+        "related": [
+          "知识：二叉搜索树"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "堆与优先队列",
+        "status": "知识与方法",
+        "related": [
+          "知识：堆与优先队列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "Huffman 树",
+        "status": "知识与方法",
+        "related": [
+          "知识：Huffman",
+          "板子：二叉Huffman最小WPL",
+          "题型：二叉Huffman与最优合并",
+          "题型：k叉Huffman与最长码长次目标"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  },
+  {
+    "id": "06-trees",
+    "order": 6,
+    "title": "树",
+    "summary": "掌握森林表示、树形转换与等价关系的合并查询。",
+    "prerequisites": [
+      "第5课；图的边与路径的直观概念"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A0%91/",
+    "repoPaths": [
+      "notes-理论-期中前/6-树.md"
+    ],
+    "knowledge": [
+      {
+        "title": "树与森林",
+        "body": "有根树除根外每个结点恰有一个父亲。无向树连通且无环，n个结点有n-1条边；仅有边数条件不够。有向树还需检查入度和从根可达，空树是否允许依题面。"
+      },
+      {
+        "title": "左孩子右兄弟",
+        "body": "firstChild存第一个孩子，nextSibling存下一个兄弟。二叉表示中的右指针代表兄弟，沿右指针不增加原树深度；转换后结构的二叉树高度可以改变。"
+      },
+      {
+        "title": "遍历与多种存储",
+        "body": "一般树先根遍历对应孩子兄弟二叉树先序，后根遍历对应其中序。父指针便于上行，孩子表便于列举孩子，度数/双标记等顺序编码要按编码规则还原。"
+      },
+      {
+        "title": "并查集",
+        "body": "维护等价关系的划分，支持find和union。父指针树是内部实现，不是原图边，也不保留原图路径。路径压缩+按大小合并的均摊代价接近常数O(α(n))。"
+      },
+      {
+        "title": "带关系并查集",
+        "body": "食物链等题需维护相对关系，可用带权父边或把每个元素拆成多个角色。关系应满足合并前后的相容性；普通DSU只回答是否同属一个集合。"
+      },
+      {
+        "title": "完全k叉树",
+        "body": "在1基顺序编号约定下，第i个结点的孩子是k(i-1)+2到ki+1，父结点是floor((i-2)/k)+1。性质公式必须先说明k、根深度与结点编号约定。"
+      },
+      {
+        "title": "树形编码与有根/无根同构",
+        "body": "无序有根树可递归求各孩子规范串并排序后加括号，保留边界便能确定结构。无根树先找一个或两个重心，再规范化；只比较各层点数、度数序列不足以判断同构。使用哈希压缩编码时应说明碰撞风险。"
+      },
+      {
+        "title": "关系并查集的组合公式",
+        "body": "约定rel[x]=value[x]−value[parent[x]]（模m）。路径压缩时rel[x]加上旧父到根的关系。若约束value[x]−value[y]=d且把rootX接到rootY，则rel[rootX]=d−rel[x]+rel[y]（模m）；反向连接要重新推导。"
+      },
+      {
+        "title": "树的直径与负权例外",
+        "body": "非负权树可两次最远点遍历求直径，路径唯一所以无需优先队列。负权下“两次最远点”不再是通用保证，应以树形DP合并每点向下的两条最佳链，并按是否允许空路径处理初值。"
+      },
+      {
+        "title": "LCA与根路径前缀",
+        "body": "倍增up[j][u]保存u的2^j级祖先。距离可由dist[u]+dist[v]−2dist[lca]得到；路径异或则prefix[u] xor prefix[v]已消除公共段。边权与点权公式不同，点权路径和需要加回LCA。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "dsu",
+        "title": "路径压缩+按大小合并",
+        "when": "顶点0..n-1；find返回代表，unite返回本次是否真的合并。",
+        "complexity": "均摊O(α(n))每操作，O(n)空间",
+        "code": "struct DSU {\n    vector<int> p,sz;\n    explicit DSU(int n):p(n),sz(n,1){ iota(p.begin(),p.end(),0); }\n    int find(int x){ return p[x]==x?x:p[x]=find(p[x]); }\n    bool unite(int x,int y){\n        x=find(x); y=find(y); if(x==y) return false;\n        if(sz[x]<sz[y]) swap(x,y);\n        p[y]=x; sz[x]+=sz[y]; return true;\n    }\n};",
+        "notes": "查询集合大小用sz[find(x)]。从1编号的题可构造n+1；不要混用两种约定。"
+      },
+      {
+        "id": "lcrs-height",
+        "title": "孩子兄弟表示中的两种高度",
+        "when": "first/next构成合法单棵树，结点0为空；返回原树边高和二叉表示边高。",
+        "complexity": "O(n)时间，O(n)辅助空间与O(h)递归栈",
+        "code": "pair<int,int> treeHeights(int root,const vector<int>& first,const vector<int>& next) {\n    function<int(int)> original=[&](int u){\n        int h=0;\n        for(int v=first[u];v;v=next[v]) h=max(h,1+original(v));\n        return h;\n    };\n    function<int(int)> binary=[&](int u){\n        if(!u) return -1;\n        return 1+max(binary(first[u]),binary(next[u]));\n    };\n    if(!root) return {-1,-1};\n    return {original(root),binary(root)};\n}",
+        "notes": "原树递归只沿孩子列表；二叉高度同时沿左右。root的next应为0，森林需先定义虚根是否计入。"
+      },
+      {
+        "id": "weighted-dsu",
+        "title": "带模关系并查集：方向固定的公式",
+        "when": "维护value[x]-value[y]=d (mod mod)，0..n-1；add返回约束是否相容。",
+        "complexity": "路径压缩+按大小合并，均摊O(α(n))；空间O(n)",
+        "code": "struct RelationDSU{\n    int mod;vector<int> p,sz,rel;\n    RelationDSU(int n,int mod):mod(mod),p(n),sz(n,1),rel(n){iota(p.begin(),p.end(),0);}\n    int norm(int x)const{x%=mod;return x<0?x+mod:x;}\n    int find(int x){if(p[x]==x)return x;int old=p[x];p[x]=find(old);rel[x]=norm(rel[x]+rel[old]);return p[x];}\n    bool add(int x,int y,int d){\n        d=norm(d);int rx=find(x),ry=find(y);\n        if(rx==ry)return norm(rel[x]-rel[y])==d;\n        int delta=norm(d-rel[x]+rel[y]);\n        if(sz[rx]<=sz[ry]){p[rx]=ry;rel[rx]=delta;sz[ry]+=sz[rx];}\n        else {p[ry]=rx;rel[ry]=norm(-delta);sz[rx]+=sz[ry];}\n        return true;\n    }\n};",
+        "notes": "mod>=2，rel运算使用int的前提是mod较小（如2或3）。调用前先检查编号范围；食物链中“吃”的方向要与value差定义一致。"
+      },
+      {
+        "id": "lca-binary",
+        "title": "迭代建树与倍增LCA",
+        "when": "无向连通树，0..n-1；根可指定，查询点合法。",
+        "complexity": "预处理O(n log n)，查询O(log n)，空间O(n log n)",
+        "code": "struct LCA{\n    int log;vector<vector<int>> up;vector<int> depth;\n    LCA(const vector<vector<int>>& g,int root):depth(g.size(),-1){\n        int n=g.size();log=1;while((1LL<<log)<=n)++log;\n        up.assign(log,vector<int>(n,root));queue<int> q;q.push(root);depth[root]=0;\n        while(!q.empty()){int u=q.front();q.pop();for(int v:g[u])if(depth[v]<0){depth[v]=depth[u]+1;up[0][v]=u;q.push(v);}}\n        for(int j=1;j<log;++j)for(int u=0;u<n;++u)up[j][u]=up[j-1][up[j-1][u]];\n    }\n    int query(int u,int v)const{\n        if(depth[u]<depth[v])swap(u,v);int d=depth[u]-depth[v];\n        for(int j=0;j<log;++j)if(d>>j&1)u=up[j][u];\n        if(u==v)return u;\n        for(int j=log-1;j>=0;--j)if(up[j][u]!=up[j][v]){u=up[j][u];v=up[j][v];}\n        return up[0][u];\n    }\n};",
+        "notes": "预处理使用队列避免深链递归栈溢出；森林应记录分量并拒绝跨分量LCA，不能原样忽略未访问点。"
+      }
+    ],
+    "types": [
+      {
+        "id": "forest-convert",
+        "title": "森林、孩子兄弟转换与高度比较",
+        "category": "基础篇 · 第16章 二叉树；进阶篇 · 第9章 树",
+        "features": "多叉树可转二叉表示，右指针表示兄弟而不是原树孩子。",
+        "steps": [
+          "解析进入/离开或括号编码。",
+          "first连首孩子，next连相邻兄弟。",
+          "原树深度只在父子边加1。",
+          "转换后的二叉树两种边都加1。"
+        ],
+        "pitfalls": [
+          "右链长度不等于原树高度。",
+          "多根森林需要统一处理各棵树。"
+        ],
+        "practice": [
+          {
+            "id": "4081",
+            "title": "树的转换",
+            "url": "http://bailian.openjudge.cn/practice/4081/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "比较一般树和二叉表示高度。",
+            "hint": "维护深度与兄弟链贡献。",
+            "warning": "根深度按0，避免差1。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4082",
+            "title": "树的镜面映射",
+            "url": "http://bailian.openjudge.cn/practice/4082/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "森林镜像与遍历。",
+            "hint": "先恢复孩子顺序，镜像逆转每个孩子表。",
+            "warning": "反转遍历串不等于镜像树。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "tree-isomorphism",
+        "title": "有根树编码与同构判定",
+        "category": "进阶篇 · 第9章 树；第7章 字符串",
+        "features": "孩子无序时不同遍历编码可能表示同一个树形。",
+        "steps": [
+          "递归解析每棵子树。",
+          "把子树规范编码排序。",
+          "拼接带边界的编码。",
+          "比较根的规范表示。"
+        ],
+        "pitfalls": [
+          "不能只比较度数或深度序列。",
+          "必须保留括号边界防止串拼接歧义。"
+        ],
+        "practice": [
+          {
+            "id": "1635",
+            "title": "Subway tree systems",
+            "url": "http://bailian.openjudge.cn/practice/1635/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "直接比较两棵地铁树。",
+            "hint": "对子树编码排序，递归规范化。",
+            "warning": "输入DFS走边编码，不是结点标签串。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P5043",
+            "title": "【模板】树同构 / [BJOI2015] 树的同构",
+            "url": "https://www.luogu.com.cn/problem/P5043",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "扩展到无根树同构。",
+            "hint": "可找重心分别规范化或用树哈希。",
+            "warning": "哈希需说明碰撞；无根树可能两个重心。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "is-tree",
+        "title": "树的判定：入度、连通与环",
+        "category": "基础篇 · 第18章 图的基本应用",
+        "features": "输入若干边，要求判断是否构成一棵有根树或无向树。",
+        "steps": [
+          "收集真正出现的结点。",
+          "有向树检查唯一根和其余入度1。",
+          "从根遍历所有结点并判重复。",
+          "无向版本检查连通且无环。"
+        ],
+        "pitfalls": [
+          "边数n-1不是独立充分条件。",
+          "空图是否为树由题面决定。"
+        ],
+        "practice": [
+          {
+            "id": "1308",
+            "title": "Is It A Tree?",
+            "url": "http://bailian.openjudge.cn/practice/1308/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "有向边是否形成树。",
+            "hint": "检查入度、根数及可达性。",
+            "warning": "空树按题面视为树；0 0与负数结束标记区分。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1551",
+            "title": "亲戚",
+            "url": "https://www.luogu.com.cn/problem/P1551",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "用并查集认识连通分量。",
+            "hint": "先合并亲戚，再回答是否同组。",
+            "warning": "该题练连通性，不要求树形判定。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "dsu-basic",
+        "title": "普通并查集与动态连通",
+        "category": "基础篇 · 第17章 集合",
+        "features": "只关心两个点是否属于同一等价类，合并后不需要恢复原路径。",
+        "steps": [
+          "每点初始化一个集合。",
+          "路径压缩find。",
+          "按大小/秩合并根。",
+          "用根相同判断连通。"
+        ],
+        "pitfalls": [
+          "对非根直接接边会破坏结构。",
+          "并查集父树不是原图。"
+        ],
+        "practice": [
+          {
+            "id": "P3367",
+            "title": "【模板】并查集",
+            "url": "https://www.luogu.com.cn/problem/P3367",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "普通并查集模板。",
+            "hint": "一基题目构造n+1容量。",
+            "warning": "合并同集合应无副作用。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1611",
+            "title": "The Suspects",
+            "url": "http://bailian.openjudge.cn/practice/1611/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "群组传播关系。",
+            "hint": "每组首人与其他人合并，最终查询0所属组规模。",
+            "warning": "小组可能为空，不能无条件读首人。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2236",
+            "title": "Wireless Network",
+            "url": "http://bailian.openjudge.cn/practice/2236/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "带激活条件的无线网络。",
+            "hint": "修复时与距离内已激活点合并。",
+            "warning": "未修复点不能参与连通。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "dsu-relation",
+        "title": "扩展域与带模关系并查集",
+        "category": "基础篇 · 第17章 集合",
+        "features": "等价关系带有相同、敌对、食物链等相对关系。",
+        "steps": [
+          "定义关系值及组合方向。",
+          "find时累计到根的关系。",
+          "同根先检验新约束。",
+          "异根推导根间关系再合并。"
+        ],
+        "pitfalls": [
+          "吃与被吃方向反了。",
+          "越界编号必须先判，不能访问数组。"
+        ],
+        "practice": [
+          {
+            "id": "1182",
+            "title": "食物链",
+            "url": "http://bailian.openjudge.cn/practice/1182/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "三类相对关系与假话计数。",
+            "hint": "用模3带权DSU或三倍扩展域。",
+            "warning": "自身吃自身、编号越界都是假话。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1525",
+            "title": "[NOIP 2010 提高组] 关押罪犯",
+            "url": "https://www.luogu.com.cn/problem/P1525",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "冲突关系二分图式合并。",
+            "hint": "按矛盾强度降序，敌人的敌人合并。",
+            "warning": "首次冲突边决定答案，不能仅普通连通。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "dsu-distance",
+        "title": "维护偏移量的带权并查集",
+        "category": "基础篇 · 第17章 集合",
+        "features": "父指针上的权表示距离或相对位置，合并会改变整组偏移。",
+        "steps": [
+          "定义dist[x]是x到父还是根。",
+          "压缩前保存旧父。",
+          "递归压缩后累加旧父偏移。",
+          "按题意定向连接整组。"
+        ],
+        "pitfalls": [
+          "按大小任意交换根可能违反堆叠方向。",
+          "压缩后再读旧父会丢失偏移。"
+        ],
+        "practice": [
+          {
+            "id": "1988",
+            "title": "Cube Stacking",
+            "url": "http://bailian.openjudge.cn/practice/1988/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "方块堆叠与下方数量。",
+            "hint": "根记录组大小，合并时整堆根偏移为目标堆大小。",
+            "warning": "查询的是该方块下方数量，不是集合大小。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1962",
+            "title": "Corporative Network",
+            "url": "http://bailian.openjudge.cn/practice/1962/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "企业网络距离。",
+            "hint": "按命令连父并累积距离，路径压缩维护权值。",
+            "warning": "本题操作语义与普通无向合并不同。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "tree-diameter",
+        "title": "树的直径与最长路径",
+        "category": "进阶篇 · 第9章 树",
+        "features": "树上两点路径唯一，非负边权下可从任一点找最远点，再找其最远点。",
+        "steps": [
+          "建无向树。",
+          "一次遍历定位直径端点。",
+          "第二次遍历取最大距离。",
+          "有负权时改用树形DP。"
+        ],
+        "pitfalls": [
+          "树上带权路径也可DFS累加，不需要Dijkstra。",
+          "断开森林要逐分量处理。"
+        ],
+        "practice": [
+          {
+            "id": "2631",
+            "title": "Roads in the North",
+            "url": "http://bailian.openjudge.cn/practice/2631/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "带权树直径。",
+            "hint": "两次DFS或BFS累积唯一通路距离。",
+            "warning": "不是边数，而是权重和。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1985",
+            "title": "Cow Marathon",
+            "url": "http://bailian.openjudge.cn/practice/1985/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "农场最远距离。",
+            "hint": "读入边的长度，方向字符按题面处理。",
+            "warning": "数据结构是树，不能把方向字母当单向边。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "lca",
+        "title": "最近公共祖先、倍增与路径信息",
+        "category": "进阶篇 · 第9章 树 · 最近公共祖先",
+        "features": "静态树上多次问祖先或两点路径，单次向上爬会太慢。",
+        "steps": [
+          "遍历得到depth和父亲。",
+          "倍增预处理2^j祖先。",
+          "先拉齐深度再同时跳。",
+          "用根路径信息组合答案。"
+        ],
+        "pitfalls": [
+          "根的父亲约定要统一。",
+          "异或路径不需要减两倍LCA权。"
+        ],
+        "practice": [
+          {
+            "id": "P3379",
+            "title": "【模板】最近公共祖先（LCA）",
+            "url": "https://www.luogu.com.cn/problem/P3379",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "直接练倍增LCA。",
+            "hint": "预处理up表，查询O(log n)。",
+            "warning": "n大时递归深链可能爆栈。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2420",
+            "title": "让我们异或吧",
+            "url": "https://www.luogu.com.cn/problem/P2420",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "树路径异或。",
+            "hint": "从根到每点的异或值，查询直接xor两者。",
+            "warning": "此题利用可逆性可以省略LCA，练路径信息简化。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "tree-dp",
+        "title": "子树规模、重心与边贡献",
+        "category": "进阶篇 · 第16章 树与图上的动态规划",
+        "features": "切断一条树边后分成两部分，答案由子树规模或子树平衡决定。",
+        "steps": [
+          "选根并获得父子顺序。",
+          "后序累加size。",
+          "计算删除点/边后的各部分规模。",
+          "按目标取最大、最小或加权总和。"
+        ],
+        "pitfalls": [
+          "父方向那部分是n-size[u]。",
+          "边贡献乘积可能超过int。"
+        ],
+        "practice": [
+          {
+            "id": "2378",
+            "title": "Tree Cutting",
+            "url": "http://bailian.openjudge.cn/practice/2378/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "树的重心类平衡点。",
+            "hint": "每点最大分块=max(各孩子size,n-size[u])。",
+            "warning": "按题面阈值筛选全部点。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2052",
+            "title": "[NOI2011] 道路修建",
+            "url": "https://www.luogu.com.cn/problem/P2052",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "道路修建的边贡献。",
+            "hint": "每边贡献w*abs(n-2*size[child])。",
+            "warning": "根边无父亲，乘法先转long long。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "kary-numbering",
+        "title": "完全k叉树编号与隐式祖先",
+        "category": "基础篇 · 第16章 二叉树（k叉扩展）",
+        "features": "树极大但编号规则明确，能用整数运算描述祖先与整层区间。",
+        "steps": [
+          "约定根编号1、层深0。",
+          "用父编号floor((i-2)/k)+1。",
+          "层区间按k倍扩展。",
+          "特殊到k=2核对父子关系。"
+        ],
+        "pitfalls": [
+          "编号公式与满k叉树的层计数公式不同。",
+          "乘法扩展先防溢出。"
+        ],
+        "practice": [
+          {
+            "id": "2756",
+            "title": "二叉树",
+            "url": "http://bailian.openjudge.cn/practice/2756/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "k=2的祖先查询。",
+            "hint": "比较较大编号并跳父亲。",
+            "warning": "不能把一般树标签当堆编号。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2788",
+            "title": "二叉树",
+            "url": "http://bailian.openjudge.cn/practice/2788/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "k=2的子树层区间计数。",
+            "hint": "逐层区间扩展并裁剪到n。",
+            "warning": "属于完全k叉编号的二叉特例；不测任意k输入。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否画清孩子与兄弟的两个方向？",
+      "能否说明DSU为何不能回答路径或任意删除？",
+      "能否在有向树判定中同时检查根、入度和可达？"
+    ],
+    "coverageNote": "",
+    "outlineCoverage": [
+      {
+        "title": "树与森林",
+        "status": "知识与方法",
+        "related": [
+          "知识：树与森林"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "树与森林 / 树的表示",
+        "status": "知识与方法",
+        "related": [
+          "知识：左孩子右兄弟"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "树与森林 / 树的表示 / 左孩子右兄弟",
+        "status": "知识与方法",
+        "related": [
+          "知识：左孩子右兄弟"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "树与森林 / 树的遍历",
+        "status": "知识与方法",
+        "related": [
+          "知识：树与森林"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "树与森林 / 其他存储方法",
+        "status": "知识与方法",
+        "related": [
+          "知识：遍历与多种存储"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "并查集",
+        "status": "知识与方法",
+        "related": [
+          "知识：并查集",
+          "知识：带关系并查集",
+          "知识：关系并查集的组合公式",
+          "板子：带模关系并查集：方向固定的公式",
+          "题型：普通并查集与动态连通"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "完全 $k$ 叉树",
+        "status": "知识与方法",
+        "related": [
+          "知识：完全k叉树",
+          "题型：完全k叉树编号与隐式祖先"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  },
+  {
+    "id": "07-graphs",
+    "order": 7,
+    "title": "图",
+    "summary": "依据边权、方向和目标，在BFS、拓扑、最短路和MST之间选对方法。",
+    "prerequisites": [
+      "第3课BFS直觉；第6课DSU与树"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%9B%BE/",
+    "repoPaths": [
+      "notes-理论-期中后/7-图.md"
+    ],
+    "knowledge": [
+      {
+        "title": "图的存储与遍历",
+        "body": "邻接矩阵O(V²)空间，适合稠密图；邻接表O(V+E)，遍历O(V+E)。有向边只加一个方向，无向边加两个；平行边、孤立点和自环须按题意处理。"
+      },
+      {
+        "title": "BFS与DFS",
+        "body": "BFS按最短边数分层，等权时可给最短路；DFS适合连通性与结构遍历。网格可隐式生成邻居，无需显式建立所有边。边权不等时，第一次入队不代表最短。"
+      },
+      {
+        "title": "DAG与拓扑",
+        "body": "拓扑序只对有向无环图存在。Kahn维护入度0点，输出数少于V说明有环；要求最小编号优先时，用最小堆而非普通FIFO。"
+      },
+      {
+        "title": "AOE关键路径",
+        "body": "活动是边，事件是点；正向拓扑算最早事件ve，反向算最迟事件vl。活动(u,v,w)的最早开始ve[u]，最迟开始vl[v]-w；相等才是关键活动。多终点时可加零权虚汇点。"
+      },
+      {
+        "title": "最短路",
+        "body": "非负边可用Dijkstra，稀疏图堆实现O((V+E)log V)；负边需换算法。Floyd外层必须枚举中间点k，时间O(V³)、空间O(V²)。有向图不能擅自对称化。"
+      },
+      {
+        "title": "最小生成树",
+        "body": "MST最小化连接所有点的总边权，不最小化某源到各点距离。Kruskal按边权升序用DSU排环；Prim维护未选点到已选点集的最轻连接边。连通图最终应选V-1条边。"
+      },
+      {
+        "title": "DFS三色判有向环",
+        "body": "白色未访问、灰色在当前递归路径、黑色已经完成。遇灰色后继代表有向回边与环；遇黑点不代表有环。无向图则要忽略反向父边，不能照搬有向三色规则。"
+      },
+      {
+        "title": "零一BFS的代价条件",
+        "body": "边权恰为0或1时，用双端队列，0边松弛后入队首，1边入队尾，可实现O(V+E)。权为1和2不能简单整体减1后套零一BFS，因为不同路径的边数不同，目标距离会改变。"
+      },
+      {
+        "title": "最短路算法的选用",
+        "body": "非负稀疏图用堆Dijkstra，稠密图可用O(V²)矩阵版；含负边用Bellman-Ford或其他有保证方法。Floyd适于小图全源O(V³)；Johnson先做势函数重赋权再逐源Dijkstra，不能在负边图直接跑Dijkstra。"
+      },
+      {
+        "title": "MST的割性质与环性质",
+        "body": "对任意割，最轻跨割边可属于某棵MST；若是严格唯一最轻则必在所有MST中。对任意环，严格最重边不在任何MST中；权相等时需要谨慎处理“可取”与“必取”。"
+      },
+      {
+        "title": "强连通与双连通的方向区别",
+        "body": "强连通针对有向图互相可达；割点、桥、点双、边双通常在无向图讨论。SCC缩点为DAG；边双去桥后分块，点双可能共享割点，所以不能把两种分量当普通顶点划分一样处理。"
+      },
+      {
+        "title": "关键路径的时间约定",
+        "body": "AOE以边为活动、点为事件，ve[v]=max(ve[u]+w)，反向vl[u]=min(vl[v]−w)。活动最早开始ve[u]，最迟开始vl[v]−w，二者相同为关键；多个汇点的总工期取最大ve并统一最迟边界。"
+      },
+      {
+        "title": "欧拉与Hamilton的区别",
+        "body": "欧拉要求每条边恰好一次，可重复点；Hamilton要求每个点恰好一次，允许边只用其中一部分。前者有度数加连通条件并能线性构造，后者一般困难，不能把访问所有点的回溯剪枝说成欧拉算法。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "bfs",
+        "title": "邻接表BFS：距离与前驱",
+        "when": "顶点0..n-1，边权全为1；返回distance和parent，不可达为-1。",
+        "complexity": "O(V+E)时间，O(V)辅助空间",
+        "code": "pair<vector<int>,vector<int>> bfs(const vector<vector<int>>& g,int s) {\n    vector<int> d(g.size(),-1), pre(g.size(),-1); queue<int> q;\n    d[s]=0; q.push(s);\n    while(!q.empty()) {\n        int u=q.front(); q.pop();\n        for(int v:g[u]) if(d[v]==-1) {\n            d[v]=d[u]+1; pre[v]=u; q.push(v);\n        }\n    }\n    return {d,pre};\n}",
+        "notes": "网格题把(x,y)展成编号，或直接保存坐标。题面若数格子，可能在边数距离上加1；先对照题面样例。"
+      },
+      {
+        "id": "topo",
+        "title": "最小编号优先拓扑序",
+        "when": "有向图，顶点0..n-1，返回拓扑序；结果长度<n表示存在环。",
+        "complexity": "O((V+E)log V)时间，O(V)空间",
+        "code": "vector<int> topo(const vector<vector<int>>& g) {\n    vector<int> deg(g.size()),ans;\n    for(const auto& row:g) for(int v:row) ++deg[v];\n    priority_queue<int,vector<int>,greater<int>> q;\n    for(int u=0;u<(int)g.size();++u) if(!deg[u]) q.push(u);\n    while(!q.empty()) {\n        int u=q.top(); q.pop(); ans.push_back(u);\n        for(int v:g[u]) if(--deg[v]==0) q.push(v);\n    }\n    return ans;\n}",
+        "notes": "4084输出示例含v前缀，按题面格式输出。只需任意拓扑序时可换普通queue。"
+      },
+      {
+        "id": "dijkstra",
+        "title": "非负边Dijkstra：堆中允许旧条目",
+        "when": "邻接表pair=(终点,权重)，所有边权非负且有限路径和<4e18。返回距离数组。",
+        "complexity": "O((V+E)log V)时间，O(V+E)辅助空间（含堆条目）",
+        "code": "vector<long long> dijkstra(const vector<vector<pair<int,int>>>& g,int s) {\n    const long long INF=4000000000000000000LL;\n    vector<long long> d(g.size(),INF);\n    using State=pair<long long,int>;\n    priority_queue<State,vector<State>,greater<State>> q;\n    d[s]=0; q.push({0,s});\n    while(!q.empty()) {\n        auto [du,u]=q.top(); q.pop();\n        if(du!=d[u]) continue;\n        for(auto [v,w]:g[u]) if(d[v]>du+w) {\n            d[v]=du+w; q.push({d[v],v});\n        }\n    }\n    return d;\n}",
+        "notes": "无向边由输入阶段加两次，不在算法里取min(g[u][v],g[v][u])。负权边不可使用。"
+      },
+      {
+        "id": "floyd",
+        "title": "Floyd全源最短路",
+        "when": "d初始对角0、无边INF、平行边取最小；无负环。原地更新矩阵。",
+        "complexity": "O(V³)时间，O(1)额外空间（矩阵本身O(V²)）",
+        "code": "void floyd(vector<vector<long long>>& d) {\n    const long long INF=4000000000000000000LL;\n    int n=(int)d.size();\n    for(int k=0;k<n;++k)\n        for(int i=0;i<n;++i) if(d[i][k]<INF)\n            for(int j=0;j<n;++j) if(d[k][j]<INF)\n                d[i][j]=min(d[i][j],d[i][k]+d[k][j]);\n}",
+        "notes": "假设有效路径加法不溢出long long。中间点k在最外层；不能因题名“网络”就默认无向。"
+      },
+      {
+        "id": "kruskal",
+        "title": "Kruskal最小生成树",
+        "when": "包含第6课DSU；顶点0..n-1；n>=1，边为无向边。返回(是否连通,权重和)。",
+        "complexity": "O(E log E)时间，O(V+E)空间（含边副本）",
+        "code": "struct Edge { int u,v; long long w; };\npair<bool,long long> kruskal(int n,vector<Edge> edges) {\n    sort(edges.begin(),edges.end(),[](const Edge& a,const Edge& b){return a.w<b.w;});\n    DSU dsu(n); int used=0; long long total=0;\n    for(auto e:edges) if(dsu.unite(e.u,e.v)) {\n        total+=e.w; if(++used==n-1) break;\n    }\n    return {used==n-1,total};\n}",
+        "notes": "断连时total只是最小生成森林的权重。一个点且无边时返回连通、权重0。"
+      },
+      {
+        "id": "prim-dense",
+        "title": "矩阵Prim：最小接入代价",
+        "when": "n>=1，矩阵无向，无边INF=4e18，对角0；返回连通性及MST权重。",
+        "complexity": "O(n²)时间，O(n)辅助空间",
+        "code": "pair<bool,long long> prim(const vector<vector<long long>>& w){\n    int n=w.size();const long long INF=4000000000000000000LL;\n    vector<long long> d(n,INF);vector<bool> used(n);d[0]=0;long long total=0;\n    for(int k=0;k<n;++k){int u=-1;for(int i=0;i<n;++i)if(!used[i]&&(u<0||d[i]<d[u]))u=i;\n        if(d[u]==INF)return {false,0};used[u]=true;total+=d[u];\n        for(int v=0;v<n;++v)if(!used[v])d[v]=min(d[v],w[u][v]);\n    }\n    return {true,total};\n}",
+        "notes": "d[v]保存连接生成树的最小边，不是起点到v的路径和。负边对MST可以合法，不需要Dijkstra的非负条件。"
+      },
+      {
+        "id": "bellman-ford",
+        "title": "Bellman-Ford负环检测",
+        "when": "顶点0..n-1；source=-1表示超级源到所有点，否则只查source可达负环。",
+        "complexity": "O(VE)时间，O(V)空间",
+        "code": "struct Arc{int u,v;long long w;};\nbool hasNegativeCycle(int n,const vector<Arc>& edges,int source=-1){\n    const long long INF=4000000000000000000LL;vector<long long>d(n,source<0?0:INF);\n    if(source>=0)d[source]=0;\n    for(int i=0;i<n;++i){bool changed=false;\n        for(auto e:edges)if(d[e.u]!=INF&&d[e.v]>d[e.u]+e.w){d[e.v]=d[e.u]+e.w;changed=true;}\n        if(!changed)return false;\n    }\n    return true;\n}",
+        "notes": "要求n轮内累加值在long long范围。P3385从1可达的定义对应source=0（一基转零基后），不要误用全图超级源模式。"
+      },
+      {
+        "id": "tarjan-scc",
+        "title": "Tarjan强连通分量",
+        "when": "有向邻接表，0..n-1；返回每点分量编号（0起）。",
+        "complexity": "O(V+E)时间，O(V)辅助空间",
+        "code": "vector<int> stronglyConnected(const vector<vector<int>>& g){\n    int n=g.size(),timer=0,groups=0;vector<int> dfn(n),low(n),comp(n,-1),st;vector<bool> in(n);\n    function<void(int)> dfs=[&](int u){\n        dfn[u]=low[u]=++timer;st.push_back(u);in[u]=true;\n        for(int v:g[u])if(!dfn[v]){dfs(v);low[u]=min(low[u],low[v]);}\n            else if(in[v])low[u]=min(low[u],dfn[v]);\n        if(low[u]==dfn[u]){while(true){int v=st.back();st.pop_back();in[v]=false;comp[v]=groups;if(v==u)break;}++groups;}\n    };\n    for(int u=0;u<n;++u)if(!dfn[u])dfs(u);return comp;\n}",
+        "notes": "递归深度最坏V，大图长链可改显式帧或采用迭代Kosaraju。不要在没有栈容量保证时承诺这个递归片段适合任意百万点图。"
+      },
+      {
+        "id": "cuts-bridges",
+        "title": "无向图割点与桥：按边号忽略父边",
+        "when": "edges中每条无向边一次，允许重边；返回割点标记与桥边号。",
+        "complexity": "O(V+E)时间与空间",
+        "code": "pair<vector<bool>,vector<int>> cutsAndBridges(int n,const vector<pair<int,int>>& edges){\n    vector<vector<pair<int,int>>> g(n);for(int i=0;i<(int)edges.size();++i){auto [u,v]=edges[i];g[u].push_back({v,i});g[v].push_back({u,i});}\n    vector<int>dfn(n),low(n),bridges;vector<bool>cut(n);int timer=0;\n    function<void(int,int)>dfs=[&](int u,int parentEdge){\n        dfn[u]=low[u]=++timer;int children=0;\n        for(auto [v,id]:g[u]){if(id==parentEdge)continue;\n            if(!dfn[v]){++children;dfs(v,id);low[u]=min(low[u],low[v]);\n                if(parentEdge!=-1&&low[v]>=dfn[u])cut[u]=true;\n                if(low[v]>dfn[u])bridges.push_back(id);\n            }else low[u]=min(low[u],dfn[v]);\n        }\n        if(parentEdge==-1&&children>1)cut[u]=true;\n    };\n    for(int u=0;u<n;++u)if(!dfn[u])dfs(u,-1);return {cut,bridges};\n}",
+        "notes": "根按DFS孩子数判割点。重边拥有不同边号，只有真正的父边被忽略；返回桥编号可用于后续边双染色。深链递归风险同SCC。"
+      },
+      {
+        "id": "aoe",
+        "title": "AOE最早/最迟事件与关键活动",
+        "when": "合法或含环的有向图，非负活动耗时；返回是否DAG、工期、关键边编号。",
+        "complexity": "O(V+E)时间和空间",
+        "code": "struct Activity{int u,v;long long w;};\ntuple<bool,long long,vector<int>> criticalPath(int n,const vector<Activity>& edges){\n    vector<vector<int>>g(n);vector<int>deg(n),order;vector<long long>ve(n);\n    for(int i=0;i<(int)edges.size();++i){g[edges[i].u].push_back(i);++deg[edges[i].v];}\n    queue<int>q;for(int i=0;i<n;++i)if(!deg[i])q.push(i);\n    while(!q.empty()){int u=q.front();q.pop();order.push_back(u);\n        for(int id:g[u]){auto e=edges[id];ve[e.v]=max(ve[e.v],ve[u]+e.w);if(!--deg[e.v])q.push(e.v);}}\n    if((int)order.size()!=n)return {false,0,{}};\n    long long total=n?*max_element(ve.begin(),ve.end()):0;vector<long long>vl(n,total);\n    for(int i=n-1;i>=0;--i){int u=order[i];for(int id:g[u]){auto e=edges[id];vl[u]=min(vl[u],vl[e.v]-e.w);}}\n    vector<int>key;for(int i=0;i<(int)edges.size();++i){auto e=edges[i];if(ve[e.u]==vl[e.v]-e.w)key.push_back(i);}\n    return {true,total,key};\n}",
+        "notes": "所有汇点共用总工期边界，等价于连至统一虚拟汇。若题目只关心指定源汇，先限制相关子图；本段不把无关子工程自动剔除。"
+      },
+      {
+        "id": "euler-undirected",
+        "title": "无向欧拉路线：迭代Hierholzer",
+        "when": "调用前已检查度数与非零度连通性；边可重、点0..n-1。",
+        "complexity": "O(V+E)时间和空间（不含邻接排序）",
+        "code": "vector<int> eulerTrail(int n,const vector<pair<int,int>>& edges,int start){\n    vector<vector<pair<int,int>>>g(n);for(int i=0;i<(int)edges.size();++i){auto[u,v]=edges[i];g[u].push_back({v,i});g[v].push_back({u,i});}\n    vector<int>ptr(n),st{start},out;vector<bool>used(edges.size());\n    while(!st.empty()){int u=st.back();\n        while(ptr[u]<(int)g[u].size()&&used[g[u][ptr[u]].second])++ptr[u];\n        if(ptr[u]==(int)g[u].size()){out.push_back(u);st.pop_back();}\n        else {auto[v,id]=g[u][ptr[u]++];used[id]=true;st.push_back(v);}\n    }\n    if(out.size()!=edges.size()+1)return {};reverse(out.begin(),out.end());return out;\n}",
+        "notes": "字典序要求对g[u]按邻点排序；自环在邻接表出现两次但共用边号，所以只消耗一次。函数不代替度数检查。"
+      }
+    ],
+    "types": [
+      {
+        "id": "representation",
+        "title": "邻接表、邻接矩阵与有序遍历",
+        "category": "基础篇 · 第18章 图的基本应用",
+        "features": "边的密度、是否重边及输出顺序决定存储方式与遍历成本。",
+        "steps": [
+          "区分有向/无向。",
+          "根据n、m选择矩阵或邻接表。",
+          "重边按问题保留或取最小。",
+          "输出顺序有要求就排序邻接表。"
+        ],
+        "pitfalls": [
+          "无向边需双向存。",
+          "矩阵无边值不能与权重0混淆。"
+        ],
+        "practice": [
+          {
+            "id": "P5318",
+            "title": "【深基18.例3】查找文献",
+            "url": "https://www.luogu.com.cn/problem/P5318",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "有序DFS和BFS。",
+            "hint": "邻接表排序，遍历只从规定起点。",
+            "warning": "不要求遍历未从起点可达的其他分量。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P3916",
+            "title": "图的遍历",
+            "url": "https://www.luogu.com.cn/problem/P3916",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "反向建图减少重复遍历。",
+            "hint": "从大编号向小编号在反图传播可达最大点。",
+            "warning": "每点独立DFS会超时；方向反转要有理由。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "components",
+        "title": "DFS/BFS染色与连通块",
+        "category": "基础篇 · 第18章 图的基本应用",
+        "features": "邻接关系隐含在棋盘或显式边中，只需统计可达区域。",
+        "steps": [
+          "定义合法邻居，四连通或八连通。",
+          "外层枚举所有未访问有效点。",
+          "启动一次搜索并标记整个分量。",
+          "累加分量数或大小。"
+        ],
+        "pitfalls": [
+          "四方向和八方向不能凭习惯选。",
+          "不能只从一个起点搜索。"
+        ],
+        "practice": [
+          {
+            "id": "1562",
+            "title": "Oil Deposits",
+            "url": "http://bailian.openjudge.cn/practice/1562/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "油田八连通分量。",
+            "hint": "每个未访问@启动搜索。",
+            "warning": "斜对角也相连。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2386",
+            "title": "Lake Counting",
+            "url": "http://bailian.openjudge.cn/practice/2386/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "水洼计数。",
+            "hint": "八邻域洪水填充，访问即标记。",
+            "warning": "可直接改原矩阵，但要明确不会再用原值。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "bfs-shortest",
+        "title": "无权最短路与路径恢复",
+        "category": "进阶篇 · 第10章 最短路",
+        "features": "每条边代价相同，层数就是最短距离。",
+        "steps": [
+          "起点距离0。",
+          "入队即标记。",
+          "首次发现时记录前驱。",
+          "从终点逆向重建再反转。"
+        ],
+        "pitfalls": [
+          "重复入队会放大内存。",
+          "路径上的格子数通常等于边数加1。"
+        ],
+        "practice": [
+          {
+            "id": "4127",
+            "title": "迷宫问题",
+            "url": "http://bailian.openjudge.cn/practice/4127/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "恢复二维迷宫最短路线。",
+            "hint": "保存pre坐标并逆向追踪。",
+            "warning": "起点终点都需要输出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "3752",
+            "title": "走迷宫",
+            "url": "http://bailian.openjudge.cn/practice/3752/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "输出最少经过格子数。",
+            "hint": "起始距离按题面设1或最终加1。",
+            "warning": "障碍字符按题面解析，不与别的迷宫混淆。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "state-bfs",
+        "title": "多维状态BFS：位置、方向与时间",
+        "category": "进阶篇 · 第10章 最短路",
+        "features": "同一位置在不同方向、时间相位或资源下具有不同后续转移。",
+        "steps": [
+          "把影响未来的量全部放入状态。",
+          "定义每步操作及其代价。",
+          "按完整状态标记访问。",
+          "找到任意目标状态时按层数取最短。"
+        ],
+        "pitfalls": [
+          "只按坐标visited会错误剪枝。",
+          "转向与前进距离的操作次数不同。"
+        ],
+        "practice": [
+          {
+            "id": "P1126",
+            "title": "[CERC1996] 机器人搬重物",
+            "url": "https://www.luogu.com.cn/problem/P1126",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "机器人方向状态。",
+            "hint": "状态(x,y,dir)，转向和向前1至3格各算一次操作。",
+            "warning": "2×2占地和边界阻挡需预处理。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4129",
+            "title": "变换的迷宫",
+            "url": "http://bailian.openjudge.cn/practice/4129/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "随时间变化的迷宫。",
+            "hint": "访问标记包含时间模周期；按题意转移地图相位。",
+            "warning": "只能移动，不能原地等待；岩石每K个单位时间消失，visited必须含时间模K。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "knight-bfs",
+        "title": "棋盘特殊走法与最短步数",
+        "category": "进阶篇 · 第10章 最短路",
+        "features": "邻接由固定跳跃规则产生，通常不需要显式存全部边。",
+        "steps": [
+          "列出所有走法。",
+          "范围内位置作为状态。",
+          "BFS按步数分层。",
+          "多测重置并处理起终点相同。"
+        ],
+        "pitfalls": [
+          "骑士步不是八方向相邻。",
+          "字母坐标和数字坐标映射要一致。"
+        ],
+        "practice": [
+          {
+            "id": "2243",
+            "title": "Knight Moves",
+            "url": "http://bailian.openjudge.cn/practice/2243/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "标准8×8棋盘骑士最短路。",
+            "hint": "字母和数字坐标转成0..7。",
+            "warning": "按指定英文句式输出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1915",
+            "title": "Knight Moves",
+            "url": "http://bailian.openjudge.cn/practice/1915/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "较大棋盘、多场景骑士搜索。",
+            "hint": "数组或双向BFS均可。",
+            "warning": "每组棋盘尺寸不同，不可沿用固定8。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "topo",
+        "title": "拓扑排序、环判定与字典序",
+        "category": "基础篇 · 第18章 图的基本应用",
+        "features": "有向先后依赖关系，要求一个合法线性次序或判无解。",
+        "steps": [
+          "统计入度。",
+          "所有零入度点进队列/小根堆。",
+          "弹出并删除出边。",
+          "输出数不足n说明存在有向环。"
+        ],
+        "pitfalls": [
+          "无向图不能直接做入度拓扑。",
+          "孤立结点也须初始化入队。"
+        ],
+        "practice": [
+          {
+            "id": "2367",
+            "title": "Genealogical tree",
+            "url": "http://bailian.openjudge.cn/practice/2367/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "家谱依赖顺序。",
+            "hint": "父先于后代，按入度处理。",
+            "warning": "输入每行0只终止该行。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4084",
+            "title": "拓扑排序",
+            "url": "http://bailian.openjudge.cn/practice/4084/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "字典序拓扑序。",
+            "hint": "零入度点用最小堆。",
+            "warning": "输出带v前缀的结点格式。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "topo-unique",
+        "title": "偏序关系的唯一性与增量判定",
+        "category": "基础篇 · 第18章 图的基本应用",
+        "features": "约束逐条加入，需要尽早判断矛盾或次序唯一。",
+        "steps": [
+          "每加边后更新图。",
+          "拓扑过程中检查是否有多个零入度候选。",
+          "存在环判矛盾。",
+          "恰有一个选择贯穿全过程才唯一。"
+        ],
+        "pitfalls": [
+          "结果唯一与恰好一种当前贪心输出不同。",
+          "确定答案后输入剩余关系仍需读完。"
+        ],
+        "practice": [
+          {
+            "id": "1094",
+            "title": "Sorting It All Out",
+            "url": "http://bailian.openjudge.cn/practice/1094/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "逐条关系判断有序、矛盾或未定。",
+            "hint": "对每个前缀做一次拓扑，记录首次确定时刻。",
+            "warning": "重复边不能重复增加入度。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1347",
+            "title": "[ECNA 2001] 排序",
+            "url": "https://www.luogu.com.cn/problem/P1347",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "独立练增量偏序判断。",
+            "hint": "从当前所有字母结点做拓扑并判唯一。",
+            "warning": "要报告最早的关系数量。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "critical-path",
+        "title": "AOE关键路径与最早最迟时间",
+        "category": "进阶篇 · 第16章 树与图上的动态规划",
+        "features": "边表示活动耗时，事件按前驱完成后发生，问整体工期或关键活动。",
+        "steps": [
+          "拓扑正向取max算ve。",
+          "总工期取所有终点最早时刻最大值。",
+          "逆拓扑取min算vl。",
+          "活动(u,v)若ve[u]==vl[v]-w则关键。"
+        ],
+        "pitfalls": [
+          "关键活动可能构成多条路径。",
+          "多源多汇要加虚拟源汇或正确初始化。"
+        ],
+        "practice": [
+          {
+            "id": "P1113",
+            "title": "[USACO02FEB] 杂务",
+            "url": "https://www.luogu.com.cn/problem/P1113",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "先练并行任务总工期。",
+            "hint": "点权工序转为最早完成时间DP。",
+            "warning": "仅求工期，不直接输出所有关键活动。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1807",
+            "title": "最长路",
+            "url": "https://www.luogu.com.cn/problem/P1807",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "DAG最长依赖链。",
+            "hint": "拓扑序中用max松弛；AOE最早事件时刻是同类递推。",
+            "warning": "此题只评测最长路，不要求最迟时间和关键活动输出。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "dijkstra",
+        "title": "非负单源最短路：稀疏图Dijkstra",
+        "category": "进阶篇 · 第10章 最短路",
+        "features": "边权非负，每次确定当前未定点中距离最小者。",
+        "steps": [
+          "距离初始化INF、起点0。",
+          "最小堆弹候选。",
+          "旧条目与当前距离不等就跳过。",
+          "松弛邻边并入堆。"
+        ],
+        "pitfalls": [
+          "有负边时贪心不成立。",
+          "不处理旧堆条目会反复扩展。"
+        ],
+        "practice": [
+          {
+            "id": "P4779",
+            "title": "【模板】单源最短路径（标准版）",
+            "url": "https://www.luogu.com.cn/problem/P4779",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "标准非负最短路模板。",
+            "hint": "邻接表+小根堆。",
+            "warning": "权重和用long long并正确处理不可达。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2387",
+            "title": "Til the Cows Come Home",
+            "url": "http://bailian.openjudge.cn/practice/2387/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "无向图最短路。",
+            "hint": "双向建边，同两点可能有重边。",
+            "warning": "输入是边数再点数，别读反。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4116",
+            "title": "拯救行动",
+            "url": "http://bailian.openjudge.cn/practice/4116/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "格子上的非等权最短路。",
+            "hint": "进入守卫格代价2，普通格代价1；用Dijkstra。",
+            "warning": "不能用普通BFS首次到达即确定距离。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "dense-shortest",
+        "title": "稠密图与几何建图最短路",
+        "category": "进阶篇 · 第10章 最短路",
+        "features": "点数不大但两点之间可能都有边，或距离由坐标计算。",
+        "steps": [
+          "把交通规则转为边权。",
+          "必要时隐式枚举任意点对。",
+          "用O(n²)Dijkstra或Floyd。",
+          "统一单位并按要求舍入。"
+        ],
+        "pitfalls": [
+          "欧氏距离不是曼哈顿距离。",
+          "速度单位转换错会放大60或1000倍。"
+        ],
+        "practice": [
+          {
+            "id": "2502",
+            "title": "Subway",
+            "url": "http://bailian.openjudge.cn/practice/2502/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "地铁与步行混合。",
+            "hint": "相邻站地铁边，任意两点步行边，取较快。",
+            "warning": "输入线路以-1 -1分隔，时间换算成分钟。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1125",
+            "title": "Stockbroker Grapevine",
+            "url": "http://bailian.openjudge.cn/practice/1125/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "对稠密小图从各源执行Dijkstra。",
+            "hint": "矩阵O(n²)单源，枚举源再取最小离心率。",
+            "warning": "有向可达性；也可用Floyd，但本类指定矩阵Dijkstra。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "negative-cycle",
+        "title": "负环、差分约束与Bellman-Ford",
+        "category": "进阶篇 · 第10章 最短路",
+        "features": "允许负边，需判定能否无限改进，或不等式转图。",
+        "steps": [
+          "将约束转成有向带权边。",
+          "单源或超级源初始化。",
+          "反复松弛，n轮后仍可改进表示相关负环。",
+          "区分全图负环与起点可达负环。"
+        ],
+        "pitfalls": [
+          "只从1初始化可能漏不连通分量的负环。",
+          "SPFA最坏复杂度仍高，不能声称线性。"
+        ],
+        "practice": [
+          {
+            "id": "P3385",
+            "title": "【模板】负环",
+            "url": "https://www.luogu.com.cn/problem/P3385",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "判起点可达负环。",
+            "hint": "按题面正边双向、负边单向建图。",
+            "warning": "该模板只判断从1能到的负环。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2240",
+            "title": "Arbitrage",
+            "url": "http://bailian.openjudge.cn/practice/2240/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "套利转乘法环。",
+            "hint": "可用乘法Floyd，或-log汇率转负环。",
+            "warning": "浮点误差与兑换方向。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "all-pairs",
+        "title": "Floyd全源最短路与中间点阶段",
+        "category": "进阶篇 · 第10章 最短路",
+        "features": "点数较小，很多点对查询，或中间点逐批开放。",
+        "steps": [
+          "对角0，无边INF，重边取小。",
+          "中间点k必须在最外层。",
+          "有限距离才相加。",
+          "若动态开放，按时间排序处理中间点。"
+        ],
+        "pitfalls": [
+          "调换k循环会改变状态含义。",
+          "未开放端点不可答，即使有数值距离。"
+        ],
+        "practice": [
+          {
+            "id": "1125",
+            "title": "Stockbroker Grapevine",
+            "url": "http://bailian.openjudge.cn/practice/1125/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "全源距离后选最优广播源。",
+            "hint": "Floyd后取每点最大距离，再取最小。",
+            "warning": "存在不可达点的源不能当合法答案。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1119",
+            "title": "灾后重建",
+            "url": "https://www.luogu.com.cn/problem/P1119",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "按开放时间增量Floyd。",
+            "hint": "查询按时间处理，逐个加入可用中间点。",
+            "warning": "端点本身没建好时返回-1。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "shortest-count",
+        "title": "最短路计数与等长方案合并",
+        "category": "进阶篇 · 第10章 最短路",
+        "features": "不仅问距离，还问达到最短距离的路径数。",
+        "steps": [
+          "先维护最短距离。",
+          "找到更短距离时覆盖方案数。",
+          "相等距离时累加。",
+          "按题面取模并处理多重边。"
+        ],
+        "pitfalls": [
+          "普通visited不能挡掉等距贡献。",
+          "零权环时最短行走数量可能无限，需看图与路径定义。"
+        ],
+        "practice": [
+          {
+            "id": "P1144",
+            "title": "最短路计数",
+            "url": "https://www.luogu.com.cn/problem/P1144",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "无权图最短路径计数。",
+            "hint": "BFS层间累加，cnt[v]+=cnt[u]。",
+            "warning": "取模100003；重边语义按题面。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1608",
+            "title": "路径统计",
+            "url": "https://www.luogu.com.cn/problem/P1608",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "正权最短路及其方案数。",
+            "hint": "Dijkstra等距累加，重边先按题意去重。",
+            "warning": "相同两点相同权重的重复边不能盲目重复计。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "prim",
+        "title": "稠密图Prim与最小跨割边",
+        "category": "进阶篇 · 第11章 最小生成树",
+        "features": "每轮为当前生成树加入连接树内与树外的最小权边，稠密图矩阵方便。",
+        "steps": [
+          "任取起点dist=0。",
+          "选未加入且dist最小点。",
+          "把选中边权累加。",
+          "用该点更新其余点连接代价。"
+        ],
+        "pitfalls": [
+          "Prim的dist是接入代价，非起点最短距离。",
+          "断图时最小dist仍INF。"
+        ],
+        "practice": [
+          {
+            "id": "1258",
+            "title": "Agri-Net",
+            "url": "http://bailian.openjudge.cn/practice/1258/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "矩阵给权的生成树。",
+            "hint": "O(n²)Prim即可。",
+            "warning": "矩阵对角0不能误当新接入边。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2421",
+            "title": "Constructing Roads",
+            "url": "http://bailian.openjudge.cn/practice/2421/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "已有道路基础上修路。",
+            "hint": "已有边视作0权或预合并后求MST。",
+            "warning": "已有道路可能含环，不能重复收费。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "kruskal",
+        "title": "边排序Kruskal与连通性",
+        "category": "进阶篇 · 第11章 最小生成树",
+        "features": "边稀疏或便于按权排序，通过并查集避免成环。",
+        "steps": [
+          "边按权升序。",
+          "只选连接不同分量的边。",
+          "合并并累加权重。",
+          "选足n-1条才连通。"
+        ],
+        "pitfalls": [
+          "排序本身不检查成环。",
+          "n=1无需选边。"
+        ],
+        "practice": [
+          {
+            "id": "1287",
+            "title": "Networking",
+            "url": "http://bailian.openjudge.cn/practice/1287/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "标准无向MST。",
+            "hint": "排序边并用DSU判不同集合。",
+            "warning": "图可能重边，按权取自然处理。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P3366",
+            "title": "【模板】最小生成树",
+            "url": "https://www.luogu.com.cn/problem/P3366",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "检查断图与MST代价。",
+            "hint": "若选边数不足n-1输出orz。",
+            "warning": "答案范围和断图输出。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "mst-variant",
+        "title": "最小瓶颈、聚类与最大生成树",
+        "category": "进阶篇 · 第11章 最小生成树",
+        "features": "目标可能是限制最大边、保留k个分量，或反向最大化总边权。",
+        "steps": [
+          "先识别目标是否由生成树控制。",
+          "聚类在达到k分量时停止。",
+          "瓶颈记录所选最大边。",
+          "最大生成树将排序改降序。"
+        ],
+        "pitfalls": [
+          "最小总和与最小瓶颈目标不同。",
+          "k个卫星对应k个地面分组，不能少减一次。"
+        ],
+        "practice": [
+          {
+            "id": "2349",
+            "title": "Arctic Network",
+            "url": "http://bailian.openjudge.cn/practice/2349/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "卫星网络聚类。",
+            "hint": "边排序后连到s个分量，最大地面边即答案。",
+            "warning": "输出欧氏距离，两位小数。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2377",
+            "title": "Bad Cowtractors",
+            "url": "http://bailian.openjudge.cn/practice/2377/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "最大生成树。",
+            "hint": "按边权降序Kruskal。",
+            "warning": "不能覆盖全部点则按题意输出-1。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "mst-uniqueness",
+        "title": "MST唯一性与替换边",
+        "category": "进阶篇 · 第11章 最小生成树",
+        "features": "同权边可能产生相同总代价的不同生成树，需要检测等价替换。",
+        "steps": [
+          "先求一棵MST。",
+          "对非树边求树上路径最大边。",
+          "若非树边权等于该最大值即可等价替换。",
+          "或按同权批次检查压缩图环。"
+        ],
+        "pitfalls": [
+          "不能仅看到相同权重就判不唯一。",
+          "次小生成树是否严格次小要区分。"
+        ],
+        "practice": [
+          {
+            "id": "1679",
+            "title": "The Unique MST",
+            "url": "http://bailian.openjudge.cn/practice/1679/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "直接判断MST是否唯一。",
+            "hint": "比较非树边与路径最大边。",
+            "warning": "输出Not Unique!格式。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P4180",
+            "title": "[BJWC2010] 严格次小生成树",
+            "url": "https://www.luogu.com.cn/problem/P4180",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "严格次小生成树扩展。",
+            "hint": "倍增维护路径最大与严格次大边，选合法替换增量。",
+            "warning": "等权替换不算严格次小。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "scc",
+        "title": "强连通分量与缩点DAG",
+        "category": "进阶篇 · 第12章 连通性问题",
+        "features": "有向图中互相可达的点形成等价类，可压成无环图。",
+        "steps": [
+          "Tarjan维护dfn、low和在栈标记。",
+          "low[u]==dfn[u]弹出一个分量。",
+          "将跨分量边建到缩点图。",
+          "按入出度或DAG DP处理。"
+        ],
+        "pitfalls": [
+          "已出栈点不能再参与low回退。",
+          "缩点后是否需要去重边依目标决定。"
+        ],
+        "practice": [
+          {
+            "id": "2186",
+            "title": "Popular Cows",
+            "url": "http://bailian.openjudge.cn/practice/2186/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "受所有点欢迎的牛。",
+            "hint": "缩点后唯一出度0分量是候选。",
+            "warning": "多个汇分量则答案0。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1236",
+            "title": "Network of Schools",
+            "url": "http://bailian.openjudge.cn/practice/1236/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "学校网络补边。",
+            "hint": "统计缩点后零入度和零出度分量。",
+            "warning": "只有一个SCC时第二问为0。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P3387",
+            "title": "【模板】缩点 / 强连通分量",
+            "url": "https://www.luogu.com.cn/problem/P3387",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "缩点后最大权路径。",
+            "hint": "分量点权求和，再DAG最长路。",
+            "warning": "不能在原图环内直接做拓扑。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "articulation",
+        "title": "割点与点双连通",
+        "category": "进阶篇 · 第12章 连通性问题",
+        "features": "删去一个顶点会增加无向图连通分量，需区分根和非根规则。",
+        "steps": [
+          "DFS求dfn和low。",
+          "非根存在孩子low[v]>=dfn[u]则割点。",
+          "根需要至少两个DFS孩子。",
+          "点双可结合边栈弹出。"
+        ],
+        "pitfalls": [
+          "DFS根不能用普通规则。",
+          "无向边需按边编号识别父边，注意重边。"
+        ],
+        "practice": [
+          {
+            "id": "1144",
+            "title": "Network",
+            "url": "http://bailian.openjudge.cn/practice/1144/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "网络割点计数。",
+            "hint": "遍历所有分量，统计不同割点。",
+            "warning": "输入按行，以0结束。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P3388",
+            "title": "【模板】割点",
+            "url": "https://www.luogu.com.cn/problem/P3388",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "直接割点模板。",
+            "hint": "根与非根分开处理。",
+            "warning": "输出升序结点编号。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "bridge",
+        "title": "桥、边双连通与定向",
+        "category": "进阶篇 · 第12章 连通性问题",
+        "features": "删除一条边会断开连通分量；重边会改变桥判定。",
+        "steps": [
+          "为无向边分配成对编号。",
+          "DFS忽略反向父边。",
+          "low[v]>dfn[u]判桥。",
+          "去桥后染色得到边双分量。"
+        ],
+        "pitfalls": [
+          "不能按父结点跳过所有同终点边。",
+          "桥判定是严格大于，割点是大于等于。"
+        ],
+        "practice": [
+          {
+            "id": "P8436",
+            "title": "【模板】边双连通分量",
+            "url": "https://www.luogu.com.cn/problem/P8436",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "边双连通分量。",
+            "hint": "先判桥，再在非桥边上划分。",
+            "warning": "孤立点也是分量。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1515",
+            "title": "Street Directions",
+            "url": "http://bailian.openjudge.cn/practice/1515/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "道路定向。",
+            "hint": "非桥按DFS方向，桥需要双向通行。",
+            "warning": "打印顺序和案例格式按题面。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "euler",
+        "title": "欧拉通路、度数条件与Hierholzer",
+        "category": "基础篇 · 第18章 图的基本应用",
+        "features": "要求每条边恰用一次，访问对象是边而非结点。",
+        "steps": [
+          "检查非零度部分连通。",
+          "无向图奇点数0或2；有向图检查入出度差。",
+          "选合法起点并逐边消耗。",
+          "回溯记录再反转。"
+        ],
+        "pitfalls": [
+          "visited结点不能代替边是否使用。",
+          "字典序要求需排序且处理重边。"
+        ],
+        "practice": [
+          {
+            "id": "P2731",
+            "title": "[USACO3.3] 骑马修栅栏 Riding the Fences",
+            "url": "https://www.luogu.com.cn/problem/P2731",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "无向字典序欧拉路线。",
+            "hint": "按最小邻接点消耗边，回溯输出。",
+            "warning": "有奇点从较小奇点出发，否则最小非零度点。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1386",
+            "title": "Play on Words",
+            "url": "http://bailian.openjudge.cn/practice/1386/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "单词首尾字母拼接。",
+            "hint": "字母为点、单词为有向边，检查有向欧拉条件。",
+            "warning": "度数满足还需弱连通。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "dag-count",
+        "title": "DAG路径计数与最长层级",
+        "category": "进阶篇 · 第16章 树与图上的动态规划",
+        "features": "状态沿有向无环依赖图传播，可能统计方案数也可能计算最大层数。",
+        "steps": [
+          "确定所有源点初始值。",
+          "拓扑遍历保证前驱已处理。",
+          "计数用加法，层级用max。",
+          "仅在题目定义的终点汇总。"
+        ],
+        "pitfalls": [
+          "DP运算不同不能套同一初始化。",
+          "没有源的环会让拓扑处理不完整。"
+        ],
+        "practice": [
+          {
+            "id": "P4017",
+            "title": "最大食物链计数",
+            "url": "https://www.luogu.com.cn/problem/P4017",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "统计源到汇的食物链条数。",
+            "hint": "源点ways=1，沿拓扑累加到后继。",
+            "warning": "只汇总出度0点并取模。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1137",
+            "title": "旅行计划",
+            "url": "https://www.luogu.com.cn/problem/P1137",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "计算旅行计划中的最长前驱链。",
+            "hint": "dp[v]=max(dp[v],dp[u]+1)。",
+            "warning": "每个城市都需要输出，孤立点长度1。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否先说明目标是最短路径还是最小总连接费用？",
+      "能否解释Dijkstra的非负边条件？",
+      "能否写出AOE关键活动的判定等式？"
+    ],
+    "coverageNote": "",
+    "outlineCoverage": [
+      {
+        "title": "图的表示",
+        "status": "知识与方法",
+        "related": [
+          "知识：图的存储与遍历"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "图的表示 / 邻接矩阵",
+        "status": "知识与方法",
+        "related": [
+          "知识：图的存储与遍历"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "图的表示 / 邻接表",
+        "status": "知识与方法",
+        "related": [
+          "知识：图的存储与遍历"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "图的遍历",
+        "status": "知识与方法",
+        "related": [
+          "知识：BFS与DFS",
+          "知识：零一BFS的代价条件",
+          "板子：邻接表BFS：距离与前驱",
+          "题型：DFS/BFS染色与连通块",
+          "题型：多维状态BFS：位置、方向与时间"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "图的遍历 / 深度优先搜索",
+        "status": "知识与方法",
+        "related": [
+          "知识：BFS与DFS",
+          "知识：DFS三色判有向环",
+          "题型：DFS/BFS染色与连通块"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "图的遍历 / 广度优先搜索",
+        "status": "知识与方法",
+        "related": [
+          "知识：BFS与DFS",
+          "知识：零一BFS的代价条件",
+          "板子：邻接表BFS：距离与前驱",
+          "题型：DFS/BFS染色与连通块",
+          "题型：多维状态BFS：位置、方向与时间"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "有向无环图",
+        "status": "知识与方法",
+        "related": [
+          "知识：DAG与拓扑",
+          "板子：最小编号优先拓扑序",
+          "题型：拓扑排序、环判定与字典序"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "有向无环图 / 拓扑排序",
+        "status": "知识与方法",
+        "related": [
+          "题型：拓扑排序、环判定与字典序"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "有向无环图 / AOE 网与关键路径",
+        "status": "知识与方法",
+        "related": [
+          "知识：AOE关键路径",
+          "知识：关键路径的时间约定",
+          "题型：AOE关键路径与最早最迟时间"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "最短路",
+        "status": "知识与方法",
+        "related": [
+          "知识：最短路",
+          "知识：最短路算法的选用",
+          "板子：Floyd全源最短路",
+          "题型：无权最短路与路径恢复",
+          "题型：非负单源最短路：稀疏图Dijkstra"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "最短路 / 单源最短路",
+        "status": "知识与方法",
+        "related": [
+          "知识：最短路",
+          "知识：最短路算法的选用",
+          "板子：Floyd全源最短路",
+          "题型：无权最短路与路径恢复",
+          "题型：非负单源最短路：稀疏图Dijkstra"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "最短路 / 任意两点最短路",
+        "status": "知识与方法",
+        "related": [
+          "板子：Floyd全源最短路",
+          "题型：Floyd全源最短路与中间点阶段"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "最小生成树",
+        "status": "知识与方法",
+        "related": [
+          "知识：最小生成树",
+          "板子：Kruskal最小生成树"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "最小生成树 / Prim",
+        "status": "知识与方法",
+        "related": [
+          "板子：矩阵Prim：最小接入代价",
+          "题型：稠密图Prim与最小跨割边"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "最小生成树 / Prim / MST 性质",
+        "status": "知识与方法",
+        "related": [
+          "知识：MST的割性质与环性质",
+          "题型：MST唯一性与替换边"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "最小生成树 / Prim / D 数组实现",
+        "status": "知识与方法",
+        "related": [
+          "板子：矩阵Prim：最小接入代价",
+          "题型：稠密图Prim与最小跨割边"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "最小生成树 / Kruskal",
+        "status": "知识与方法",
+        "related": [
+          "板子：Kruskal最小生成树",
+          "题型：边排序Kruskal与连通性"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  },
+  {
+    "id": "08-sorting",
+    "order": 8,
+    "title": "内排序",
+    "summary": "用不变量比较排序方法，并将排序用于去重、排名与逆序统计。",
+    "prerequisites": [
+      "第2课线性表；第5课堆"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%86%85%E6%8E%92%E5%BA%8F/",
+    "repoPaths": [
+      "notes-理论-期中后/8-内排序.md"
+    ],
+    "knowledge": [
+      {
+        "title": "稳定性与比较器",
+        "body": "稳定排序保留相等关键码的原相对次序。多关键字可一次比较tuple，或从次关键字到主关键字逐次稳定排序。比较器必须是严格弱序，相等时不可返回true。"
+      },
+      {
+        "title": "插入、冒泡、选择",
+        "body": "直接插入和冒泡在合适实现下稳定，最坏O(n²)；已有序输入可达O(n)。普通直接选择不稳定，即使原序已排序仍需O(n²)比较。"
+      },
+      {
+        "title": "Shell、快排与堆排",
+        "body": "Shell按步长分组插入，不稳定且复杂度依步长而定。快排平均O(n log n)、最坏O(n²)，划分需保证指针推进；堆排O(n log n)、辅助空间O(1)，一般不稳定。"
+      },
+      {
+        "title": "归并排序",
+        "body": "分治后线性合并，时间O(n log n)，普通数组实现额外O(n)空间；相等时先取左边可稳定。归并同时能统计跨区间逆序对。"
+      },
+      {
+        "title": "计数、桶、基数与间接排序",
+        "body": "关键码值域小可计数O(n+K)；LSD基数排序每一位排序都必须稳定。间接排序调整索引而非大记录本体。比较排序下界Ω(n log n)不约束利用值域的非比较方法。"
+      },
+      {
+        "title": "Shell的复杂度不能脱离步长",
+        "body": "Shell每轮进行若干组插入，最终步长1保证正确。不同步长族有不同上界，简单折半步长可达二次量级，不能把所有Shell统称O(n log n)。练习小数据验证的是结果，理论分析仍需说明步长。"
+      },
+      {
+        "title": "三路快排与快速选择",
+        "body": "重复值多时划分成<、=、>三段可避免等值区间反复递归。快排递归两侧，快速选择只进入目标k所在侧；随机主元给期望O(n log n)排序、O(n)选择，不是确定性最坏保证。"
+      },
+      {
+        "title": "稳定分配与LSD基数",
+        "body": "低位先处理依赖每轮稳定，否则高位相同记录会打乱已有低位序。计数排序先频次、再前缀位置，逆序扫描输入放入输出即可稳定；只按桶频次重复输出数值不适用于保留记录顺序。"
+      },
+      {
+        "title": "间接排序与置换循环",
+        "body": "排序索引能保留大记录本体，也能提供旧位置到新位置映射。含l个点的置换环用l−1次任意交换就能归位；相邻交换的最小次数则是严格逆序对数，两者不可混用。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "comparator",
+        "title": "严格多关键字排序",
+        "when": "记录包含score、name、id；分数降序，姓名升序，最后按原编号。",
+        "complexity": "O(n log n)比较时间，辅助空间依排序实现",
+        "code": "struct Record { int score,id; string name; };\nvoid sortRecords(vector<Record>& a) {\n    sort(a.begin(),a.end(),[](const Record& x,const Record& y){\n        if(x.score!=y.score) return x.score>y.score;\n        if(x.name!=y.name) return x.name<y.name;\n        return x.id<y.id;\n    });\n}",
+        "notes": "如果题目要求同分保留输入顺序，可用stable_sort只比较主码，或把id明确作为末级码。"
+      },
+      {
+        "id": "inversions",
+        "title": "归并排序+逆序对计数",
+        "when": "输入任意整数数组；返回严格逆序对数，并把数组改为非降序。",
+        "complexity": "O(n log n)时间，O(n)辅助空间",
+        "code": "long long inversionCount(vector<int>& a) {\n    vector<int> b(a.size());\n    function<long long(int,int)> solve=[&](int l,int r)->long long {\n        if(r-l<=1) return 0;\n        int m=l+(r-l)/2;\n        long long ans=solve(l,m)+solve(m,r);\n        int i=l,j=m,k=l;\n        while(i<m && j<r) {\n            if(a[i]<=a[j]) b[k++]=a[i++];\n            else {ans+=m-i; b[k++]=a[j++];}\n        }\n        while(i<m) b[k++]=a[i++];\n        while(j<r) b[k++]=a[j++];\n        copy(b.begin()+l,b.begin()+r,a.begin()+l);\n        return ans;\n    };\n    return solve(0,(int)a.size());\n}",
+        "notes": "全程使用[l,r)；相等时取左边，因此相等元素不算逆序。答案最大n(n-1)/2，需要long long。"
+      },
+      {
+        "id": "elementary",
+        "title": "插入、冒泡、选择与Shell四种基础排序",
+        "when": "整数升序；每个函数独立原地修改vector。",
+        "complexity": "前三种最坏O(n²)，折半Shell最坏O(n²)；O(1)辅助空间",
+        "code": "void insertionSort(vector<int>& a){\n    for(int i=1;i<(int)a.size();++i){int x=a[i],j=i;while(j&&a[j-1]>x){a[j]=a[j-1];--j;}a[j]=x;}\n}\nvoid bubbleSort(vector<int>& a){\n    for(int end=(int)a.size()-1;end>0;--end){bool changed=false;\n        for(int j=0;j<end;++j)if(a[j]>a[j+1]){swap(a[j],a[j+1]);changed=true;}\n        if(!changed)break;}\n}\nvoid selectionSort(vector<int>& a){\n    for(int i=0;i<(int)a.size();++i){int p=i;for(int j=i+1;j<(int)a.size();++j)if(a[j]<a[p])p=j;swap(a[i],a[p]);}\n}\nvoid shellSort(vector<int>& a){\n    for(int gap=(int)a.size()/2;gap;gap/=2)for(int i=gap;i<(int)a.size();++i){\n        int x=a[i],j=i;while(j>=gap&&a[j-gap]>x){a[j]=a[j-gap];j-=gap;}a[j]=x;}\n}",
+        "notes": "插入/冒泡的严格>保留相等元素相对顺序；选择和Shell一般不稳定。对大n必须按约束选复杂度有保证的算法。"
+      },
+      {
+        "id": "quick-threeway",
+        "title": "随机三路快排：小侧递归、大侧迭代",
+        "when": "升序排序vector<int>；内部区间[l,r)半开。",
+        "complexity": "期望O(n log n)，最坏O(n²)；递归栈O(log n)",
+        "code": "void quickSort(vector<int>& a){\n    mt19937 rng(1234567);\n    function<void(int,int)> sortRange=[&](int l,int r){\n        while(r-l>1){int pivot=a[l+rng()%(r-l)],lt=l,i=l,gt=r;\n            while(i<gt){if(a[i]<pivot)swap(a[lt++],a[i++]);else if(a[i]>pivot)swap(a[i],a[--gt]);else ++i;}\n            if(lt-l<r-gt){sortRange(l,lt);l=gt;}else {sortRange(gt,r);r=lt;}\n        }\n    };\n    sortRange(0,a.size());\n}",
+        "notes": "等值段[lt,gt)不用再排。固定种子便于复现，但不提供对抗输入下的最坏保证；正式工程可用std::sort的保证。"
+      },
+      {
+        "id": "heapsort",
+        "title": "原地大根堆排序",
+        "when": "任意整数数组，最终非降序。",
+        "complexity": "O(n log n)最坏时间，O(1)额外空间",
+        "code": "void heapSort(vector<int>& a){\n    auto down=[&](int u,int n){\n        while(2*u+1<n){int v=2*u+1;if(v+1<n&&a[v+1]>a[v])++v;\n            if(a[u]>=a[v])break;swap(a[u],a[v]);u=v;}\n    };\n    int n=a.size();for(int u=n/2-1;u>=0;--u)down(u,n);\n    for(int end=n-1;end>0;--end){swap(a[0],a[end]);down(0,end);}\n}",
+        "notes": "不稳定；大根堆弹最大放尾部得到升序，小根堆同样操作则得到降序。"
+      },
+      {
+        "id": "stable-counting",
+        "title": "稳定计数排序：记录按小整数键",
+        "when": "输入pair=(key,payload)，0<=key<=maxKey；返回稳定排序结果。",
+        "complexity": "O(n+maxKey)时间与空间",
+        "code": "vector<pair<int,int>> countingSort(const vector<pair<int,int>>& a,int maxKey){\n    vector<int>count(maxKey+1);for(auto [key,value]:a)++count[key];\n    for(int k=1;k<=maxKey;++k)count[k]+=count[k-1];\n    vector<pair<int,int>>out(a.size());\n    for(int i=(int)a.size()-1;i>=0;--i)out[--count[a[i].first]]=a[i];\n    return out;\n}",
+        "notes": "逆序放回确保同键记录原相对顺序。键可能为负时需偏移，值域太大时不要按maxKey分配数组。"
+      },
+      {
+        "id": "radix-int32",
+        "title": "有符号32位整数LSD基数排序",
+        "when": "int为32位；翻转最高符号位转为无符号顺序键。",
+        "complexity": "O(4n+4·256)时间，O(n+256)空间",
+        "code": "void radixSort(vector<int>& a){\n    vector<int>b(a.size());\n    for(int shift=0;shift<32;shift+=8){array<size_t,256>count{};\n        auto digit=[&](int x){return ((uint32_t(x)^0x80000000u)>>shift)&255u;};\n        for(int x:a)++count[digit(x)];for(int i=1;i<256;++i)count[i]+=count[i-1];\n        for(int i=(int)a.size()-1;i>=0;--i)b[--count[digit(a[i])]]=a[i];a.swap(b);\n    }\n}",
+        "notes": "uint32_t转换与符号位翻转必须在取字节之前执行。每轮稳定分配，辅助数组与原数组交换后仍可下轮复用。"
+      }
+    ],
+    "types": [
+      {
+        "id": "comparison",
+        "title": "多关键字、稳定性与自定义比较",
+        "category": "基础篇 · 第9章 排序",
+        "features": "记录有多个优先级，或相同主键需保留输入先后。",
+        "steps": [
+          "依优先级逐项比较。",
+          "相等时继续下一级。",
+          "完全相等返回false。",
+          "需要原序稳定就stable_sort或补id。"
+        ],
+        "pitfalls": [
+          "使用<=违反严格弱序。",
+          "浮点epsilon比较可能破坏传递性。"
+        ],
+        "practice": [
+          {
+            "id": "2998",
+            "title": "日志排序",
+            "url": "http://bailian.openjudge.cn/practice/2998/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "日志多字段排序。",
+            "hint": "明确日期、时间等关键字顺序。",
+            "warning": "字符串切片位置与空格输入。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1093",
+            "title": "[NOIP 2007 普及组] 奖学金",
+            "url": "https://www.luogu.com.cn/problem/P1093",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "奖学金多关键字。",
+            "hint": "总分降序、语文降序、编号升序。",
+            "warning": "只输出前5名，所有关键字要完整。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1012",
+            "title": "[NOIP 1998 提高组] 拼数",
+            "url": "https://www.luogu.com.cn/problem/P1012",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "拼数比较器。",
+            "hint": "比较a+b和b+a，而非数值或原串大小。",
+            "warning": "严格比较，不可返回>=。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "simple-sort",
+        "title": "插入、冒泡与直接选择的实现对照",
+        "category": "基础篇 · 第9章 排序",
+        "features": "规模小，需要掌握移动、交换与已排序区间不变量。",
+        "steps": [
+          "明确当前已排序部分。",
+          "插入把大值右移；冒泡相邻交换；选择定位极值。",
+          "每轮保持边界不变量。",
+          "分析比较次数、移动次数与稳定性。"
+        ],
+        "pitfalls": [
+          "选择排序通常不稳定。",
+          "冒泡提前退出只适用于本轮无交换。"
+        ],
+        "practice": [
+          {
+            "id": "2871",
+            "title": "整数奇偶排序",
+            "url": "http://bailian.openjudge.cn/practice/2871/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "按奇偶与数值排序的短数组。",
+            "hint": "可手写插入或选择，比较器先奇偶再按大小。",
+            "warning": "奇数降序、偶数升序以题面为准。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2752",
+            "title": "字符串数组排序问题",
+            "url": "http://bailian.openjudge.cn/practice/2752/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "短字符串数组排序。",
+            "hint": "用插入排序逐个把字符串放入已排序前缀。",
+            "warning": "按题面给定inc/dec/ncinc/ncdec模式决定升降序与大小写规则；比较器必须满足严格弱序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1059",
+            "title": "[NOIP 2006 普及组] 明明的随机数",
+            "url": "https://www.luogu.com.cn/problem/P1059",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "排序与去重。",
+            "hint": "小数据可手写三种O(n²)算法比较；去重独立执行。",
+            "warning": "比较结果相等时不要误删非重复键。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "shell-sort",
+        "title": "Shell分组插入与步长序列",
+        "category": "基础篇 · 第9章 排序",
+        "features": "通过远距离移动缓解直接插入的逆序，最后步长必须为1。",
+        "steps": [
+          "选择递减步长。",
+          "对每个余数类做插入排序。",
+          "缩小步长继续。",
+          "最后一轮步长1确保全局有序。"
+        ],
+        "pitfalls": [
+          "Shell复杂度依赖步长，不能一概O(n log n)。",
+          "它通常不稳定，即使每组插入稳定。"
+        ],
+        "practice": [
+          {
+            "id": "2752",
+            "title": "字符串数组排序问题",
+            "url": "http://bailian.openjudge.cn/practice/2752/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "对小规模正式输入练分组插入。",
+            "hint": "用gap=n/2逐减至1，每轮按间隔移动字符串。",
+            "warning": "按题面给定inc/dec/ncinc/ncdec模式决定升降序与大小写规则；比较器必须满足严格弱序。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1059",
+            "title": "[NOIP 2006 普及组] 明明的随机数",
+            "url": "https://www.luogu.com.cn/problem/P1059",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "用Shell完成排序再去重。",
+            "hint": "仍需独立做相邻去重。",
+            "warning": "小规模允许该步长；不能据此承诺大规模复杂度。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "quick-sort",
+        "title": "快速排序、三路划分与第k小",
+        "category": "基础篇 · 第9章 排序",
+        "features": "划分后主元两侧相对位置已确定，选择问题只需递归一侧。",
+        "steps": [
+          "选主元避免固定最差。",
+          "小于、等于、大于分区。",
+          "排序递归两侧，选择只进目标侧。",
+          "控制递归深度与重复元素。"
+        ],
+        "pitfalls": [
+          "指针不推进会死循环。",
+          "k可能是0基，不能照习惯当1基。"
+        ],
+        "practice": [
+          {
+            "id": "P1177",
+            "title": "【模板】排序",
+            "url": "https://www.luogu.com.cn/problem/P1177",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "完整排序模板。",
+            "hint": "随机三路快排或迭代划分。",
+            "warning": "有序与全相等输入都要可靠。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1923",
+            "title": "【深基9.例4】求第 k 小的数",
+            "url": "https://www.luogu.com.cn/problem/P1923",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "求第k小。",
+            "hint": "快速选择或nth_element。",
+            "warning": "本题k按0基计。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "merge-sort",
+        "title": "稳定归并与严格逆序对",
+        "category": "基础篇 · 第9章 排序",
+        "features": "两个有序段线性归并，同时可统计跨段的大小关系。",
+        "steps": [
+          "分治到长度1。",
+          "有序合并。",
+          "右边较小时累加剩余左段长度。",
+          "复制回原区间。"
+        ],
+        "pitfalls": [
+          "相等不算严格逆序。",
+          "逆序对最大n(n-1)/2需long long。"
+        ],
+        "practice": [
+          {
+            "id": "2299",
+            "title": "Ultra-QuickSort",
+            "url": "http://bailian.openjudge.cn/practice/2299/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "大规模逆序计数。",
+            "hint": "归并排序同时统计。",
+            "warning": "输入n=0结束。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1908",
+            "title": "逆序对",
+            "url": "https://www.luogu.com.cn/problem/P1908",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "重复元素下严格逆序计数。",
+            "hint": "相等时先取左段。",
+            "warning": "不能用>=触发逆序贡献。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "heap-sort",
+        "title": "堆排序与原地最坏界",
+        "category": "基础篇 · 第9章 排序",
+        "features": "希望O(n log n)最坏时间且数组额外空间常数，不要求稳定。",
+        "steps": [
+          "Floyd自底向上建大根堆。",
+          "交换根与末项。",
+          "缩短堆区间。",
+          "只在剩余堆下沉根。"
+        ],
+        "pitfalls": [
+          "建堆初始点n/2-1。",
+          "排序区间与堆区间必须分开。"
+        ],
+        "practice": [
+          {
+            "id": "P1177",
+            "title": "【模板】排序",
+            "url": "https://www.luogu.com.cn/problem/P1177",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "以手写堆排完成同一排序基准。",
+            "hint": "建大根堆后逐个移出最大值到尾部。",
+            "warning": "该题不强制算法，本类型练习要求主动用堆排。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2166",
+            "title": "Heapsort",
+            "url": "http://bailian.openjudge.cn/practice/2166/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "堆排序机制与特殊构造。",
+            "hint": "按题面具体heapification和下沉规则分析比较或交换。",
+            "warning": "该题不能只调用sort输出排序结果。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "counting-sort",
+        "title": "计数、桶与小值域统计",
+        "category": "基础篇 · 第9章 排序",
+        "features": "值域小于或接近数据规模，利用值而非两两比较排序。",
+        "steps": [
+          "计算值域与偏移。",
+          "统计每个值次数。",
+          "按值域输出或做前缀位置。",
+          "需要稳定时逆序放回原记录。"
+        ],
+        "pitfalls": [
+          "存在性桶会丢失重复次数。",
+          "负值和巨大值域不能直接开桶。"
+        ],
+        "practice": [
+          {
+            "id": "P1059",
+            "title": "[NOIP 2006 普及组] 明明的随机数",
+            "url": "https://www.luogu.com.cn/problem/P1059",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "值域小的去重排序。",
+            "hint": "布尔桶标记出现，输出不同值。",
+            "warning": "计数应为不同数个数。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1271",
+            "title": "【深基9.例1】选举学生会",
+            "url": "https://www.luogu.com.cn/problem/P1271",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "票数数据的计数排序。",
+            "hint": "计数后按编号重复输出。",
+            "warning": "本题重复项必须保留，不能像去重题只输出一次。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "radix-sort",
+        "title": "LSD基数排序与稳定分配",
+        "category": "基础篇 · 第9章 排序",
+        "features": "整数/定长关键字可拆成若干位，每一轮按一位稳定排序。",
+        "steps": [
+          "确定位宽、进制与符号处理。",
+          "从低位到高位。",
+          "用稳定计数排序。",
+          "交换缓冲并继续高位。"
+        ],
+        "pitfalls": [
+          "每位不稳定会破坏低位顺序。",
+          "有符号整数需偏移或翻转符号位。"
+        ],
+        "practice": [
+          {
+            "id": "P1177",
+            "title": "【模板】排序",
+            "url": "https://www.luogu.com.cn/problem/P1177",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "用整数基数排序处理大数组。",
+            "hint": "32位键可按8位分4轮，负数先做符号映射。",
+            "warning": "以实际题面数值范围选足位数。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1271",
+            "title": "【深基9.例1】选举学生会",
+            "url": "https://www.luogu.com.cn/problem/P1271",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "以小值域计数作为单轮分配基础。",
+            "hint": "先练稳定桶位置，再推广多位键。",
+            "warning": "本题不强制稳定和多轮，属于分配子步骤训练。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "indirect-sort",
+        "title": "间接排序、排名与置换环",
+        "category": "基础篇 · 第9章 排序",
+        "features": "记录很大、需要保留原数据，或问将置换排序的最少交换次数。",
+        "steps": [
+          "排序索引而非本体。",
+          "维护原位置到目标位置映射。",
+          "分解置换环。",
+          "环长l贡献l-1次任意交换。"
+        ],
+        "pitfalls": [
+          "重复值让目标映射不唯一，需按题目处理。",
+          "最少任意交换不等于相邻交换数。"
+        ],
+        "practice": [
+          {
+            "id": "1674",
+            "title": "Sorting by Swapping",
+            "url": "http://bailian.openjudge.cn/practice/1674/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "置换最少交换。",
+            "hint": "计算环数，答案n-环数。",
+            "warning": "这里是任意位置交换，不是逆序对。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "3719",
+            "title": "学生信息用qsort排序",
+            "url": "http://bailian.openjudge.cn/practice/3719/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "学生记录自定义排序。",
+            "hint": "可排序索引数组后按索引输出完整记录。",
+            "warning": "比较函数类型及多字段优先级。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "inversion-app",
+        "title": "排序度量、稳定排名与局部逆序",
+        "category": "基础篇 · 第9章 排序",
+        "features": "逆序数衡量离有序状态多远，可作为记录的派生排序键。",
+        "steps": [
+          "为每条记录计算逆序指标。",
+          "保留原输入编号。",
+          "按指标升序稳定排序。",
+          "输出原记录而非内部拷贝错误结果。"
+        ],
+        "pitfalls": [
+          "同指标的相对顺序。",
+          "计算逆序时原串是否可改写。"
+        ],
+        "practice": [
+          {
+            "id": "4086",
+            "title": "DNA排序",
+            "url": "http://bailian.openjudge.cn/practice/4086/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "DNA按逆序度排序。",
+            "hint": "短串可双循环计算，再stable_sort。",
+            "warning": "同逆序度按输入顺序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1007",
+            "title": "DNA排序",
+            "url": "http://bailian.openjudge.cn/practice/1007/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "独立同类DNA数据练稳定性。",
+            "hint": "以ACGT的字典序统计严格逆序。",
+            "warning": "别把相等字符算逆序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "sort-two-pointer",
+        "title": "排序后的双指针、配对与去重",
+        "category": "基础篇 · 第9章 排序",
+        "features": "先排序建立单调关系，再线性扫配对、区间或差值。",
+        "steps": [
+          "分析排序是否改变问题语义。",
+          "定义左右指针不变量。",
+          "按比较结果单向移动。",
+          "重复块整体计数。"
+        ],
+        "pitfalls": [
+          "一个值出现多次时不能只计一个配对。",
+          "两指针相遇条件依是否允许同一元素而定。"
+        ],
+        "practice": [
+          {
+            "id": "P1102",
+            "title": "A-B 数对",
+            "url": "https://www.luogu.com.cn/problem/P1102",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "固定差值数对。",
+            "hint": "排序双指针或频次映射，相同值乘重数。",
+            "warning": "答案用long long，C=0时需读清有序对定义。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2792",
+            "title": "集合加法",
+            "url": "http://bailian.openjudge.cn/practice/2792/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "两集合目标和。",
+            "hint": "一侧升一侧降的双指针。",
+            "warning": "多个测试用例清理状态。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否比较各排序的稳定性、最坏时间和额外空间？",
+      "能否说出计数排序为什么不违反比较排序下界？",
+      "能否解释合并时一次增加m-i的理由？"
+    ],
+    "coverageNote": "",
+    "outlineCoverage": [
+      {
+        "title": "排序问题",
+        "status": "知识与方法",
+        "related": [
+          "知识：稳定性与比较器",
+          "题型：多关键字、稳定性与自定义比较"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "比较排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：归并排序",
+          "知识：计数、桶、基数与间接排序",
+          "知识：间接排序与置换循环",
+          "板子：严格多关键字排序",
+          "板子：归并排序+逆序对计数"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "比较排序 / 直接插入排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：插入、冒泡、选择",
+          "板子：插入、冒泡、选择与Shell四种基础排序",
+          "题型：插入、冒泡与直接选择的实现对照",
+          "题型：Shell分组插入与步长序列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "比较排序 / Shell 排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：Shell、快排与堆排",
+          "知识：Shell的复杂度不能脱离步长",
+          "板子：插入、冒泡、选择与Shell四种基础排序",
+          "题型：Shell分组插入与步长序列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "比较排序 / 选择排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：插入、冒泡、选择",
+          "知识：三路快排与快速选择",
+          "板子：插入、冒泡、选择与Shell四种基础排序",
+          "题型：插入、冒泡与直接选择的实现对照"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "比较排序 / 堆排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：Shell、快排与堆排",
+          "板子：原地大根堆排序",
+          "题型：堆排序与原地最坏界"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "比较排序 / 冒泡排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：插入、冒泡、选择",
+          "板子：插入、冒泡、选择与Shell四种基础排序",
+          "题型：插入、冒泡与直接选择的实现对照"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "比较排序 / 快速排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：Shell、快排与堆排",
+          "知识：三路快排与快速选择",
+          "板子：随机三路快排：小侧递归、大侧迭代"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "比较排序 / 归并排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：归并排序",
+          "板子：归并排序+逆序对计数",
+          "题型：稳定归并与严格逆序对"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "非比较排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：计数、桶、基数与间接排序",
+          "板子：归并排序+逆序对计数",
+          "板子：稳定计数排序：记录按小整数键",
+          "题型：计数、桶与小值域统计"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "非比较排序 / 计数与桶式分配",
+        "status": "知识与方法",
+        "related": [
+          "知识：计数、桶、基数与间接排序",
+          "板子：归并排序+逆序对计数",
+          "板子：稳定计数排序：记录按小整数键",
+          "题型：计数、桶与小值域统计"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "非比较排序 / 基数排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：计数、桶、基数与间接排序",
+          "知识：稳定分配与LSD基数",
+          "板子：有符号32位整数LSD基数排序",
+          "题型：LSD基数排序与稳定分配"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "间接排序",
+        "status": "知识与方法",
+        "related": [
+          "知识：计数、桶、基数与间接排序",
+          "知识：间接排序与置换循环",
+          "题型：间接排序、排名与置换环"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "下界与对比",
+        "status": "知识与方法",
+        "related": [
+          "知识：归并排序",
+          "知识：计数、桶、基数与间接排序",
+          "知识：间接排序与置换循环",
+          "板子：严格多关键字排序",
+          "板子：归并排序+逆序对计数"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "下界与对比 / 比较排序的下界",
+        "status": "知识与方法",
+        "related": [
+          "知识：稳定性与比较器",
+          "题型：多关键字、稳定性与自定义比较"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "下界与对比 / 算法对比",
+        "status": "知识与方法",
+        "related": [
+          "知识：Shell、快排与堆排",
+          "知识：Shell的复杂度不能脱离步长",
+          "板子：插入、冒泡、选择与Shell四种基础排序",
+          "题型：Shell分组插入与步长序列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  },
+  {
+    "id": "09-external-sorting",
+    "order": 9,
+    "title": "外排序",
+    "summary": "区分CPU比较次数与磁盘I/O，用顺串、选择结构与最佳归并树组织大文件。",
+    "prerequisites": [
+      "第5课堆与Huffman；第8课归并"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E5%A4%96%E6%8E%92%E5%BA%8F/",
+    "repoPaths": [
+      "notes-理论-期中后/9-文件与外排序.md"
+    ],
+    "knowledge": [
+      {
+        "title": "I/O模型与缓冲",
+        "body": "记录放不进内存时，用块传输成本衡量；一趟完整归并通常读N/B块、写N/B块，需对两侧向上取整。缓冲可批量读写，不能把每个记录访问都视为一次磁盘I/O。"
+      },
+      {
+        "title": "初始顺串与外排序框架",
+        "body": "先用内存排序生成有序段，再多趟k路归并。若有r段，理想平衡归并需要ceil(log_k r)趟。k路通常至少要k个输入缓冲和1个输出缓冲，归并路数受内存约束。"
+      },
+      {
+        "title": "置换选择",
+        "body": "内存维护当前段可输出记录的最小堆。新记录>=刚输出值时继续当前段，否则冻结到下一段；当前堆空时开启新段。内存可容m条时降序输入每段约m条，随机独立输入期望段长常见约2m，后者不是所有输入保证。"
+      },
+      {
+        "title": "赢者树与败者树",
+        "body": "叶子代表各顺串当前记录。赢者树保存比较胜者，败者树内部保存败者并另存最终胜者；每次只更新胜者所在叶到根的路径，单次O(log k)。堆同阶，但比较次数与访问模式不同。"
+      },
+      {
+        "title": "不等长顺串与最佳归并树",
+        "body": "合并一次长度总和即代价，目标等价于最小带权路径长度。k叉最佳归并需补0权段至(叶数-1)可被k-1整除。若统计读加写，则通常还要乘2；题目可能只计比较或只计输出。"
+      },
+      {
+        "title": "两层成本：CPU 与块 I/O",
+        "body": "外排序不能只写 O(N log N)：文件扫描至少读 ceil(N/B) 个块，产生一趟输出还要写同量级块。比较、缓冲管理和设备吞吐是不同层的成本；要先说明题目计的是比较、记录搬运，还是读写块数。"
+      },
+      {
+        "title": "初始顺串的长度决定归并轮数",
+        "body": "分批内排序得到约 ceil(N/M) 段；置换选择通过“当前段/冻结段”两组候选延长顺串，但随机输入约 2M 只是经验期望，递减输入仍可能只有 M。"
+      },
+      {
+        "title": "归并路数受缓冲约束",
+        "body": "k 路归并通常至少需要 k 个输入缓冲和 1 个输出缓冲。增大 k 可减少全文件扫描趟数，却会缩小每路块、增大比较结构维护；不能只看 ceil(log_k r)。"
+      },
+      {
+        "title": "选择树不是堆的别名",
+        "body": "堆、赢者树、败者树都可在 k 路流头中选最小值。选择树在某一路更新后只重放叶到根的比较；败者树内部存败者、全局胜者单独保存。实现前固定哨兵、相等键的稳定规则和下标约定。"
+      },
+      {
+        "title": "不等长顺串的最佳归并",
+        "body": "合并长度 a、b 的两段会带来 a+b 的搬运代价。每次合并最短段构成 Huffman 式最佳归并树；k 叉时需补零权叶，使 (叶数-1) 能被 k-1 整除。"
+      },
+      {
+        "title": "多路归并的缓冲预算",
+        "body": "总内存M、每缓冲块B时，需要k个输入缓冲和至少1个输出缓冲，约束(k+1)B<=M。增加k可减少归并趟数，但增加选择代价、文件句柄和随机访问压力；CPU比较次数和磁盘I/O次数分别分析。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "replacement",
+        "title": "置换选择生成初始顺串",
+        "when": "a是输入记录，m>=1为内存可容记录数；返回所有非降序段。",
+        "complexity": "O(N log m)时间，O(m)堆空间，O(N)返回结果空间",
+        "code": "vector<vector<int>> replacementSelection(const vector<int>& a,int m) {\n    priority_queue<int,vector<int>,greater<int>> active,frozen;\n    size_t pos=0;\n    while(pos<a.size() && active.size()<(size_t)m) active.push(a[pos++]);\n    vector<vector<int>> runs;\n    while(!active.empty()) {\n        vector<int> run;\n        while(!active.empty()) {\n            int x=active.top(); active.pop(); run.push_back(x);\n            if(pos<a.size()) {\n                int y=a[pos++];\n                if(y>=x) active.push(y); else frozen.push(y);\n            }\n        }\n        runs.push_back(move(run)); active.swap(frozen);\n    }\n    return runs;\n}",
+        "notes": "函数展示顺串形成，不是磁盘文件接口。真正外排序应把run逐块输出到文件，不把全部结果保存在RAM。"
+      },
+      {
+        "id": "kway",
+        "title": "k路有序流合并",
+        "when": "每个输入vector已非降序；返回全体元素的非降序合并。",
+        "complexity": "O(N log k)时间，O(k)堆空间，O(N)结果空间",
+        "code": "vector<long long> mergeRuns(const vector<vector<long long>>& runs) {\n    using Item=tuple<long long,int,int>;\n    priority_queue<Item,vector<Item>,greater<Item>> q;\n    for(int i=0;i<(int)runs.size();++i)\n        if(!runs[i].empty()) q.push({runs[i][0],i,0});\n    vector<long long> out;\n    while(!q.empty()) {\n        auto [x,i,j]=q.top();q.pop();out.push_back(x);\n        if(j+1<(int)runs[i].size()) q.push({runs[i][j+1],i,j+1});\n    }\n    return out;\n}",
+        "notes": "每次只推进弹出元素所属流；相等元素照常保留。可把取值改成函数生成，输出前m项后停止。"
+      },
+      {
+        "id": "k-huffman",
+        "title": "k叉最优归并：权重与高度双目标",
+        "when": "w非空、非负，k>=2；返回(最小总代价,该代价下最小最大叶深)。",
+        "complexity": "O(n log n+k log n)量级（补叶<k）；O(n+k)空间",
+        "code": "pair<long long,int> kHuffman(vector<long long> w,int k) {\n    using Item=pair<long long,int>;\n    priority_queue<Item,vector<Item>,greater<Item>> q;\n    for(auto x:w) q.push({x,0});\n    int extra=(k-1-((int)w.size()-1)%(k-1))%(k-1);\n    while(extra--) q.push({0,0});\n    long long total=0;\n    while(q.size()>1) {\n        long long sum=0; int h=0;\n        for(int i=0;i<k;++i) {\n            auto [v,d]=q.top();q.pop(); sum+=v; h=max(h,d);\n        }\n        total+=sum; q.push({sum,h+1});\n    }\n    return {total,q.top().second};\n}",
+        "notes": "权重相同时优先较低子树。long long容量仍需与输入总权重及叶深的乘积比较。"
+      },
+      {
+        "id": "optimal-merge-cost",
+        "title": "最佳归并总代价：最小堆",
+        "when": "w 为各初始顺串长度，元素非负；返回二路最优归并的记录搬运长度之和。",
+        "complexity": "O(n log n) 时间，O(n) 空间",
+        "code": "long long optimalMergeCost(vector<long long> w) {\n    priority_queue<long long, vector<long long>, greater<long long>> q(w.begin(), w.end());\n    long long ans = 0;\n    while (q.size() > 1) {\n        long long a = q.top(); q.pop();\n        long long b = q.top(); q.pop();\n        ans += a + b;\n        q.push(a + b);\n    }\n    return ans;\n}",
+        "notes": "此模板计“合并长度”而非真实磁盘 I/O；若题目把一次读与一次写都计入，通常再按定义折算。"
+      },
+      {
+        "id": "loser-tree",
+        "title": "败者树：多路有序流增量选择",
+        "when": "每路当前键与有效标记；只能更新当前胜者。相等键按路号稳定选择。",
+        "complexity": "建树O(k log k)，每取出一个元素O(log k)，空间O(k)",
+        "code": "struct LoserTree {\n    int k; vector<int> loser; vector<long long> key; vector<bool> alive;\n    LoserTree(vector<long long> a, vector<bool> valid):k((int)a.size()),loser(k,k),key(a),alive(valid){\n        for(int i=k-1;i>=0;--i) adjust(i);\n    }\n    bool lessPlayer(int a,int b) const {\n        if(a==k || b==k) return a==k && b!=k;\n        if(alive[a]!=alive[b]) return alive[a];\n        if(!alive[a]) return a<b;\n        return key[a]!=key[b]?key[a]<key[b]:a<b;\n    }\n    void adjust(int s){\n        for(int p=(s+k)/2;p>0;p/=2)\n            if(lessPlayer(loser[p],s)) swap(s,loser[p]);\n        if(k) loser[0]=s;\n    }\n    int winner() const {return k && alive[loser[0]]?loser[0]:-1;}\n    void replaceWinner(long long value,bool valid){\n        int s=winner();if(s<0)return;key[s]=value;alive[s]=valid;adjust(s);\n    }\n};",
+        "notes": "输入各路必须非降序；valid长度等于路数。用有效位表示耗尽，避免把LLONG_MAX错误当作无穷哨兵。此接口不支持随意更改非胜者叶子。"
+      }
+    ],
+    "types": [
+      {
+        "id": "io-runs",
+        "title": "块 I/O、缓冲与初始顺串",
+        "category": "课程理论专项：外排序",
+        "features": "数据超过内存；先形成有序 run，再批量顺序读写；题目可能把内存排序当作已给定。",
+        "steps": [
+          "列出 N、M、B 与题目成本口径。",
+          "估算 run 数，再讨论可用缓冲决定的归并路数。",
+          "把“内部排序代码”与“外存读写接口”分开。"
+        ],
+        "pitfalls": [
+          "不要把每条记录都算作一次磁盘 I/O。",
+          "不要把运行内存中保存全部输出的函数称为完整外排序。"
+        ],
+        "practice": [
+          {
+            "id": "P1177",
+            "title": "【模板】排序",
+            "url": "https://www.luogu.com.cn/problem/P1177",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "练习大规模排序的比较模型，并对照外排序为何还要计 I/O。",
+            "hint": "先判断数据是否可整体放入内存。",
+            "warning": "本题不是外存题；只训练内排序这一子步骤。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1908",
+            "title": "逆序对",
+            "url": "https://www.luogu.com.cn/problem/P1908",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "用归并过程理解顺序扫描与两个游标推进。",
+            "hint": "递归合并时维护左右已排序区间。",
+            "warning": "本题不含文件与块缓冲；仅迁移训练归并扫描。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "replacement-selection",
+        "title": "置换选择生成更长初始顺串",
+        "category": "课程理论专项：外排序",
+        "features": "输入持续到达；新键小于刚输出键时冻结到下一段；堆顶驱动当前段输出。",
+        "steps": [
+          "用容量 M 装入活动堆。",
+          "弹出最小键并读入一条新记录。",
+          "按与 last 的比较放入活动区或冻结区；活动区空时交换两区。"
+        ],
+        "pitfalls": [
+          "last 必须是当前 run 最近输出值。",
+          "冻结记录不能在同一 run 中重新参与竞争。"
+        ],
+        "practice": [
+          {
+            "id": "P1631",
+            "title": "序列合并",
+            "url": "https://www.luogu.com.cn/problem/P1631",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "练习多条有序候选流的堆式头部选择。",
+            "hint": "每次只推进弹出项所属的流。",
+            "warning": "本题不是置换选择；它不含冻结规则，属于选择结构迁移。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2085",
+            "title": "最小函数值",
+            "url": "https://www.luogu.com.cn/problem/P2085",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "练习以最小堆维持“下一批最小候选”。",
+            "hint": "入堆前确认每条候选序列的单调性。",
+            "warning": "不涉及外存顺串和冻结区，只迁移优先队列管理。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "two-way-merge",
+        "title": "二路归并、稳定性与不等长段",
+        "category": "课程理论专项：外排序",
+        "features": "两路输入各有当前位置；相等键需按原先后次序决定输出；段长不等会影响下一轮代价。",
+        "steps": [
+          "比较两路头部，较小者输出并推进。",
+          "一侧耗尽后顺序复制另一侧。",
+          "记录每段长度，为后续最佳归并建模。"
+        ],
+        "pitfalls": [
+          "相等键用 < 会破坏稳定性，稳定归并通常取左侧。",
+          "不要把元素个数、比较次数、读写次数混为一谈。"
+        ],
+        "practice": [
+          {
+            "id": "P1309",
+            "title": "[NOIP 2011 普及组] 瑞士轮",
+            "url": "https://www.luogu.com.cn/problem/P1309",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "把每轮已经有序的胜者组与败者组归并。",
+            "hint": "同组内本轮加分一致，保留原相对有序；双指针线性归并。",
+            "warning": "每轮重新全排序增加复杂度；得分相同按编号。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2299",
+            "title": "Ultra-QuickSort",
+            "url": "http://bailian.openjudge.cn/practice/2299/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "二路归并同时统计跨段逆序。",
+            "hint": "严格小于时右项进入，贡献左段剩余长度。",
+            "warning": "此题训练归并内核，不评测磁盘缓冲。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "winner-loser-tree",
+        "title": "多路归并的堆、赢者树与败者树",
+        "category": "课程理论专项：外排序",
+        "features": "k 路输入流反复替换一个头部；选择器更新应是 O(log k)，而非每次扫描 k 路。",
+        "steps": [
+          "为每一路保留一个当前键和耗尽哨兵。",
+          "取全局胜者输出。",
+          "只更新该路叶到根的路径，直至所有路耗尽。"
+        ],
+        "pitfalls": [
+          "哨兵方向与比较符号不一致会让耗尽路继续获胜。",
+          "相等键要额外比较 run 编号，才能保持稳定。"
+        ],
+        "practice": [
+          {
+            "id": "P3378",
+            "title": "【模板】堆",
+            "url": "https://www.luogu.com.cn/problem/P3378",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "掌握多路选择器的可替代最小堆接口。",
+            "hint": "插入、取顶、删除顶均保持堆序。",
+            "warning": "堆不是败者树的实现；仅训练同阶的选择操作。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1631",
+            "title": "序列合并",
+            "url": "https://www.luogu.com.cn/problem/P1631",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "在真正的有序流头部上使用优先选择结构。",
+            "hint": "堆元素必须带来源与位置。",
+            "warning": "本题不要求实现赢者树或败者树。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "optimal-merge",
+        "title": "最佳归并树与 k 叉补零叶",
+        "category": "课程理论专项：外排序",
+        "features": "多个不等长 run；合并代价等于参与段长度和；目标是总搬运代价最小。",
+        "steps": [
+          "把每段长度放入最小堆。",
+          "反复取最短两段或 k 段，累计并回插。",
+          "k 叉时先补零权段，再按题意处理并列高度。"
+        ],
+        "pitfalls": [
+          "Huffman 编码长度与外排序读写成本的倍数未必相同。",
+          "k 叉补零公式针对叶数，不是随意补到 k 的倍数。"
+        ],
+        "practice": [
+          {
+            "id": "4080",
+            "title": "Huffman编码树",
+            "url": "http://bailian.openjudge.cn/practice/4080/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "直接练习最短权重优先合并与总带权路径长度。",
+            "hint": "每次合并最小两项。",
+            "warning": "题意是编码树；把权重解释为 run 长度才可迁移到归并。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2168",
+            "title": "[NOI2015] 荷马史诗",
+            "url": "https://www.luogu.com.cn/problem/P2168",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "练习 k 叉合并、补零叶和并列高度处理。",
+            "hint": "先检查 (n-1) mod (k-1)。",
+            "warning": "题目不是外排序，需自行把权重映射为顺串长度。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否手述新记录何时冻结到下一顺串？",
+      "能否区分败者树、堆和最佳归并树的作用？",
+      "能否从缓冲数量推导可行归并路数？"
+    ],
+    "coverageNote": "直接题按题面训练本方法；迁移题只覆盖已注明的子步骤或接口，不等同于完整结构评测。本章两类正式练习分别覆盖多路选择与最优归并模型。尚未核实到适合本课程、直接要求磁盘置换选择或败者树维护的百练/洛谷题；不把迁移题标成完整外排序实现题。置换选择板子和I/O知识仍保留供课堂复习，不另设小实验。",
+    "outlineCoverage": [
+      {
+        "title": "外排序基础",
+        "status": "知识与方法",
+        "related": [
+          "知识：I/O模型与缓冲",
+          "知识：两层成本：CPU 与块 I/O",
+          "题型：块 I/O、缓冲与初始顺串"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "外排序基础 / 存储层次",
+        "status": "知识与方法",
+        "related": [
+          "知识：I/O模型与缓冲",
+          "知识：两层成本：CPU 与块 I/O",
+          "题型：块 I/O、缓冲与初始顺串"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "外排序基础 / I/O 模型",
+        "status": "知识与方法",
+        "related": [
+          "知识：I/O模型与缓冲"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "外排序基础 / 文件与记录",
+        "status": "知识与方法",
+        "related": [
+          "知识：I/O模型与缓冲",
+          "知识：两层成本：CPU 与块 I/O",
+          "题型：块 I/O、缓冲与初始顺串"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "外排序基础 / 缓冲区",
+        "status": "知识与方法",
+        "related": [
+          "知识：I/O模型与缓冲",
+          "知识：归并路数受缓冲约束",
+          "知识：多路归并的缓冲预算",
+          "题型：块 I/O、缓冲与初始顺串"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "初始顺串",
+        "status": "知识与方法",
+        "related": [
+          "知识：初始顺串与外排序框架",
+          "知识：初始顺串的长度决定归并轮数",
+          "板子：置换选择生成初始顺串",
+          "题型：块 I/O、缓冲与初始顺串",
+          "题型：置换选择生成更长初始顺串"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "初始顺串 / 外排序框架",
+        "status": "知识与方法",
+        "related": [
+          "知识：初始顺串与外排序框架"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "初始顺串 / 置换选择",
+        "status": "知识与方法",
+        "related": [
+          "知识：置换选择",
+          "板子：置换选择生成初始顺串",
+          "题型：置换选择生成更长初始顺串"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "归并过程",
+        "status": "知识与方法",
+        "related": [
+          "知识：不等长顺串与最佳归并树",
+          "知识：初始顺串的长度决定归并轮数",
+          "知识：归并路数受缓冲约束",
+          "知识：不等长顺串的最佳归并",
+          "知识：多路归并的缓冲预算"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "归并过程 / 二路归并",
+        "status": "知识与方法",
+        "related": [
+          "知识：不等长顺串与最佳归并树",
+          "知识：初始顺串的长度决定归并轮数",
+          "知识：归并路数受缓冲约束",
+          "知识：不等长顺串的最佳归并",
+          "知识：多路归并的缓冲预算"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "归并过程 / 不等长顺串",
+        "status": "知识与方法",
+        "related": [
+          "知识：不等长顺串与最佳归并树",
+          "知识：不等长顺串的最佳归并",
+          "板子：最佳归并总代价：最小堆",
+          "题型：最佳归并树与 k 叉补零叶"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "归并过程 / 多路归并",
+        "status": "知识与方法",
+        "related": [
+          "知识：多路归并的缓冲预算",
+          "板子：败者树：多路有序流增量选择",
+          "题型：多路归并的堆、赢者树与败者树"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "归并过程 / 多路归并 / 赢者树",
+        "status": "知识与方法",
+        "related": [
+          "知识：赢者树与败者树",
+          "题型：多路归并的堆、赢者树与败者树"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "归并过程 / 多路归并 / 败者树",
+        "status": "知识与方法",
+        "related": [
+          "知识：赢者树与败者树",
+          "板子：败者树：多路有序流增量选择",
+          "题型：多路归并的堆、赢者树与败者树"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      },
+      {
+        "title": "代价取舍",
+        "status": "知识与方法",
+        "related": [
+          "知识：多路归并的缓冲预算"
+        ],
+        "boundary": "讲解包含I/O模型；在线题训练归并、选择或代价计算，不能评测真实磁盘吞吐。"
+      }
+    ]
+  },
+  {
+    "id": "10-search",
+    "order": 10,
+    "title": "检索",
+    "summary": "从有序性、单调性和键的性质选择二分、散列或集合结构。",
+    "prerequisites": [
+      "第2课顺序表；第5课BST；第8课排序"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E6%A3%80%E7%B4%A2/",
+    "repoPaths": [
+      "notes-理论-期中后/10-检索.md"
+    ],
+    "knowledge": [
+      {
+        "title": "顺序、二分与分块",
+        "body": "顺序查找O(n)，二分在有序随机访问表上O(log n)。分块索引先定位块再块内查找，常见代价O(块数+块长)，块长约sqrt(n)可平衡，但具体由检索方式决定。"
+      },
+      {
+        "title": "集合与位向量",
+        "body": "小且稠密值域可用位向量，用第x位代表是否存在x；集合交并差可做位运算。值域巨大而数据稀疏时，压缩、排序或哈希更合适。"
+      },
+      {
+        "title": "散列函数",
+        "body": "选择除留余数、折叠或多项式等方法，应考虑值域分布与装载因子α。负数取模先正规化；哈希表平均O(1)不意味着最坏也O(1)。"
+      },
+      {
+        "title": "冲突解决",
+        "body": "链地址法每桶维护记录链；开放寻址在同一表内探测，必须保留从未使用、使用中、已删除三态。删除不能直接变成空槽，否则后续查找会过早终止。"
+      },
+      {
+        "title": "二分答案",
+        "body": "不是对“有序数组”二分，而是对可行性单调的答案空间二分。先写check及单调方向，再定第一个真或最后一个真。上界、下界必须有意义且避免mid不前进。"
+      },
+      {
+        "title": "字符串检索",
+        "body": "完整键查询可用unordered_map<string,...>保存原串，由容器比较确认相等；只存滚动哈希值会引入碰撞风险。字典方向和空行分隔是实现中常见错误。"
+      },
+      {
+        "title": "检索前先确认数据组织",
+        "body": "顺序检索不要求有序；二分需要有序且可随机访问；分块检索先走块索引再块内处理。算法的前提错了，复杂度结论没有意义。"
+      },
+      {
+        "title": "边界检索比“找到即可”更常见",
+        "body": "lower_bound、upper_bound、前驱、后继与最近值都要把不存在时的位置写清。半开区间 [l,r) 让“第一个满足条件的位置”为 r 的自然含义。"
+      },
+      {
+        "title": "位向量适合稠密值域",
+        "body": "第 x 位可表示成员资格，交/并/差映射为按位运算。键域巨大而数据少时会浪费空间；此时应选排序、哈希或压缩位图。"
+      },
+      {
+        "title": "散列表的平均界有条件",
+        "body": "哈希函数分布、装载因子和冲突策略共同决定表现。链地址法可自然容纳冲突；开放寻址删除须留下删除墓碑，不能直接改回空槽。"
+      },
+      {
+        "title": "二分答案的对象是可行性",
+        "body": "答案 x 的 check(x) 必须单调；“最大化最小值”常找最后一个真，“最小化最大值”常找第一个真。先写单调方向，再选中点偏置。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "lower-bound",
+        "title": "手写lower_bound：第一个>=x的位置",
+        "when": "a非降序，返回0..n；n表示不存在。",
+        "complexity": "O(log n)时间，O(1)额外空间",
+        "code": "int firstNotLess(const vector<long long>& a,long long x) {\n    int l=0,r=(int)a.size();\n    while(l<r) {\n        int m=l+(r-l)/2;\n        if(a[m]>=x) r=m; else l=m+1;\n    }\n    return l;\n}",
+        "notes": "最近值查询需比较p与p-1，先检查两者是否越界；距离相等时按题意选更小值。"
+      },
+      {
+        "id": "answer",
+        "title": "二分答案：最大化最近间距",
+        "when": "positions是不同位置，2<=c<=n；返回能安置c个点的最大最小间距。",
+        "complexity": "O(n log D+n log n)时间，O(n)参数副本空间",
+        "code": "long long maxMinGap(vector<long long> positions,int c) {\n    sort(positions.begin(),positions.end());\n    auto ok=[&](long long gap){\n        int count=1; long long last=positions[0];\n        for(int i=1;i<(int)positions.size();++i)\n            if(positions[i]-last>=gap) {last=positions[i];++count;}\n        return count>=c;\n    };\n    long long l=0,r=positions.back()-positions.front();\n    while(l<r) {\n        long long mid=l+(r-l+1)/2;\n        if(ok(mid)) l=mid; else r=mid-1;\n    }\n    return l;\n}",
+        "notes": "这是“最后一个可行值”，使用上取中点。Copying Books则是“第一个可行最大段和”，check方向相反。"
+      },
+      {
+        "id": "hash",
+        "title": "完整字符串计数：保留精确键",
+        "when": "返回每个不同字符串的出现次数，适用于规范化后的完整键。",
+        "complexity": "期望O(输入总字符数)时间，空间O(不同键总字符数)；最坏可退化",
+        "code": "unordered_map<string,int> frequencies(const vector<string>& words) {\n    unordered_map<string,int> count;\n    count.reserve(words.size()*2+1);\n    for(const string& word:words) ++count[word];\n    return count;\n}",
+        "notes": "需要升序输出时另外排序键或用map。查询时find不会插入默认值，而operator[]会。"
+      },
+      {
+        "id": "linear-probing",
+        "title": "线性探测散列表：插入、查找、删除",
+        "when": "固定正容量的整数集合；状态0空、1占用、2已删除。",
+        "complexity": "低装载率时平均O(1)，最坏O(m)；空间O(m)",
+        "code": "struct LinearSet {\n    vector<long long> key;vector<int> state;\n    explicit LinearSet(int m):key(m),state(m){assert(m>0);}\n    int start(long long x) const {long long m=key.size();return int((x%m+m)%m);}\n    bool contains(long long x) const {\n        int m=key.size(),h=start(x);\n        for(int d=0;d<m;++d){int i=(h+d)%m;if(state[i]==0)return false;if(state[i]==1&&key[i]==x)return true;}\n        return false;\n    }\n    bool insert(long long x){\n        int m=key.size(),h=start(x),slot=-1;\n        for(int d=0;d<m;++d){int i=(h+d)%m;\n            if(state[i]==1&&key[i]==x)return true;\n            if(state[i]!=1&&slot<0)slot=i;\n            if(state[i]==0)break;\n        }\n        if(slot<0)return false;key[slot]=x;state[slot]=1;return true;\n    }\n    bool erase(long long x){\n        int m=key.size(),h=start(x);\n        for(int d=0;d<m;++d){int i=(h+d)%m;if(state[i]==0)return false;\n            if(state[i]==1&&key[i]==x){state[i]=2;return true;}}\n        return false;\n    }\n};",
+        "notes": "删除不能改成空槽；查找遇删除标记继续，插入记住首个墓碑但仍检查重复键。容量满返回false；生产实现应扩容并重散列。"
+      }
+    ],
+    "types": [
+      {
+        "id": "sequential-set",
+        "title": "顺序检索、集合检索与哨兵思想",
+        "category": "课程理论专项：检索",
+        "features": "小规模或未排序数据；按顺序比较；集合容器可表达成员关系与去重。",
+        "steps": [
+          "明确目标是首次位置、所有位置还是仅成员资格。",
+          "线性扫描或维护 set/map。",
+          "按题意处理重复键和原始顺序。"
+        ],
+        "pitfalls": [
+          "set 的排序顺序不等于输入顺序。",
+          "哨兵写法不能越过真实容器容量。"
+        ],
+        "practice": [
+          {
+            "id": "3729",
+            "title": "用set实现字符串的排序和查找",
+            "url": "http://bailian.openjudge.cn/practice/3729/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "练习集合去重、排序与成员查询。",
+            "hint": "区分插入与查询两类命令。",
+            "warning": "使用 STL set 是集合检索，不是哈希冲突实现。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P4305",
+            "title": "[JLOI2011] 不重复数字",
+            "url": "https://www.luogu.com.cn/problem/P4305",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "练习成员标记与首次出现顺序的分离。",
+            "hint": "用哈希集合判断是否见过，再顺序输出。",
+            "warning": "题目不要求推导装载因子；关注重复处理。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "binary-boundary",
+        "title": "二分检索：边界、前驱后继与最近值",
+        "category": "进阶篇 第13章：二分查找与二分答案",
+        "features": "有序序列、随机访问；返回插入位置或相邻候选，而不是只返回命中布尔值。",
+        "steps": [
+          "定义要找第一个 >=x、>x 或最后一个 <=x。",
+          "使用半开区间迭代收缩。",
+          "根据位置 p 访问 p 与 p-1，先检查越界。"
+        ],
+        "pitfalls": [
+          "重复元素时普通二分的任意命中没有业务意义。",
+          "距离相同的 tie-break 必须按题意。"
+        ],
+        "practice": [
+          {
+            "id": "4134",
+            "title": "查找最接近的元素",
+            "url": "http://bailian.openjudge.cn/practice/4134/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "直接训练插入点两侧的最近值比较。",
+            "hint": "先 lower_bound，再比较候选。",
+            "warning": "不要在 p 为 0 或 n 时访问不存在元素。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2249",
+            "title": "【深基13.例1】查找",
+            "url": "https://www.luogu.com.cn/problem/P2249",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "训练第一个出现位置的边界二分。",
+            "hint": "保持答案为左端点的含义。",
+            "warning": "输出位置通常是 1 基，内部下标可保持 0 基。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "binary-answer",
+        "title": "答案二分与单调可行性",
+        "category": "进阶篇 第13章：二分查找与二分答案",
+        "features": "目标不是数组下标，而是一个数值答案；可行性随答案单调改变。",
+        "steps": [
+          "写出 check(mid) 和单调方向。",
+          "确定寻找第一个真或最后一个真。",
+          "选择不会停滞的中点并验证边界。"
+        ],
+        "pitfalls": [
+          "不可行/可行方向写反时循环仍可能结束但答案错误。",
+          "上界应来自输入，不要随意设常数。"
+        ],
+        "practice": [
+          {
+            "id": "2456",
+            "title": "Aggressive cows",
+            "url": "http://bailian.openjudge.cn/practice/2456/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "最大化最小间距的经典“最后一个真”。",
+            "hint": "贪心放置并统计可放数量。",
+            "warning": "位置必须先排序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "1505",
+            "title": "Copying Books",
+            "url": "http://bailian.openjudge.cn/practice/1505/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "最小化最大段和的“第一个真”。",
+            "hint": "检验能否在给定上限内分成不超过 k 段。",
+            "warning": "重建方案时要从后向前保证每组非空。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "block-search",
+        "title": "分块检索与块级摘要",
+        "category": "课程理论专项：检索",
+        "features": "数据可分块；块头保存最大键、范围或计数；先在块摘要中定位。",
+        "steps": [
+          "按块组织数据并维护每块摘要。",
+          "先在摘要数组中定位可能块。",
+          "再块内顺序或二分处理。"
+        ],
+        "pitfalls": [
+          "块间有序不等于块内一定有序。",
+          "更新数据后必须同步更新块摘要。"
+        ],
+        "practice": [
+          {
+            "id": "P2801",
+            "title": "教主的魔法",
+            "url": "https://www.luogu.com.cn/problem/P2801",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "有序块+懒标记维护区间阈值统计。",
+            "hint": "边界块暴力修改重排，整块只改tag，查询整块二分。",
+            "warning": "块内原序数组与排序摘要必须同时维护。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1198",
+            "title": "[JSOI2008] 最大数",
+            "url": "https://www.luogu.com.cn/problem/P1198",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "追加序列与后缀区间最大值。",
+            "hint": "可用分块存每块最大值，查询只扫边界块。",
+            "warning": "在线参数受上次答案影响；也可线段树或单调结构。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "bit-vector",
+        "title": "位向量集合与筛法标记",
+        "category": "进阶篇 第2章：前缀和、差分与离散化",
+        "features": "值域较小或可压缩；单个位表示成员，按位操作可并行集合运算。",
+        "steps": [
+          "确定键到 bit 的映射。",
+          "按位设置/清除并维护边界。",
+          "对大值域先评估压缩或改用哈希。"
+        ],
+        "pitfalls": [
+          "bitset 下标不能越界。",
+          "筛法中的 false/true 语义与 0/1 编号要统一。"
+        ],
+        "practice": [
+          {
+            "id": "4088",
+            "title": "集合运算",
+            "url": "http://bailian.openjudge.cn/practice/4088/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "位向量表示小整数域集合。",
+            "hint": "一位标记一个元素，AND/OR/XOR对应交并与对称差。",
+            "warning": "题目若含负数或大域，先压缩；保留输出顺序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4093",
+            "title": "倒排索引查询",
+            "url": "http://bailian.openjudge.cn/practice/4093/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "用位集合合成布尔检索。",
+            "hint": "必含词取AND，不含词取AND NOT。",
+            "warning": "补码高位不属于文档全集，需掩码或从正项候选开始。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "hash-dictionary",
+        "title": "散列字典：规范化、计数与双向映射",
+        "category": "基础篇 第17章：集合",
+        "features": "完整键到值的映射；输入格式可能有分隔行、大小写或规范化要求。",
+        "steps": [
+          "统一键表示。",
+          "选择 map/unordered_map 保存精确键。",
+          "查询时用 find 区分不存在与默认值。"
+        ],
+        "pitfalls": [
+          "仅保存哈希值会有碰撞风险。",
+          "operator[] 查询可能意外插入新键。"
+        ],
+        "practice": [
+          {
+            "id": "1002",
+            "title": "方便记忆的电话号码",
+            "url": "http://bailian.openjudge.cn/practice/1002/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "直接练习字符串规范化后的计数。",
+            "hint": "先把字母映射成统一数字串。",
+            "warning": "格式化输出与“无重复”提示都要按题意。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2503",
+            "title": "Babelfish",
+            "url": "http://bailian.openjudge.cn/practice/2503/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "练习单向字典和未知词查询。",
+            "hint": "读到空行后切换到查询阶段。",
+            "warning": "不要把词典方向建反。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "collision-resolution",
+        "title": "散列函数、链地址与开放寻址",
+        "category": "课程理论专项：检索",
+        "features": "存在碰撞；需要明示表长、装载因子、探测序列或桶结构。",
+        "steps": [
+          "选择哈希函数并正规化负数余数。",
+          "链地址记录同桶元素，或按探测序列寻找槽位。",
+          "删除后保持后续查找可达，必要时重散列。"
+        ],
+        "pitfalls": [
+          "开放寻址删除成 EMPTY 会截断查找链。",
+          "高装载因子下“平均 O(1)”不再是可靠常数。"
+        ],
+        "practice": [
+          {
+            "id": "P3370",
+            "title": "【模板】字符串哈希",
+            "url": "https://www.luogu.com.cn/problem/P3370",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "练习哈希值构造及用哈希比较字符串。",
+            "hint": "选择基数与模数或使用双哈希。",
+            "warning": "哈希相等并非数学上必然字符串相等；竞赛模板应说明碰撞风险。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P4305",
+            "title": "[JLOI2011] 不重复数字",
+            "url": "https://www.luogu.com.cn/problem/P4305",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "练习哈希表成员查询的应用。",
+            "hint": "维护已见集合并保留首次顺序。",
+            "warning": "题目不会暴露冲突处理细节；用于接口训练。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否准确说明lower_bound的返回区间？",
+      "能否给出check单调性的证明？",
+      "能否解释开放寻址为什么需要删除标记？"
+    ],
+    "coverageNote": "直接题按题面训练本方法；迁移题只覆盖已注明的子步骤或接口，不等同于完整结构评测。",
+    "outlineCoverage": [
+      {
+        "title": "基本检索",
+        "status": "知识与方法",
+        "related": [
+          "知识：检索前先确认数据组织"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "基本检索 / 顺序检索",
+        "status": "知识与方法",
+        "related": [
+          "知识：顺序、二分与分块",
+          "题型：顺序检索、集合检索与哨兵思想"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "基本检索 / 二分检索",
+        "status": "知识与方法",
+        "related": [
+          "知识：顺序、二分与分块",
+          "知识：二分答案",
+          "知识：二分答案的对象是可行性",
+          "板子：二分答案：最大化最近间距",
+          "题型：二分检索：边界、前驱后继与最近值"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "基本检索 / 分块检索",
+        "status": "知识与方法",
+        "related": [
+          "知识：顺序、二分与分块",
+          "题型：分块检索与块级摘要"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "基本检索 / 位向量集合",
+        "status": "知识与方法",
+        "related": [
+          "知识：集合与位向量",
+          "知识：位向量适合稠密值域",
+          "题型：位向量集合与筛法标记"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "散列检索",
+        "status": "知识与方法",
+        "related": [
+          "知识：散列函数",
+          "知识：散列表的平均界有条件",
+          "板子：线性探测散列表：插入、查找、删除",
+          "题型：散列字典：规范化、计数与双向映射",
+          "题型：散列函数、链地址与开放寻址"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "散列检索 / 散列函数构造",
+        "status": "知识与方法",
+        "related": [
+          "知识：散列函数",
+          "题型：散列函数、链地址与开放寻址"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "散列检索 / 链地址法",
+        "status": "知识与方法",
+        "related": [
+          "知识：冲突解决"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "散列检索 / 开放寻址",
+        "status": "知识与方法",
+        "related": [
+          "板子：线性探测散列表：插入、查找、删除"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "散列检索 / 期望复杂度",
+        "status": "知识与方法",
+        "related": [
+          "知识：散列表的平均界有条件"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "散列检索 / 散列的其他用途",
+        "status": "知识与方法",
+        "related": [
+          "板子：完整字符串计数：保留精确键"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  },
+  {
+    "id": "11-index",
+    "order": 11,
+    "title": "索引",
+    "summary": "把查找从单条记录提升到有序块、磁盘页和倒排表。",
+    "prerequisites": [
+      "第10课检索；第5、6课树"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E7%B4%A2%E5%BC%95/",
+    "repoPaths": [
+      "notes-理论-期中后/11-索引.md"
+    ],
+    "knowledge": [
+      {
+        "title": "稠密、稀疏与多级索引",
+        "body": "稠密索引为每个检索键建立入口；稀疏索引只为部分键或块建立入口，通常要求主文件按键有序。多级索引把下层索引当作新的有序文件；更新数据时也必须维护索引一致性。"
+      },
+      {
+        "title": "ISAM与溢出区",
+        "body": "ISAM的主数据区和索引层次通常相对静态，插入记录进入溢出区。溢出链过长会降低查询效率，需要重组；不要把它与动态分裂的B树混同。"
+      },
+      {
+        "title": "B树的阶与约束",
+        "body": "本页约定m阶表示一个结点最多m个孩子、m−1个关键码。非根内部结点至少ceil(m/2)个孩子，非根结点至少ceil(m/2)−1个关键码；非空根至少1个关键码，非叶根至少2个孩子。所有叶子同层。不同教材的“阶/最小度数”定义需先换算。"
+      },
+      {
+        "title": "B树更新与磁盘访问",
+        "body": "结点内二分定位，沿孩子下降；插入溢出时分裂并向父结点提升分隔码，删除不足时借位或合并，根可能升高或降低。树高是磁盘页访问层数的主要因素，而非单纯比较次数。"
+      },
+      {
+        "title": "B+树与区间查询",
+        "body": "本页采用全部记录入口在叶层、内部结点只作路由的B+树约定。叶子按序链接，点查先到叶层，范围查询定位起点后沿叶链扫描。分隔码是下界还是上界必须与具体实现保持一致。"
+      },
+      {
+        "title": "倒排索引与布尔检索",
+        "body": "正排是文档→词，倒排是词→文档集合。同一文档内重复词只应贡献一个文档编号。AND取交、OR取并、NOT相对候选集做差；有序倒排表可用双指针线性合并。"
+      },
+      {
+        "title": "索引项与主文件是两套数据",
+        "body": "索引把键映射为记录地址或块地址。稠密索引可为每条记录建立入口；稀疏索引通常要求主文件按键有序，只记录块边界。更新时必须同时维护数据和索引。"
+      },
+      {
+        "title": "静态 ISAM 与动态树不同",
+        "body": "ISAM 的层次索引与主区大多预先建立，插入常落入溢出页/链，过长后需要重组；B 树在节点满/空时分裂、借位或合并，结构随更新保持平衡。"
+      },
+      {
+        "title": "B 树的页约束先于代码",
+        "body": "先明确“m 阶”还是“最小度数 t”。非根节点的最少孩子/键数、根的特例、所有叶子同层，决定分裂和合并是否合法。"
+      },
+      {
+        "title": "B+ 树的范围扫描依赖叶链",
+        "body": "内部节点只承担导航，数据入口通常在叶节点；定位左端点后沿叶链扫到右端点。分隔键是左侧上界还是右侧下界，必须同实现一致。"
+      },
+      {
+        "title": "倒排与位图是查询组织，不是字符串算法",
+        "body": "倒排词典把 term 映射到有序文档号表，用双指针实现 AND/OR/NOT；位图索引把条件结果映射为位集合，适合低/中基数属性与快速布尔组合。"
+      },
+      {
+        "title": "红黑树的保证是路径黑高",
+        "body": "根黑、红节点不相邻、每条到空叶路径黑节点数相同，使高度为 O(log n)。插删修复是围绕叔叔/兄弟颜色与旋转的有限情形，而不是“任意 BST 染色”。"
+      },
+      {
+        "title": "B树插入与删除的完整分支",
+        "body": "先明确阶数或最小度t。插入在满结点分裂时提升中位键；根分裂增加高度。删除叶键后若不足，先向有余量的兄弟借键，经父分隔键旋转；兄弟也不足则与父分隔键合并，并可能向上处理。根空且有唯一孩子时缩根。内部键删除先用前驱/后继替代，或者合并后递归，不能只删内部键而断开范围。"
+      },
+      {
+        "title": "B+树更新与范围查询",
+        "body": "B+树内部键只做路由，数据记录在叶结点；叶结点按键相连，区间扫描先定位左界再沿叶链移动。叶分裂向父复制分隔键，内部结点分裂的键提升规则不同；删除或借位改变子树最小键后，必须维护父分隔键。采用“右子树最小键”还是“左子树最大键”要全程一致。"
+      },
+      {
+        "title": "红黑树的修复逻辑",
+        "body": "黑色NIL也计入黑高，根黑、红结点不能有红孩子、各根叶路径黑高相等。插入红结点：叔红则父叔变黑、祖父变红并上移；叔黑则先折线转直线，再围绕祖父旋转和换色。删除黑结点会产生黑高缺口：红兄弟先旋转转成黑兄弟；黑兄弟双黑侄时兄弟变红并上推；近红远黑先转成远红，远侄红则围绕父旋转并重新着色结束。所有旋转都维护父指针和根引用。"
+      },
+      {
+        "title": "混合型B树的双阶数",
+        "body": "本大纲的混合型B树把内部层和叶层分别规定容量：内部结点存分隔键与孩子指针，叶结点存记录并连成链。查找必须下降到叶；叶分裂复制右叶最小键到父，内部层按自己的阶数分裂并提升中间分隔键。删除先分别检查叶层与内部层的下限，再借位、合并、维护分隔键及缩根；不可把叶关键码数和内部孩子数套成同一个上限。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "postings",
+        "title": "有序倒排表：交集与差集",
+        "when": "a、b已经升序且去重；exclude=false取交，true取a减b。",
+        "complexity": "O(|a|+|b|)时间，O(|a|)结果空间",
+        "code": "vector<int> combinePostings(const vector<int>& a,\n                            const vector<int>& b,bool exclude=false) {\n    vector<int> out; size_t i=0,j=0;\n    while(i<a.size()) {\n        while(j<b.size() && b[j]<a[i]) ++j;\n        bool found=j<b.size() && b[j]==a[i];\n        if(found!=exclude) out.push_back(a[i]);\n        ++i;\n    }\n    return out;\n}",
+        "notes": "4093每个查询保证至少一个必含词，先取一个正项作候选，再逐个求交或求差；无需虚构所有文档编号的全集。输入列表先排序去重。"
+      },
+      {
+        "id": "btree-find",
+        "title": "B树结点内定位与递归下降",
+        "when": "演示检索不变量；keys严格升序，叶子child为空，内部child.size()==keys.size()+1。",
+        "complexity": "每层O(log m)比较，h层O(h log m)；不含磁盘缓存开销",
+        "code": "struct BNode { vector<int> keys; vector<BNode*> child; };\nbool contains(BNode* u,int x) {\n    while(u) {\n        int i=lower_bound(u->keys.begin(),u->keys.end(),x)-u->keys.begin();\n        if(i<(int)u->keys.size() && u->keys[i]==x) return true;\n        if(u->child.empty()) return false;\n        u=u->child[i];\n    }\n    return false;\n}",
+        "notes": "这是检索板子，不包含B树分裂、借位和合并。做理论题时必须画出这些更新过程；不能用这段代码声称已实现完整B树。"
+      },
+      {
+        "id": "build-inverted-index",
+        "title": "构建去重倒排表并做 AND",
+        "when": "docs[i] 是第 i 篇文档的词序列；返回词到升序文档号表的映射。",
+        "complexity": "设总词数为 T，构建 O(T log T)（含每篇去重），两表求交 O(a+b)",
+        "code": "map<string, vector<int>> buildInverted(const vector<vector<string>>& docs) {\n    map<string, vector<int>> index;\n    for (int id = 0; id < (int)docs.size(); ++id) {\n        set<string> uniqueWords(docs[id].begin(), docs[id].end());\n        for (const string& word : uniqueWords) index[word].push_back(id);\n    }\n    return index;\n}\nvector<int> intersect(const vector<int>& a, const vector<int>& b) {\n    vector<int> out;\n    for (int i = 0, j = 0; i < (int)a.size() && j < (int)b.size();) {\n        if (a[i] == b[j]) { out.push_back(a[i]); ++i; ++j; }\n        else if (a[i] < b[j]) ++i;\n        else ++j;\n    }\n    return out;\n}",
+        "notes": "同一文档的重复词只应写一次文档号。真实检索还需分词、词项归一化、词频/位置和持久化页面管理。"
+      },
+      {
+        "id": "bitmap-boolean",
+        "title": "位图索引：AND、OR、差集",
+        "when": "同一文档全集编号0..n-1；每个词对应一个Bitmap。",
+        "complexity": "每次集合运算O(ceil(n/64))，空间O(ceil(n/64))",
+        "code": "struct Bitmap {\n    int n;vector<uint64_t> bits;\n    explicit Bitmap(int size):n(size),bits((size+63)/64){}\n    void set(int i){bits[i/64]|=uint64_t(1)<<(i%64);}\n    bool test(int i) const {return (bits[i/64]>>(i%64))&1;}\n    Bitmap combine(const Bitmap& b,char op) const {\n        assert(n==b.n);Bitmap c(n);\n        for(int i=0;i<(int)bits.size();++i)\n            c.bits[i]=op=='&'?(bits[i]&b.bits[i]):op=='|'?(bits[i]|b.bits[i]):(bits[i]&~b.bits[i]);\n        if(n%64 && !c.bits.empty())c.bits.back()&=(uint64_t(1)<<(n%64))-1;\n        return c;\n    }\n};",
+        "notes": "调用set/test前检查0<=i<n。op只允许&、|、-；差集是A AND NOT B。空全集允许；右移位数不得等于64。"
+      }
+    ],
+    "types": [
+      {
+        "id": "linear-static-index",
+        "title": "稠密、稀疏与多级线性索引",
+        "category": "课程理论专项：索引",
+        "features": "主文件按键有序；索引项保存键和记录/块地址；可把下层索引继续索引。",
+        "steps": [
+          "确定索引是否覆盖每条记录。",
+          "稀疏索引先定块，再在主块中找。",
+          "更新时同步地址、块边界与上层索引。"
+        ],
+        "pitfalls": [
+          "稀疏索引直接跳到“块”而非精确记录。",
+          "主文件无序时不能照搬有序索引的二分定位。"
+        ],
+        "practice": [
+          {
+            "id": "P2249",
+            "title": "【深基13.例1】查找",
+            "url": "https://www.luogu.com.cn/problem/P2249",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "训练有序键的精确索引定位。",
+            "hint": "返回第一次出现位置。",
+            "warning": "本题无文件页和多级索引；仅训练最底层有序键检索。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1678",
+            "title": "烦恼的高考志愿",
+            "url": "https://www.luogu.com.cn/problem/P1678",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "训练用有序键做前驱/后继定位。",
+            "hint": "对每个查询检查 lower_bound 两侧。",
+            "warning": "不是索引文件题；不涉及地址维护。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "isam-overflow",
+        "title": "静态索引、ISAM 与溢出区",
+        "category": "课程理论专项：索引",
+        "features": "初始文件与索引相对静态；新记录可能挂入溢出区；查询要合并主区与溢出链。",
+        "steps": [
+          "先用索引定位主块。",
+          "检查主块和关联溢出记录。",
+          "评估溢出链，必要时重组文件与索引。"
+        ],
+        "pitfalls": [
+          "ISAM 不会像 B 树那样立即对页面分裂。",
+          "只查主区会漏掉后插入记录。"
+        ],
+        "practice": [
+          {
+            "id": "P2801",
+            "title": "教主的魔法",
+            "url": "https://www.luogu.com.cn/problem/P2801",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "体验有序主块与更新后重建摘要的维护。",
+            "hint": "区间修改破坏块内有序时重排，整块维护懒标记。",
+            "warning": "仅迁移块级索引与重组思想，不评测ISAM磁盘溢出链。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1198",
+            "title": "[JSOI2008] 最大数",
+            "url": "https://www.luogu.com.cn/problem/P1198",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "体验追加更新和索引摘要同步。",
+            "hint": "新元素入当前尾块并更新块最大值。",
+            "warning": "这是追加摘要接口，不是ISAM分裂或磁盘页实现。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "inverted-index",
+        "title": "倒排索引与布尔查询",
+        "category": "进阶篇 第7章：字符串",
+        "features": "term → 有序、去重文档号表；布尔查询把表做交、并、差。",
+        "steps": [
+          "读文档时对词在单文档内去重。",
+          "对 AND 优先求短表交集。",
+          "OR 合并去重，NOT 相对候选集做差。"
+        ],
+        "pitfalls": [
+          "只按词频计数会把重复出现错误地变成多个文档。",
+          "差集方向反了会得到补集。"
+        ],
+        "practice": [
+          {
+            "id": "P3879",
+            "title": "[TJOI2010] 阅读理解",
+            "url": "https://www.luogu.com.cn/problem/P3879",
+            "source": "洛谷",
+            "level": "巩固",
+            "purpose": "直接构建词到文档集合的倒排表。",
+            "hint": "每篇文档内去重后加入文档号。",
+            "warning": "注意查询词不存在时输出空结果。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4093",
+            "title": "倒排索引查询",
+            "url": "http://bailian.openjudge.cn/practice/4093/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "直接训练多关键词的包含/排除条件。",
+            "hint": "先从一个必含词取得候选集合。",
+            "warning": "按题目定义处理否定词与输出顺序。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "btree-pages",
+        "title": "B 树：页内检索、分裂与合并",
+        "category": "课程理论专项：索引",
+        "features": "多路平衡检索树；节点对应磁盘页；所有叶子同层；插删维护最少/最多键约束。",
+        "steps": [
+          "页内 lower_bound 定位键或孩子。",
+          "插入满页时分裂并向父节点提升分隔键。",
+          "删除不足时先借位，不能借再合并，并处理根缩高。"
+        ],
+        "pitfalls": [
+          "不同教材“m 阶”定义不同，先写节点容量。",
+          "不能把 std::set 的红黑树当作 B 树页面实现。"
+        ],
+        "practice": [
+          {
+            "id": "P3369",
+            "title": "【模板】普通平衡树",
+            "url": "https://www.luogu.com.cn/problem/P3369",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "训练动态有序索引的 rank/kth/前驱后继接口。",
+            "hint": "任选正确平衡 BST 完成操作。",
+            "warning": "题目不要求多关键码页面、分裂或磁盘 I/O；只能迁移训练接口。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P5076",
+            "title": "【深基16.例7】普通二叉树（简化版）",
+            "url": "https://www.luogu.com.cn/problem/P5076",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "训练有序集合的基本查询接口。",
+            "hint": "注意不存在前驱/后继的边界。",
+            "warning": "不是 B 树；无页面和高度平衡要求。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "bplus-range",
+        "title": "B+ 树：叶层顺序链与范围扫描",
+        "category": "课程理论专项：索引",
+        "features": "内部层只导航，叶层保存数据入口且彼此相连；适合范围、排序和连续扫描。",
+        "steps": [
+          "从根下降到左边界所在叶。",
+          "沿叶链顺序输出直到右边界。",
+          "更新时同时维护分隔键与叶链。"
+        ],
+        "pitfalls": [
+          "点查命中内部导航键不代表已得到记录。",
+          "范围端点的开闭区间必须显式处理。"
+        ],
+        "practice": [
+          {
+            "id": "P6136",
+            "title": "【模板】普通平衡树（数据加强版）",
+            "url": "https://www.luogu.com.cn/problem/P6136",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "训练在线有序集合上的大量动态范围相关操作。",
+            "hint": "题目数据在线，不能离线压缩。",
+            "warning": "普通平衡树不是 B+ 树；它不训练叶链或页分裂。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1486",
+            "title": "[NOI2004] 郁闷的出纳员",
+            "url": "https://www.luogu.com.cn/problem/P1486",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "训练顺序统计与阈值分割。",
+            "hint": "维护整体偏移并删除阈值以下元素。",
+            "warning": "题目无 B+ 页布局和范围叶扫描。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "bitmap-index",
+        "title": "位图索引与布尔条件合成",
+        "category": "课程理论专项：索引",
+        "features": "每个属性值维护一张记录位图；AND/OR/NOT 直接变成按位组合；适合低/中基数条件。",
+        "steps": [
+          "为每个条件值建立等长 bitset。",
+          "将查询条件翻译为按位表达式。",
+          "估算位图长度、压缩收益与更新代价。"
+        ],
+        "pitfalls": [
+          "高基数属性可能让位图数目和空间爆炸。",
+          "NOT 必须限制在有效记录位范围。"
+        ],
+        "practice": [
+          {
+            "id": "4093",
+            "title": "倒排索引查询",
+            "url": "http://bailian.openjudge.cn/practice/4093/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "倒排布尔查询以位图实现。",
+            "hint": "把文档列表编码为位集合，组合必含和排除条件。",
+            "warning": "docID需压缩或按最大编号分配，排除后保持合法全集。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4088",
+            "title": "集合运算",
+            "url": "http://bailian.openjudge.cn/practice/4088/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "验证集合布尔代数。",
+            "hint": "将交、并、差映射为AND、OR、AND NOT。",
+            "warning": "集合去重和多重计数是不同语义。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "red-black",
+        "title": "红黑树：颜色约束与更新修复",
+        "category": "课程理论专项：索引",
+        "features": "二叉搜索树叠加红黑性质；通过旋转与染色保持黑高近似平衡。",
+        "steps": [
+          "按 BST 插入/删除定位。",
+          "围绕父、叔叔或兄弟的颜色分类修复。",
+          "每次旋转后检查根颜色、红边与黑高。"
+        ],
+        "pitfalls": [
+          "空叶 NIL 也计入黑高约定。",
+          "只保证根黑不足以保证平衡。"
+        ],
+        "practice": [
+          {
+            "id": "P3369",
+            "title": "【模板】普通平衡树",
+            "url": "https://www.luogu.com.cn/problem/P3369",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "训练红黑树可支持的动态顺序统计接口。",
+            "hint": "可用任意平衡树，但要自行对照接口。",
+            "warning": "题目不验证颜色、黑高或修复过程；不是直接红黑树实现题。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P6136",
+            "title": "【模板】普通平衡树（数据加强版）",
+            "url": "https://www.luogu.com.cn/problem/P6136",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "在在线数据下测试动态有序操作的性能。",
+            "hint": "避免依赖离线坐标压缩。",
+            "warning": "普通平衡树接口练习不能替代红黑树证明与实现。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否按同一阶数约定画出B树分裂和合并？",
+      "能否解释B+树叶链为何适合范围查询？",
+      "能否手算AND、NOT组合查询？"
+    ],
+    "coverageNote": "直接题按题面训练本方法；迁移题只覆盖已注明的子步骤或接口，不等同于完整结构评测。倒排索引有百练直接练习。动态索引题训练有序统计接口，属于迁移练习；不等同于B树/B+树页结构的完整实现。",
+    "outlineCoverage": [
+      {
+        "title": "索引基础",
+        "status": "知识与方法",
+        "related": [
+          "知识：稠密、稀疏与多级索引",
+          "题型：稠密、稀疏与多级线性索引"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "索引基础 / 索引文件",
+        "status": "知识与方法",
+        "related": [
+          "知识：索引项与主文件是两套数据"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "索引基础 / 主码与辅码",
+        "status": "知识与方法",
+        "related": [
+          "知识：索引项与主文件是两套数据"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "索引基础 / 稠密与稀疏",
+        "status": "知识与方法",
+        "related": [
+          "知识：稠密、稀疏与多级索引",
+          "题型：稠密、稀疏与多级线性索引"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "索引基础 / 多级线性索引",
+        "status": "知识与方法",
+        "related": [
+          "知识：稠密、稀疏与多级索引",
+          "题型：稠密、稀疏与多级线性索引"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "索引基础 / 静态索引与 ISAM",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：ISAM与溢出区",
+          "知识：静态 ISAM 与动态树不同",
+          "题型：静态索引、ISAM 与溢出区"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "倒排索引",
+        "status": "知识与方法",
+        "related": [
+          "知识：倒排索引与布尔检索",
+          "题型：倒排索引与布尔查询"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "倒排索引 / 倒排表运算",
+        "status": "知识与方法",
+        "related": [
+          "知识：倒排索引与布尔检索",
+          "知识：倒排与位图是查询组织，不是字符串算法",
+          "板子：有序倒排表：交集与差集",
+          "板子：构建去重倒排表并做 AND",
+          "题型：倒排索引与布尔查询"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "动态索引",
+        "status": "知识与方法",
+        "related": [
+          "知识：B树的阶与约束",
+          "知识：B树更新与磁盘访问",
+          "知识：B 树的页约束先于代码",
+          "知识：B树插入与删除的完整分支",
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "动态索引 / B 树",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B树的阶与约束",
+          "知识：B树更新与磁盘访问",
+          "知识：B 树的页约束先于代码",
+          "知识：B树插入与删除的完整分支",
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B 树 / 结构",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B树的阶与约束",
+          "知识：B树更新与磁盘访问",
+          "知识：B 树的页约束先于代码",
+          "知识：B树插入与删除的完整分支",
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B 树 / 检索",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B树的阶与约束",
+          "知识：B树更新与磁盘访问",
+          "知识：B 树的页约束先于代码",
+          "知识：B树插入与删除的完整分支",
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B 树 / 插入",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B树的阶与约束",
+          "知识：B树更新与磁盘访问",
+          "知识：B 树的页约束先于代码",
+          "知识：B树插入与删除的完整分支",
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B 树 / 删除",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B树的阶与约束",
+          "知识：B树更新与磁盘访问",
+          "知识：B 树的页约束先于代码",
+          "知识：B树插入与删除的完整分支",
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B 树 / 高度",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B树的阶与约束",
+          "知识：B树更新与磁盘访问",
+          "知识：B 树的页约束先于代码",
+          "知识：B树插入与删除的完整分支",
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B+ 树",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B+树与区间查询",
+          "知识：B+ 树的范围扫描依赖叶链",
+          "知识：B+树更新与范围查询",
+          "题型：B+ 树：叶层顺序链与范围扫描"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B+ 树 / 结构",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B+树与区间查询",
+          "知识：B+ 树的范围扫描依赖叶链",
+          "知识：B+树更新与范围查询",
+          "题型：B+ 树：叶层顺序链与范围扫描"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B+ 树 / 检索",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B+树与区间查询",
+          "知识：B+ 树的范围扫描依赖叶链",
+          "知识：B+树更新与范围查询",
+          "题型：B+ 树：叶层顺序链与范围扫描"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B+ 树 / 插入",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B+树与区间查询",
+          "知识：B+ 树的范围扫描依赖叶链",
+          "知识：B+树更新与范围查询",
+          "题型：B+ 树：叶层顺序链与范围扫描"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / B+ 树 / 删除",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：B+树与区间查询",
+          "知识：B+ 树的范围扫描依赖叶链",
+          "知识：B+树更新与范围查询",
+          "题型：B+ 树：叶层顺序链与范围扫描"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / 混合型 B 树",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / 混合型 B 树 / 结构",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / 混合型 B 树 / 检索",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / 混合型 B 树 / 插入",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "动态索引 / 混合型 B 树 / 删除",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：混合型B树的双阶数"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "位图索引",
+        "status": "知识与方法",
+        "related": [
+          "板子：位图索引：AND、OR、差集",
+          "题型：位图索引与布尔条件合成"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "红黑树",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：红黑树的保证是路径黑高",
+          "知识：红黑树的修复逻辑",
+          "题型：红黑树：颜色约束与更新修复"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "红黑树 / 旋转",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：红黑树的保证是路径黑高",
+          "知识：红黑树的修复逻辑",
+          "题型：红黑树：颜色约束与更新修复"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "红黑树 / 插入",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：红黑树的保证是路径黑高",
+          "知识：红黑树的修复逻辑",
+          "题型：红黑树：颜色约束与更新修复"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      },
+      {
+        "title": "红黑树 / 删除",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：红黑树的保证是路径黑高",
+          "知识：红黑树的修复逻辑",
+          "题型：红黑树：颜色约束与更新修复"
+        ],
+        "boundary": "结构约束与更新分支有讲解；所选题主要验证有序索引接口，不是完整磁盘B树/B+树或指定红黑实现的验收。"
+      }
+    ]
+  },
+  {
+    "id": "12-advanced",
+    "order": 12,
+    "title": "高级数据结构",
+    "summary": "串起特殊表、矩阵、存储管理、字典树和自调整检索结构。",
+    "prerequisites": [
+      "前11课；递归、区间动态规划与树的旋转"
+    ],
+    "sourceUrl": "https://www.elainafan.one/p/%E6%95%B0%E7%AE%97-%E9%AB%98%E7%BA%A7%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/",
+    "repoPaths": [
+      "notes-理论-期中后/12-高级数据结构.md"
+    ],
+    "knowledge": [
+      {
+        "title": "数组地址与特殊矩阵压缩",
+        "body": "行主序二维数组A[i][j]的线性偏移为i·列数+j（零基）。对称矩阵只存一半，先交换使i>=j，再用i(i+1)/2+j定位下三角。对角、三角和带状矩阵的公式须先明确是否存对角线及带宽。"
+      },
+      {
+        "title": "稀疏矩阵表示",
+        "body": "三元组存(row,col,value)，须约定行列范围、排序和重复坐标的合并规则。快速转置先数每列非零元，再前缀和定位新行；CSR用row_ptr记录每行区间，十字链表同时链接行和列，适合某些动态更新。"
+      },
+      {
+        "title": "广义表",
+        "body": "元素可以是原子或子表，表长是顶层元素数，深度由最大嵌套决定。常见约定原子深度0、空表深度1；取head得到首元素，tail得到删除首元素后的表，两者类型语义不同。共享子表与环会影响遍历、复制和回收。"
+      },
+      {
+        "title": "动态存储管理与回收",
+        "body": "首次适应找第一个足够大的空闲块，最佳适应取最小够用块；释放时与相邻空闲块合并。内部碎片发生在已分配块内部，外部碎片是分散空闲区。引用计数不能单独回收循环引用；标记清扫先从根标记可达对象，再回收未标记对象。"
+      },
+      {
+        "title": "Trie、Patricia与后缀结构",
+        "body": "Trie按字符下降，路径前缀共享，需区分经过次数与终止次数。Patricia压缩单分支路径；后缀树把字符串各后缀组织到压缩字典树，后缀数组则存后缀字典序及相邻LCP，二者不是同一种存储。"
+      },
+      {
+        "title": "最优二叉检索树",
+        "body": "保持中序键有序，在每个区间枚举根。成功检索权重p与失败间隙权重q都影响代价；以1784的比较次数定义，空区间代价0，非空区间增加其中所有p与q之和。不可用Huffman的任意叶序贪心代替。"
+      },
+      {
+        "title": "AVL、红黑与Splay",
+        "body": "AVL要求每个结点左右子树高度差至多1，并非完全二叉树；更新后按LL/LR/RR/RL恢复。红黑树用颜色约束控制高度。Splay以zig、zig-zig、zig-zag将访问结点伸展到根，单次可达O(n)，一串标准操作均摊O(log n)。"
+      },
+      {
+        "title": "Splay的值域与序列两种用法",
+        "body": "值域树按键有序，重复值用重数维护rank/kth；隐式序列树按子树大小定位第k项，可用懒标记做区间翻转。旋转前要下传祖先标记，旋转后先更新旧父再更新新父；两种模型的“键”不能混用。"
+      },
+      {
+        "title": "多维数组和特殊矩阵先固定下标约定",
+        "body": "行主序二维数组的零基偏移为 i*cols+j。三角、带状、对称矩阵的压缩公式会随“存上/下三角、是否含主对角、带宽定义”变化，不能记一个公式到处套。"
+      },
+      {
+        "title": "稀疏矩阵的表示决定操作",
+        "body": "三元组便于输入与快速转置；CSR 便于行扫描；十字链表便于同时按行、列动态链接。重复坐标如何合并、零值是否删除都应写进接口契约。"
+      },
+      {
+        "title": "广义表区分原子、子表、空表和共享",
+        "body": "表长只数顶层元素，深度由嵌套决定。head 是元素，tail 是表；共享子表和环使朴素递归复制/释放失效，须用所有权或访问标记。"
+      },
+      {
+        "title": "存储管理有碎片与可达性两条线",
+        "body": "自由链表、首次/最佳适应处理可用空闲块和外部碎片；标记清扫、复制、整理和引用计数处理不可达对象。引用计数无法独自处理环。"
+      },
+      {
+        "title": "Trie 家族按“路径标签”压缩",
+        "body": "普通 Trie 逐字符分支；Radix/Patricia 压缩单分支路径；二进制 Trie 常用于最大异或或最长前缀。节点终止标记、经过计数和字符集表示分别服务不同查询。"
+      },
+      {
+        "title": "后缀数组与平衡 BST 的保证不同",
+        "body": "后缀数组是静态字符串后缀的字典序排列，配 LCP/RMQ 回答子串关系；AVL 给每次操作最坏 O(log n)，Splay 只给序列均摊 O(log n)，两者不能互换承诺。"
+      },
+      {
+        "title": "广义表：共享与循环",
+        "body": "纯表可用树表示；重入表允许多个表头引用同一个子表；循环表可能经引用回到自身。求深度时共享无环结构可用记忆化，含环表不能机械套有限树深度递归。head返回首元素（可能是原子或子表），tail返回除首元素外组成的表；空表的head无定义。"
+      },
+      {
+        "title": "可利用空间表与四种回收思路",
+        "body": "空闲块按地址排序便于合并相邻块；按大小组织便于适配请求。首次适应、最佳适应、最坏适应分别选择首个、最小足够、最大块，都可能产生外碎片。引用计数可及时回收但不能独立处理环；标记清扫识别不可达环但保留碎片；复制回收将活对象搬到另一半空间；标记整理在原区域压紧并更新引用。这里的可达性板子只实现标记，不是完整内存管理器。"
+      },
+      {
+        "title": "带状矩阵与稀疏存储的选择",
+        "body": "带宽已知且带内较密时可按对角线或按行压缩；若每行固定保存2b+1个槽，可定义下标i*(2b+1)+(j-i+b)，并只访问|i-j|<=b的元素，边界行允许浪费槽。三元组适合少量非零项，CSR以rowPtr定位每行，十字链表同时连行列便于动态插删；不能把空槽数量和非零项数量混为一谈。"
+      },
+      {
+        "title": "AVL删除与高度传播",
+        "body": "删除先按BST规则替换，再从实际删除位置向根回溯更新高度。若平衡因子为2，看左孩子平衡因子：>=0用右单旋，<0先左后右；为-2时对称处理。删除可能使多个祖先失衡，不能照搬插入“首次修复后停止”；重数、size与高度都要维护。"
+      },
+      {
+        "title": "Patricia压缩与Trie前缀边界",
+        "body": "普通Trie每条边消费一个字符；Patricia把只有一个孩子的链压为一段或记录分歧位。查询必须验证被跳过的字符片段，插入在最长公共前缀结束处分裂边，删除后可合并无终止标记的单孩子结点。位Trie的最大异或贪心是另一类接口，不能当作完整字符串Patricia实现。"
+      }
+    ],
+    "templates": [
+      {
+        "id": "transpose",
+        "title": "稀疏三元组快速转置",
+        "when": "输入a按原行主序排列，坐标零基且无重复；cols是原矩阵列数。",
+        "complexity": "O(cols+非零元数)时间与辅助空间",
+        "code": "struct Entry { int row,col; long long value; };\nvector<Entry> fastTranspose(const vector<Entry>& a,int cols) {\n    vector<int> count(cols),start(cols);\n    for(auto e:a) ++count[e.col];\n    for(int c=1;c<cols;++c) start[c]=start[c-1]+count[c-1];\n    vector<Entry> b(a.size());\n    for(auto e:a) b[start[e.col]++]={e.col,e.row,e.value};\n    return b;\n}",
+        "notes": "start在填充时被推进，若后面还需原始行起点，应先复制。输出按新行、新列有序依赖输入的原行主序约定。"
+      },
+      {
+        "id": "trie",
+        "title": "小写字母Trie：插入与完整词出现次数",
+        "when": "仅含a..z；根0，不存在的孩子为0，真实新结点从1开始。",
+        "complexity": "长度L的操作O(L)，空间O(字符总数×字母表大小)",
+        "code": "struct Trie {\n    struct Node { array<int,26> next{}; int pass=0,end=0; };\n    vector<Node> a{Node{}};\n    void insert(const string& s) {\n        int u=0; ++a[u].pass;\n        for(char c:s) {\n            int x=c-'a';\n            if(!a[u].next[x]) {\n                int v=a.size(); a[u].next[x]=v; a.push_back(Node{});\n            }\n            u=a[u].next[x]; ++a[u].pass;\n        }\n        ++a[u].end;\n    }\n    int count(const string& s) const {\n        int u=0;\n        for(char c:s) { u=a[u].next[c-'a']; if(!u) return 0; }\n        return a[u].end;\n    }\n};",
+        "notes": "最短唯一前缀找首个pass==1的结点；若整个单词是其他单词的前缀，2797允许用它自身作缩写。点名题还需独立维护是否已被点过。"
+      },
+      {
+        "id": "optimal-bst",
+        "title": "最优BST：区间DP与Knuth优化",
+        "when": "p长度n，q长度n+1，权重非负；返回加权比较次数，不要求权重归一化。",
+        "complexity": "O(n²)时间，O(n²)空间",
+        "code": "long long optimalBST(const vector<long long>& p,const vector<long long>& q) {\n    int n=p.size();\n    vector<long long> sp(n+1),sq(n+2);\n    for(int i=0;i<n;++i) sp[i+1]=sp[i]+p[i];\n    for(int i=0;i<=n;++i) sq[i+1]=sq[i]+q[i];\n    vector<vector<long long>> dp(n+1,vector<long long>(n+1));\n    vector<vector<int>> opt(n+1,vector<int>(n+1));\n    for(int i=0;i<=n;++i) opt[i][i]=i;\n    for(int len=1;len<=n;++len) for(int l=0;l+len<=n;++l) {\n        int r=l+len; // keys [l,r), gaps [l,r]\n        long long w=sp[r]-sp[l]+sq[r+1]-sq[l];\n        dp[l][r]=LLONG_MAX;\n        int low=opt[l][r-1],high=min(r-1,opt[l+1][r]);\n        for(int root=low;root<=high;++root) {\n            long long cost=dp[l][root]+dp[root+1][r]+w;\n            if(cost<dp[l][r]) { dp[l][r]=cost;opt[l][r]=root; }\n        }\n    }\n    return dp[0][n];\n}",
+        "notes": "先理解枚举所有root的O(n³)基线，再利用非负权重下的最优根单调性缩小范围。不能把Knuth优化直接套到不同目标的P1040。权重总和与代价须在long long范围内；本板子空区间代价为0，对应1784的失败比较次数定义。"
+      },
+      {
+        "id": "fenwick",
+        "title": "有序统计的离线备选：树状数组",
+        "when": "离散化后值域1..n；cnt非负，kth要求1<=k<=总数。",
+        "complexity": "更新、前缀计数、kth均O(log n)，空间O(n)",
+        "code": "struct Fenwick {\n    int n; vector<int> bit;\n    Fenwick(int n):n(n),bit(n+1){}\n    void add(int x,int d) { for(;x<=n;x+=x&-x) bit[x]+=d; }\n    int sum(int x) const { int s=0;for(;x;x-=x&-x)s+=bit[x];return s; }\n    int kth(int k) const {\n        int x=0,step=1; while(step<=n/2) step*=2;\n        for(;step;step>>=1) {\n            int y=x+step;\n            if(y<=n && bit[y]<k) { x=y;k-=bit[y]; }\n        }\n        return x+1;\n    }\n};",
+        "notes": "add的x必须>=1，否则死循环。离线压缩只适用于预知所有实际键值；P6136强制在线不能直接这样处理。树状数组是扩充工具，不是AVL/Splay的替代证明。"
+      },
+      {
+        "id": "splay-rotate",
+        "title": "Splay核心：旋转与伸展",
+        "when": "结点编号从1起，0是空结点；这里只演示无懒标记的值域树核心。",
+        "complexity": "标准Splay操作序列均摊O(log n)，单次最坏O(n)",
+        "code": "struct SplayCore {\n    struct Node { int ch[2]{},fa=0,cnt=1,size=1; };\n    vector<Node> a{Node{}}; int root=0;\n    int size(int x) const { return x?a[x].size:0; }\n    void pull(int x) { if(x)a[x].size=size(a[x].ch[0])+size(a[x].ch[1])+a[x].cnt; }\n    void rotate(int x) {\n        int y=a[x].fa,z=a[y].fa,d=(a[y].ch[1]==x),b=a[x].ch[d^1];\n        if(z)a[z].ch[a[z].ch[1]==y]=x; else root=x;\n        a[x].fa=z; a[x].ch[d^1]=y; a[y].fa=x;\n        a[y].ch[d]=b; if(b)a[b].fa=y;\n        pull(y);pull(x);\n    }\n    void splay(int x) {\n        while(a[x].fa) {\n            int y=a[x].fa,z=a[y].fa;\n            if(z) rotate((a[y].ch[1]==x)==(a[z].ch[1]==y)?y:x);\n            rotate(x);\n        }\n        root=x;\n    }\n};",
+        "notes": "本段不含查找、插删、键字段或区间翻转；应在理解核心后补齐接口。序列翻转需rev标记、祖先路径下传和双哨兵区间隔离，不能直接套本段。"
+      },
+      {
+        "id": "avl-insert",
+        "title": "AVL插入：高度维护与四种旋转",
+        "when": "整数键，重复键用cnt记录；0为空结点，根初始0。",
+        "complexity": "单次O(log n)时间，n个不同键O(n)空间",
+        "code": "struct AVL {\n    struct Node { int key,l=0,r=0,h=1,cnt=1; };\n    vector<Node> a{{0}}; int root=0;\n    int height(int u) const { return u?a[u].h:0; }\n    void pull(int u) { a[u].h=1+max(height(a[u].l),height(a[u].r)); }\n    int rotateRight(int u) {\n        int v=a[u].l; a[u].l=a[v].r; a[v].r=u;pull(u);pull(v);return v;\n    }\n    int rotateLeft(int u) {\n        int v=a[u].r; a[u].r=a[v].l; a[v].l=u;pull(u);pull(v);return v;\n    }\n    int insert(int u,int key) {\n        if(!u) { a.push_back(Node{key});return (int)a.size()-1; }\n        if(key==a[u].key) { ++a[u].cnt;return u; }\n        if(key<a[u].key) { int v=insert(a[u].l,key);a[u].l=v; }\n        else { int v=insert(a[u].r,key);a[u].r=v; }\n        pull(u); int b=height(a[u].l)-height(a[u].r);\n        if(b>1) {\n            if(key>a[a[u].l].key) a[u].l=rotateLeft(a[u].l);\n            return rotateRight(u);\n        }\n        if(b< -1) {\n            if(key<a[a[u].r].key) a[u].r=rotateRight(a[u].r);\n            return rotateLeft(u);\n        }\n        return u;\n    }\n    void insert(int key) { root=insert(root,key); }\n};",
+        "notes": "这是完整插入接口；不包含删除、rank、kth。补有序统计时pull还需更新子树重数和；AVL删除可能需要从删除点一直向根恢复平衡，不能照抄插入时仅据key判断旋转的逻辑。"
+      },
+      {
+        "id": "suffix-array",
+        "title": "后缀数组：倍增+两趟稳定计数排序",
+        "when": "输入非空或空的字节串；返回后缀起点0基数组，按无符号字节字典序。",
+        "complexity": "O(n log n)时间，O(n+256)辅助空间",
+        "code": "vector<int> suffixArray(const string& s) {\n    int n=s.size(); vector<int> sa(n),rank(n),tmp(n),buf(n);\n    iota(sa.begin(),sa.end(),0);\n    for(int i=0;i<n;++i) rank[i]=(unsigned char)s[i]+1;\n    auto get=[&](int i){return i<n?rank[i]:0;};\n    for(int k=1;k<n;k*=2) {\n        int m=max(n,256)+1; vector<int> count(m);\n        auto counting=[&](int shift) {\n            fill(count.begin(),count.end(),0);\n            for(int i:sa) ++count[get(i+shift)];\n            for(int i=1;i<m;++i) count[i]+=count[i-1];\n            for(int j=n-1;j>=0;--j) {\n                int i=sa[j];buf[--count[get(i+shift)]]=i;\n            }\n            sa.swap(buf);\n        };\n        counting(k);counting(0);\n        int classes=1;tmp[sa[0]]=classes;\n        for(int i=1;i<n;++i) {\n            int x=sa[i-1],y=sa[i];\n            if(rank[x]!=rank[y] || get(x+k)!=get(y+k)) ++classes;\n            tmp[y]=classes;\n        }\n        rank.swap(tmp);if(classes==n)break;\n    }\n    return sa;\n}",
+        "notes": "先排第二关键字，再稳定排第一关键字；越界排名为0，小于所有真实字符排名。P3809输出时每项+1；本段不含LCP数组。"
+      },
+      {
+        "id": "binary-trie-xor",
+        "title": "二进制 Trie：最大异或对",
+        "when": "a 为非负 31 位整数；返回任意两数的最大异或值。",
+        "complexity": "O(n * 31) 时间，O(n * 31) 空间",
+        "code": "struct BinaryTrie {\n    struct Node { int ch[2]{}; };\n    vector<Node> t{Node{}};\n    void insert(int x) {\n        int u = 0;\n        for (int b = 30; b >= 0; --b) {\n            int v = (x >> b) & 1;\n            if (!t[u].ch[v]) { t[u].ch[v] = (int)t.size(); t.push_back(Node{}); }\n            u = t[u].ch[v];\n        }\n    }\n    int best(int x) const {\n        int u = 0, ans = 0;\n        for (int b = 30; b >= 0; --b) {\n            int v = (x >> b) & 1, want = v ^ 1;\n            if (t[u].ch[want]) { ans |= 1 << b; u = t[u].ch[want]; }\n            else u = t[u].ch[v];\n        }\n        return ans;\n    }\n};\nint maxPairXor(const vector<int>& a) {\n    BinaryTrie trie; int ans = 0;\n    for (int x : a) { if (trie.t.size() > 1) ans = max(ans, trie.best(x)); trie.insert(x); }\n    return ans;\n}",
+        "notes": "若数据可能含符号位或需要删除，须调整位数并维护每条路径的计数；空 Trie 不能查询。"
+      },
+      {
+        "id": "kasai-lcp",
+        "title": "Kasai：由后缀数组求相邻LCP",
+        "when": "sa是字符串s的合法后缀数组；lcp[i]对应sa[i-1]与sa[i]，lcp[0]=0。",
+        "complexity": "O(n)时间与空间",
+        "code": "vector<int> kasai(const string& s,const vector<int>& sa){\n    int n=s.size();vector<int> rank(n),lcp(n);\n    for(int i=0;i<n;++i)rank[sa[i]]=i;\n    for(int i=0,h=0;i<n;++i){\n        int r=rank[i];if(r==0){h=0;continue;}int j=sa[r-1];\n        while(i+h<n&&j+h<n&&s[i+h]==s[j+h])++h;\n        lcp[r]=h;if(h)--h;\n    }\n    return lcp;\n}",
+        "notes": "沿原串位置递增时，下一次公共前缀至多先减少1；数组下标是排名，不能把rank当成原下标。配合RMQ可查询任意两后缀LCP。"
+      },
+      {
+        "id": "generalized-list",
+        "title": "广义表：解析、表长与深度",
+        "when": "文法：单字符原子，或括号包围的逗号分隔表；允许空表()。输入合法、无共享和环。",
+        "complexity": "解析O(n)，深度计算O(n)，空间O(n)",
+        "code": "struct GeneralList {\n    struct Node{bool atom;char value;vector<int> child;};\n    vector<Node> nodes;string text;int pos=0;\n    explicit GeneralList(string s):text(s){}\n    void skip(){while(pos<(int)text.size()&&text[pos]==' ')++pos;}\n    int parse(){\n        skip();int u=nodes.size();bool list=text[pos]=='(';\n        nodes.push_back({!list,list?'\\0':text[pos],{}});++pos;\n        if(!list)return u;\n        skip();while(text[pos]!=')'){\n            int v=parse();nodes[u].child.push_back(v);skip();\n            if(text[pos]==','){++pos;skip();}\n        }\n        ++pos;return u;\n    }\n    int length(int u)const{return nodes[u].atom?0:int(nodes[u].child.size());}\n    int depth(int u)const{\n        if(nodes[u].atom)return 0;int best=0;\n        for(int v:nodes[u].child)best=max(best,depth(v));return best+1;\n    }\n};",
+        "notes": "表长只数第一层元素，原子深度0、空表深度1。此树式解析器不表示共享子表或循环表；多字符原子需要先做词法切分。"
+      },
+      {
+        "id": "gc-mark",
+        "title": "图可达性：垃圾回收的标记阶段",
+        "when": "对象0..n-1，边为对象引用；roots是外部根集合。",
+        "complexity": "O(V+E)时间，O(V)辅助空间",
+        "code": "vector<bool> markReachable(const vector<vector<int>>& refs,const vector<int>& roots){\n    vector<bool> live(refs.size());vector<int> st;\n    for(int r:roots)if(!live[r]){live[r]=true;st.push_back(r);}\n    while(!st.empty()){\n        int u=st.back();st.pop_back();\n        for(int v:refs[u])if(!live[v]){live[v]=true;st.push_back(v);}\n    }\n    return live;\n}",
+        "notes": "要求引用下标有效。未标记对象是回收候选；这只是mark阶段，没有实际释放、移动对象、改写指针或并发写屏障。"
+      },
+      {
+        "id": "splay-reverse",
+        "title": "隐式Splay：完整区间翻转接口",
+        "when": "初始化序列1..n，reverseRange(l,r)翻转1-based闭区间，values返回当前序列。",
+        "complexity": "建树O(n)；操作均摊O(log n)，单次最坏O(n)；空间O(n)",
+        "code": "struct SequenceSplay {\n    struct Node{int ch[2]={0,0},fa=0,size=1,value=0;bool rev=false;};\n    vector<Node> a;int root=0,n;\n    explicit SequenceSplay(int count):a(count+3),n(count){a[0].size=0;root=build(0,n+1,0);}\n    void pull(int u){a[u].size=a[a[u].ch[0]].size+a[a[u].ch[1]].size+1;}\n    void flip(int u){if(u){swap(a[u].ch[0],a[u].ch[1]);a[u].rev=!a[u].rev;}}\n    void push(int u){if(a[u].rev){flip(a[u].ch[0]);flip(a[u].ch[1]);a[u].rev=false;}}\n    int build(int l,int r,int fa){\n        if(l>r)return 0;int m=(l+r)/2,u=m+1;a[u].value=m;a[u].fa=fa;\n        a[u].ch[0]=build(l,m-1,u);a[u].ch[1]=build(m+1,r,u);pull(u);return u;\n    }\n    void rotate(int x){\n        int y=a[x].fa,z=a[y].fa,d=(a[y].ch[1]==x),b=a[x].ch[d^1];\n        if(z)a[z].ch[a[z].ch[1]==y]=x;else root=x;a[x].fa=z;\n        a[y].ch[d]=b;if(b)a[b].fa=y;\n        a[x].ch[d^1]=y;a[y].fa=x;pull(y);pull(x);\n    }\n    void splay(int x,int goal=0){\n        vector<int> path;for(int u=x;u!=goal;u=a[u].fa)path.push_back(u);\n        for(auto it=path.rbegin();it!=path.rend();++it)push(*it);\n        while(a[x].fa!=goal){int y=a[x].fa,z=a[y].fa;\n            if(z!=goal)rotate((a[y].ch[1]==x)==(a[z].ch[1]==y)?y:x);\n            rotate(x);\n        }\n    }\n    int kth(int k){\n        int u=root;while(u){push(u);int left=a[a[u].ch[0]].size;\n            if(k==left+1)return u;if(k<=left)u=a[u].ch[0];else{k-=left+1;u=a[u].ch[1];}}\n        return 0;\n    }\n    void reverseRange(int l,int r){\n        assert(1<=l&&l<=r&&r<=n);int x=kth(l);splay(x);int y=kth(r+2);splay(y,x);\n        flip(a[y].ch[0]);pull(y);pull(x);\n    }\n    vector<int> values(){\n        vector<int> ans,st;int u=root;\n        while(u||!st.empty()){\n            while(u){push(u);st.push_back(u);u=a[u].ch[0];}\n            u=st.back();st.pop_back();if(a[u].value>=1&&a[u].value<=n)ans.push_back(a[u].value);\n            u=a[u].ch[1];\n        }\n        return ans;\n    }\n};",
+        "notes": "加两个哨兵0和n+1；原区间[l,r]被第l与第r+2个结点夹住。旋转前沿祖先链下传懒标记。这个板子按隐式位置维护序列，不提供值域BST的rank/前驱后继接口。"
+      },
+      {
+        "id": "csr-multiply",
+        "title": "CSR：三元组建表与稀疏矩阵乘向量",
+        "when": "0-based合法(row,col,value)三元组，可重复；先排序合并同位置。输入x长度等于列数。",
+        "complexity": "建表O(z log z)，乘向量O(rows+z)；空间O(rows+z)",
+        "code": "struct CSR {\n    int rows,cols;vector<int> rowPtr,column;vector<long long> value;\n    CSR(int r,int c,vector<tuple<int,int,long long>> entries):rows(r),cols(c),rowPtr(r+1){\n        sort(entries.begin(),entries.end());\n        for(int i=0;i<(int)entries.size();){\n            auto [rr,cc,v]=entries[i++];\n            while(i<(int)entries.size()&&get<0>(entries[i])==rr&&get<1>(entries[i])==cc)v+=get<2>(entries[i++]);\n            if(v){++rowPtr[rr+1];column.push_back(cc);value.push_back(v);}\n        }\n        for(int i=1;i<=rows;++i)rowPtr[i]+=rowPtr[i-1];\n    }\n    vector<long long> multiply(const vector<long long>& x)const{\n        assert((int)x.size()==cols);vector<long long> y(rows);\n        for(int i=0;i<rows;++i)for(int p=rowPtr[i];p<rowPtr[i+1];++p)y[i]+=value[p]*x[column[p]];\n        return y;\n    }\n};",
+        "notes": "输入坐标必须落在矩阵范围；重复项合并后为0则删除。若数值乘加可能超过long long，题目要求更大整数或取模时要替换数值模型；CSR适合静态按行访问，插入并非O(1)。"
+      }
+    ],
+    "types": [
+      {
+        "id": "multidim-special-matrix",
+        "title": "多维数组、地址映射与特殊矩阵压缩",
+        "category": "课程理论专项：高级数据结构",
+        "features": "下标范围固定；需要把二维/多维坐标映射为连续存储偏移；特殊矩阵只存有效区域。",
+        "steps": [
+          "写出零基或一基的行主序偏移。",
+          "明确对称/三角/带状矩阵保留的区域。",
+          "在读写前统一将坐标映射到存储下标。"
+        ],
+        "pitfalls": [
+          "i、j 交换只在对称矩阵等可交换情形成立。",
+          "压缩公式的边界项最容易出现一位偏差。"
+        ],
+        "practice": [
+          {
+            "id": "2870",
+            "title": "求矩阵的加法",
+            "url": "http://bailian.openjudge.cn/practice/2870/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "训练二维坐标访问和同型矩阵遍历。",
+            "hint": "逐项读取并输出。",
+            "warning": "本题不要求压缩存储；用于数组接口基础。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4075",
+            "title": "矩阵旋转",
+            "url": "http://bailian.openjudge.cn/practice/4075/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "训练坐标变换而非直接移动元素。",
+            "hint": "先推导旧坐标到新坐标的映射。",
+            "warning": "注意旋转后行列数交换。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "sparse-matrix",
+        "title": "稀疏矩阵：三元组、CSR 与快速转置",
+        "category": "课程理论专项：高级数据结构",
+        "features": "非零元远少于总元素；表示选择由行扫描、列扫描、转置和动态更新需求决定。",
+        "steps": [
+          "规定三元组排序和重复坐标合并规则。",
+          "快速转置先统计每列非零个数。",
+          "前缀和得到新行起始位置，再一次填充。"
+        ],
+        "pitfalls": [
+          "填充时会推进 start，若后用原起点必须另存。",
+          "零值累加后应按接口决定是否删除。"
+        ],
+        "practice": [
+          {
+            "id": "P2222",
+            "title": "[HNOI2001] 矩阵乘积",
+            "url": "https://www.luogu.com.cn/problem/P2222",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "直接使用稀疏矩阵三元组。",
+            "hint": "只计算目标行列，按中间维的非零项聚合，避免生成完整稠密乘积。",
+            "warning": "维度可到6000，非零元总量小；注意多矩阵空行分隔。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P17311",
+            "title": "[入门赛 #51] 千秋的研究并不聚焦稀疏矩阵乘法",
+            "url": "https://www.luogu.com.cn/problem/P17311",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "稀疏矩阵分块压缩与存储代价。",
+            "hint": "枚举块大小，快速统计非空块，比较块数量×(k²+1)。",
+            "warning": "n可到5000，不能每种k都朴素重扫全部矩阵；本题不考快速转置。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "generalized-list",
+        "title": "广义表、递归嵌套与表达式结构",
+        "category": "课程理论专项：高级数据结构",
+        "features": "元素可为原子或子表；输入常带括号语法；遍历需按节点种类分派。",
+        "steps": [
+          "设计 atom/list/next 或等价表示。",
+          "递归下降解析嵌套括号。",
+          "分别计算顶层长度、深度或原子遍历结果。"
+        ],
+        "pitfalls": [
+          "空表与原子不是同一概念。",
+          "共享子表不能按树假设重复释放。"
+        ],
+        "practice": [
+          {
+            "id": "2694",
+            "title": "波兰表达式",
+            "url": "http://bailian.openjudge.cn/practice/2694/",
+            "source": "百练",
+            "level": "基础",
+            "purpose": "练习递归语法树的构造和求值。",
+            "hint": "操作符读到后递归读取所需子表达式。",
+            "warning": "表达式树不等于广义表；迁移训练嵌套递归。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "4132",
+            "title": "四则运算表达式求值",
+            "url": "http://bailian.openjudge.cn/practice/4132/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "练习嵌套结构、优先级与栈/递归解析。",
+            "hint": "明确一元负号和运算符优先级。",
+            "warning": "本题不要求 head/tail 广义表操作。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "storage-management",
+        "title": "自由链表、碎片与垃圾回收边界",
+        "category": "课程理论专项：高级数据结构",
+        "features": "对象/块会申请和释放；需区分内部/外部碎片、立即合并与不可达对象回收。",
+        "steps": [
+          "为块保存大小、状态和相邻关系。",
+          "释放时检查物理相邻块并合并。",
+          "GC 从根出发判定可达性；引用计数另需处理环。"
+        ],
+        "pitfalls": [
+          "自由链表顺序不等于内存物理相邻顺序。",
+          "“总空闲量足够”不保证存在连续大块。"
+        ],
+        "practice": [
+          {
+            "id": "1193",
+            "title": "内存分配",
+            "url": "http://bailian.openjudge.cn/practice/1193/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "直接模拟分配、等待和释放的状态变化。",
+            "hint": "按事件顺序更新占用区。",
+            "warning": "严格区分可用总量与连续块规则。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "2340",
+            "title": "Memory management",
+            "url": "http://bailian.openjudge.cn/practice/2340/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "练习空闲块管理与请求生命周期。",
+            "hint": "保存每个请求的起止/状态。",
+            "warning": "题目模型可能简化现实分配器，不可外推为 GC 实现。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "trie-dictionary",
+        "title": "Trie：完整词、前缀计数与删除边界",
+        "category": "进阶篇 第7章：字符串",
+        "features": "键共享字符前缀；节点需区分经过次数与完整词结束次数。",
+        "steps": [
+          "逐字符沿边创建节点。",
+          "在终点维护 end，在路径维护 pass。",
+          "查询完整词与最短唯一前缀使用不同计数。"
+        ],
+        "pitfalls": [
+          "插入 an 与 and 后不能只靠路径存在判断 an。",
+          "删除前要确认该词存在，递减后再决定是否回收节点。"
+        ],
+        "practice": [
+          {
+            "id": "2797",
+            "title": "最短前缀",
+            "url": "http://bailian.openjudge.cn/practice/2797/",
+            "source": "百练",
+            "level": "巩固",
+            "purpose": "直接训练 pass 计数与唯一前缀。",
+            "hint": "找到首个 pass 为 1 的节点。",
+            "warning": "若整个词仍不唯一，要按题意输出完整词。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2580",
+            "title": "于是他错误的点名开始了",
+            "url": "https://www.luogu.com.cn/problem/P2580",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "训练完整词查询与“已访问”状态。",
+            "hint": "字典成员与点名状态分开维护。",
+            "warning": "不能把前缀存在误判成名字存在。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "radix-patricia",
+        "title": "Radix/Patricia：路径压缩与最长前缀",
+        "category": "进阶篇 第7章：字符串",
+        "features": "普通 Trie 的单孩子链可压为带标签边；二进制 Patricia 适合地址/位串前缀。",
+        "steps": [
+          "沿边比较最长公共前缀。",
+          "只部分匹配时拆边并创建中间节点。",
+          "最长前缀查询过程中记住最近终止节点。"
+        ],
+        "pitfalls": [
+          "边标签不是单个字符时，分裂位置要精确。",
+          "压缩后不能用“层数=字符数”推复杂度。"
+        ],
+        "practice": [
+          {
+            "id": "P8306",
+            "title": "【模板】字典树 / Trie",
+            "url": "https://www.luogu.com.cn/problem/P8306",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "训练字典树查询接口，为路径压缩实现建立基线。",
+            "hint": "区分插入后节点计数与查询。",
+            "warning": "题目通常是普通 Trie，不会直接验证 Radix 边分裂。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2922",
+            "title": "[USACO08DEC] Secret Message G",
+            "url": "https://www.luogu.com.cn/problem/P2922",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "训练二进制前缀路径上的计数查询。",
+            "hint": "插入时维护每层经过/结束计数。",
+            "warning": "非 Patricia 压缩实现题；用来迁移最长前缀/位路径语义。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "binary-trie",
+        "title": "二进制 Trie 与最大异或",
+        "category": "进阶篇 第7章：字符串",
+        "features": "键按高位到低位走 0/1 分支；最大异或优先选择当前位相反分支。",
+        "steps": [
+          "逐位插入已有数。",
+          "查询时优先相反位，缺失时走同位。",
+          "支持删除时维护经过计数，不让空分支参与查询。"
+        ],
+        "pitfalls": [
+          "最高位贡献优先，不能从低位贪心。",
+          "若位数到符号位，移位和类型要用无符号或足够宽类型。"
+        ],
+        "practice": [
+          {
+            "id": "P4551",
+            "title": "最长异或路径",
+            "url": "https://www.luogu.com.cn/problem/P4551",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "直接训练树前缀异或值与二进制 Trie。",
+            "hint": "先 DFS 得到根到各点异或，再求两数最大异或。",
+            "warning": "注意边权范围和 bit 宽度。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2922",
+            "title": "[USACO08DEC] Secret Message G",
+            "url": "https://www.luogu.com.cn/problem/P2922",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "训练二进制路径上的前缀统计。",
+            "hint": "查询时累加匹配到的终止/经过信息。",
+            "warning": "题目不是最大异或；用于同一位 Trie 的另一类查询。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "suffix-structures",
+        "title": "后缀树、后缀数组与 LCP",
+        "category": "进阶篇 第7章：字符串",
+        "features": "静态字符串的大量子串/重复模式问题；后缀数组存后缀起点排序，LCP 连接相邻后缀信息。",
+        "steps": [
+          "用倍增按 (rank[i], rank[i+k]) 重排后缀。",
+          "由相邻排名构造 LCP。",
+          "模式串查询在后缀数组上找左右边界，重复问题转化为 LCP/RMQ。"
+        ],
+        "pitfalls": [
+          "P3809 输出通常是 1 基后缀位置。",
+          "越界第二关键字应小于所有真实字符排名。"
+        ],
+        "practice": [
+          {
+            "id": "P3809",
+            "title": "【模板】后缀排序（SA）",
+            "url": "https://www.luogu.com.cn/problem/P3809",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "直接实现后缀数组的字典序排序。",
+            "hint": "先确认字符串字符集与输出基数。",
+            "warning": "模板题不一定要求 LCP；不要遗漏越界排名。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P2852",
+            "title": "[USACO06DEC] Milk Patterns G",
+            "url": "https://www.luogu.com.cn/problem/P2852",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "用后缀数组和 LCP 解决重复子串长度。",
+            "hint": "排序后关注相邻后缀的公共前缀。",
+            "warning": "题目可能需窗口最小值，不是只取全局相邻最大。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "optimal-bst",
+        "title": "最佳 BST：成功/失败概率与区间 DP",
+        "category": "课程理论专项：高级数据结构",
+        "features": "有序键固定，选择树形最小化期望检索代价；成功键 p 与失败间隙 q 的定义要同步。",
+        "steps": [
+          "定义 dp[l][r] 的键区间与空区间代价。",
+          "枚举根并加上区间全部权重的深度增量。",
+          "先写 O(n^3) 基线，再判断是否满足 Knuth 优化条件。"
+        ],
+        "pitfalls": [
+          "Huffman 不保持中序键序，不能代替最优 BST。",
+          "只给 p 不给 q 时要按题目采用的失败代价约定。"
+        ],
+        "practice": [
+          {
+            "id": "1784",
+            "title": "Huffman's Greed",
+            "url": "http://bailian.openjudge.cn/practice/1784/",
+            "source": "百练",
+            "level": "提升",
+            "purpose": "对比“无键序约束”的 Huffman 贪心与最优 BST。",
+            "hint": "先辨别题目是否要求保持中序。",
+            "warning": "本题不是最优 BST；用于防止把两类目标混同。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1040",
+            "title": "[NOIP 2003 提高组] 加分二叉树",
+            "url": "https://www.luogu.com.cn/problem/P1040",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "直接训练保持中序的选根区间 DP。",
+            "hint": "枚举根并记录最优结构。",
+            "warning": "目标函数与含失败概率的最优 BST不同，不能直接搬公式。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "avl-tree",
+        "title": "AVL：平衡因子与四种旋转",
+        "category": "课程理论专项：高级数据结构",
+        "features": "每个节点左右高度差不超过 1；插入/删除回溯时维护高度；LL/LR/RR/RL 对应旋转组合。",
+        "steps": [
+          "按普通 BST 定位操作点。",
+          "自底向上更新高度与平衡因子。",
+          "按失衡根和较高孩子方向选择单旋或双旋。"
+        ],
+        "pitfalls": [
+          "旋转后先更新旧根再更新新根。",
+          "删除可能向上连续失衡，不能照搬插入时的局部判断。"
+        ],
+        "practice": [
+          {
+            "id": "P5076",
+            "title": "【深基16.例7】普通二叉树（简化版）",
+            "url": "https://www.luogu.com.cn/problem/P5076",
+            "source": "洛谷",
+            "level": "基础",
+            "purpose": "练习有序树前驱、后继和排名接口。",
+            "hint": "处理不存在边界。",
+            "warning": "题目不强制 AVL 平衡；只作接口迁移。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P3369",
+            "title": "【模板】普通平衡树",
+            "url": "https://www.luogu.com.cn/problem/P3369",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "用 AVL 完成动态有序统计的一组完整接口。",
+            "hint": "重复键需维护计数与子树大小。",
+            "warning": "题目允许其他平衡树，不会单独验证 AVL 旋转。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      },
+      {
+        "id": "splay-tree",
+        "title": "Splay：伸展、自组织与区间序列",
+        "category": "课程理论专项：高级数据结构",
+        "features": "访问点通过 zig/zig-zig/zig-zag 伸展到根；值域树和隐式序列树分别以键、子树大小为顺序。",
+        "steps": [
+          "在旋转前下传路径上的懒标记。",
+          "按父/祖父方向做一或两次旋转。",
+          "值域操作维护 cnt/size；区间操作用双哨兵隔离区间。"
+        ],
+        "pitfalls": [
+          "Splay 单次最坏可 O(n)，不要宣称逐次最坏 O(log n)。",
+          "隐式序列树的 kth 不能用键比较下降。"
+        ],
+        "practice": [
+          {
+            "id": "P3391",
+            "title": "【模板】文艺平衡树",
+            "url": "https://www.luogu.com.cn/problem/P3391",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "直接训练隐式 Splay、区间隔离和翻转懒标记。",
+            "hint": "用两个哨兵定位翻转区间。",
+            "warning": "旋转前务必 pushdown 祖先链。",
+            "coverage": "直接",
+            "checkedAt": "2026-10-25"
+          },
+          {
+            "id": "P1486",
+            "title": "[NOI2004] 郁闷的出纳员",
+            "url": "https://www.luogu.com.cn/problem/P1486",
+            "source": "洛谷",
+            "level": "提升",
+            "purpose": "训练值域 Splay 的偏移、rank 与阈值删除。",
+            "hint": "维护全局加法偏移避免逐点修改。",
+            "warning": "可用其他平衡树；题目不验证伸展势能分析。",
+            "coverage": "迁移",
+            "checkedAt": "2026-10-25"
+          }
+        ]
+      }
+    ],
+    "checklist": [
+      "能否推导压缩矩阵地址而非背错公式？",
+      "能否解释引用计数的循环回收问题？",
+      "能否区分Trie、后缀树和后缀数组？",
+      "能否说明AVL最坏界与Splay均摊界？"
+    ],
+    "coverageNote": "直接题按题面训练本方法；迁移题只覆盖已注明的子步骤或接口，不等同于完整结构评测。本章较宽，矩阵基础题只覆盖运算和坐标；广义表以正式语法递归题迁移。保留压缩存储、回收、AVL等理论知识，不以小实验替代正式练习。平衡树与后缀数组需要在核心板子外补齐完整实现。",
+    "outlineCoverage": [
+      {
+        "title": "多维数组",
+        "status": "知识与方法",
+        "related": [
+          "知识：数组地址与特殊矩阵压缩",
+          "知识：多维数组和特殊矩阵先固定下标约定",
+          "知识：后缀数组与平衡 BST 的保证不同",
+          "板子：有序统计的离线备选：树状数组",
+          "板子：后缀数组：倍增+两趟稳定计数排序"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 存储次序",
+        "status": "知识与方法",
+        "related": [
+          "知识：数组地址与特殊矩阵压缩",
+          "知识：多维数组和特殊矩阵先固定下标约定",
+          "知识：后缀数组与平衡 BST 的保证不同",
+          "板子：有序统计的离线备选：树状数组",
+          "板子：后缀数组：倍增+两趟稳定计数排序"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 存储次序 / 遍历与缓存",
+        "status": "知识与方法",
+        "related": [
+          "知识：数组地址与特殊矩阵压缩",
+          "知识：多维数组和特殊矩阵先固定下标约定",
+          "知识：后缀数组与平衡 BST 的保证不同",
+          "板子：有序统计的离线备选：树状数组",
+          "板子：后缀数组：倍增+两趟稳定计数排序"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 特殊矩阵",
+        "status": "知识与方法",
+        "related": [
+          "知识：数组地址与特殊矩阵压缩",
+          "知识：多维数组和特殊矩阵先固定下标约定",
+          "题型：多维数组、地址映射与特殊矩阵压缩"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 特殊矩阵 / 三角矩阵",
+        "status": "知识与方法",
+        "related": [
+          "知识：数组地址与特殊矩阵压缩",
+          "知识：多维数组和特殊矩阵先固定下标约定",
+          "知识：后缀数组与平衡 BST 的保证不同",
+          "板子：有序统计的离线备选：树状数组",
+          "板子：后缀数组：倍增+两趟稳定计数排序"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 特殊矩阵 / 对称矩阵与带状矩阵",
+        "status": "知识与方法",
+        "related": [
+          "知识：带状矩阵与稀疏存储的选择"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 稀疏矩阵",
+        "status": "知识与方法",
+        "related": [
+          "知识：稀疏矩阵表示",
+          "知识：稀疏矩阵的表示决定操作",
+          "板子：CSR：三元组建表与稀疏矩阵乘向量",
+          "题型：稀疏矩阵：三元组、CSR 与快速转置"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 稀疏矩阵 / 三元组表",
+        "status": "知识与方法",
+        "related": [
+          "板子：稀疏三元组快速转置",
+          "板子：CSR：三元组建表与稀疏矩阵乘向量",
+          "题型：稀疏矩阵：三元组、CSR 与快速转置"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 稀疏矩阵 / 转置",
+        "status": "知识与方法",
+        "related": [
+          "板子：稀疏三元组快速转置",
+          "题型：稀疏矩阵：三元组、CSR 与快速转置"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 稀疏矩阵 / 十字链表",
+        "status": "知识与方法",
+        "related": [
+          "知识：稀疏矩阵的表示决定操作"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "多维数组 / 稀疏矩阵 / 乘法",
+        "status": "知识与方法",
+        "related": [
+          "知识：稀疏矩阵表示",
+          "知识：稀疏矩阵的表示决定操作",
+          "板子：CSR：三元组建表与稀疏矩阵乘向量",
+          "题型：稀疏矩阵：三元组、CSR 与快速转置"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "广义表",
+        "status": "知识与方法",
+        "related": [
+          "知识：广义表",
+          "知识：广义表区分原子、子表、空表和共享",
+          "知识：广义表：共享与循环",
+          "板子：广义表：解析、表长与深度",
+          "题型：广义表、递归嵌套与表达式结构"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "广义表 / 形态",
+        "status": "知识与方法",
+        "related": [
+          "知识：广义表：共享与循环"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "广义表 / 结点表示",
+        "status": "知识与方法",
+        "related": [
+          "板子：广义表：解析、表长与深度"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "存储管理",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：动态存储管理与回收",
+          "知识：存储管理有碎片与可达性两条线"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 定长块管理",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：可利用空间表与四种回收思路"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 变长块管理",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：可利用空间表与四种回收思路"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 变长块管理 / 空闲块选择",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：可利用空间表与四种回收思路"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 变长块管理 / 分裂与合并",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：可利用空间表与四种回收思路"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 变长块管理 / 分配失败",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：可利用空间表与四种回收思路"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 无用单元回收",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：动态存储管理与回收",
+          "知识：可利用空间表与四种回收思路",
+          "板子：图可达性：垃圾回收的标记阶段",
+          "题型：自由链表、碎片与垃圾回收边界"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 无用单元回收 / 标记清除",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：动态存储管理与回收",
+          "知识：可利用空间表与四种回收思路",
+          "板子：图可达性：垃圾回收的标记阶段",
+          "题型：自由链表、碎片与垃圾回收边界"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 无用单元回收 / 标记整理",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：动态存储管理与回收",
+          "知识：可利用空间表与四种回收思路",
+          "板子：图可达性：垃圾回收的标记阶段",
+          "题型：自由链表、碎片与垃圾回收边界"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 无用单元回收 / 复制回收",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：动态存储管理与回收",
+          "知识：可利用空间表与四种回收思路",
+          "板子：图可达性：垃圾回收的标记阶段",
+          "题型：自由链表、碎片与垃圾回收边界"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "存储管理 / 无用单元回收 / 引用计数",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：动态存储管理与回收",
+          "知识：可利用空间表与四种回收思路",
+          "板子：图可达性：垃圾回收的标记阶段",
+          "题型：自由链表、碎片与垃圾回收边界"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "Trie",
+        "status": "知识与方法",
+        "related": [
+          "知识：Trie、Patricia与后缀结构",
+          "知识：Trie 家族按“路径标签”压缩",
+          "知识：Patricia压缩与Trie前缀边界",
+          "板子：小写字母Trie：插入与完整词出现次数",
+          "板子：二进制 Trie：最大异或对"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "Trie / 孩子表示",
+        "status": "知识与方法",
+        "related": [
+          "知识：Trie、Patricia与后缀结构",
+          "知识：Trie 家族按“路径标签”压缩",
+          "知识：Patricia压缩与Trie前缀边界",
+          "板子：小写字母Trie：插入与完整词出现次数",
+          "板子：二进制 Trie：最大异或对"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "Trie / Patricia 与 Radix Tree",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：Trie、Patricia与后缀结构",
+          "知识：Patricia压缩与Trie前缀边界",
+          "题型：Radix/Patricia：路径压缩与最长前缀"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "Trie / 二进制 Trie",
+        "status": "知识与方法",
+        "related": [
+          "板子：二进制 Trie：最大异或对",
+          "题型：二进制 Trie 与最大异或"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "Trie / 后缀结构",
+        "status": "知识与方法",
+        "related": [
+          "知识：Trie、Patricia与后缀结构",
+          "知识：后缀数组与平衡 BST 的保证不同",
+          "板子：后缀数组：倍增+两趟稳定计数排序",
+          "板子：Kasai：由后缀数组求相邻LCP",
+          "题型：后缀树、后缀数组与 LCP"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "Trie / 后缀结构 / 后缀树",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：Trie、Patricia与后缀结构",
+          "知识：后缀数组与平衡 BST 的保证不同",
+          "板子：后缀数组：倍增+两趟稳定计数排序",
+          "板子：Kasai：由后缀数组求相邻LCP",
+          "题型：后缀树、后缀数组与 LCP"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "Trie / 后缀结构 / 后缀数组与 LCP",
+        "status": "知识与方法",
+        "related": [
+          "板子：Kasai：由后缀数组求相邻LCP",
+          "题型：后缀树、后缀数组与 LCP"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "AVL 树",
+        "status": "知识与方法",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：AVL删除与高度传播",
+          "板子：AVL插入：高度维护与四种旋转",
+          "题型：AVL：平衡因子与四种旋转"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "AVL 树 / 高度",
+        "status": "知识与方法",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：AVL删除与高度传播",
+          "板子：AVL插入：高度维护与四种旋转",
+          "题型：AVL：平衡因子与四种旋转"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "AVL 树 / 旋转",
+        "status": "知识与方法",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：AVL删除与高度传播",
+          "板子：AVL插入：高度维护与四种旋转",
+          "题型：AVL：平衡因子与四种旋转"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "AVL 树 / 旋转 / 单旋",
+        "status": "知识与方法",
+        "related": [
+          "板子：Splay核心：旋转与伸展",
+          "板子：AVL插入：高度维护与四种旋转",
+          "题型：AVL：平衡因子与四种旋转"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "AVL 树 / 旋转 / 双旋",
+        "status": "知识与方法",
+        "related": [
+          "板子：Splay核心：旋转与伸展",
+          "板子：AVL插入：高度维护与四种旋转",
+          "题型：AVL：平衡因子与四种旋转"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "AVL 树 / 插入",
+        "status": "知识与方法",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：AVL删除与高度传播",
+          "板子：AVL插入：高度维护与四种旋转",
+          "题型：AVL：平衡因子与四种旋转"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "AVL 树 / 删除",
+        "status": "概念＋迁移",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：AVL删除与高度传播",
+          "板子：AVL插入：高度维护与四种旋转",
+          "题型：AVL：平衡因子与四种旋转"
+        ],
+        "boundary": "概念和操作流程有讲解；板子标题明确实现范围，练习不替代完整运行时回收器、后缀树或所有平衡树变体。"
+      },
+      {
+        "title": "伸展树",
+        "status": "知识与方法",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：Splay的值域与序列两种用法",
+          "板子：Splay核心：旋转与伸展",
+          "板子：隐式Splay：完整区间翻转接口",
+          "题型：Splay：伸展、自组织与区间序列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "伸展树 / 伸展过程",
+        "status": "知识与方法",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：Splay的值域与序列两种用法",
+          "板子：Splay核心：旋转与伸展",
+          "板子：隐式Splay：完整区间翻转接口",
+          "题型：Splay：伸展、自组织与区间序列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "伸展树 / 查询与插入",
+        "status": "知识与方法",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：Splay的值域与序列两种用法",
+          "板子：Splay核心：旋转与伸展",
+          "板子：隐式Splay：完整区间翻转接口",
+          "题型：Splay：伸展、自组织与区间序列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "伸展树 / 分裂、合并与删除",
+        "status": "知识与方法",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：Splay的值域与序列两种用法",
+          "板子：Splay核心：旋转与伸展",
+          "板子：隐式Splay：完整区间翻转接口",
+          "题型：Splay：伸展、自组织与区间序列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      },
+      {
+        "title": "伸展树 / 均摊复杂度",
+        "status": "知识与方法",
+        "related": [
+          "知识：AVL、红黑与Splay",
+          "知识：Splay的值域与序列两种用法",
+          "板子：Splay核心：旋转与伸展",
+          "板子：隐式Splay：完整区间翻转接口",
+          "题型：Splay：伸展、自组织与区间序列"
+        ],
+        "boundary": "结合关联讲解与下方题型复习；练习的直接/迁移范围逐题注明。"
+      }
+    ]
+  }
+];

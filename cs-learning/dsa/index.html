@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <script src="../../gate-config.js"></script>
+  <script src="../../gate.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Kotori 的数算逐课复习目录。">
+  <title>数算复习 · CS Learning</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kaisei+Decol:wght@500;700&family=Noto+Sans+SC:wght@300;400;500;700&family=Yusei+Magic&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="dsa.css">
+  <link rel="stylesheet" href="../../theme/seika.css">
+  <script src="../../theme/seika.js" defer></script>
+  <script src="content/lessons.js" defer></script>
+  <script src="dsa.js" defer></script>
+</head>
+<body class="dsa-page" data-dsa-view="catalog">
+  <header id="header" class="dsa-header">
+    <a class="dsa-brand" href="../">Kotori's CS Learning</a>
+    <a class="dsa-back-link" href="../">← 返回课程目录</a>
+  </header>
+
+  <main class="dsa-shell">
+    <aside class="dsa-sidebar" data-dsa-sidebar>
+      <div class="dsa-sidebar-heading"><span>数算复习</span><button type="button" class="dsa-sidebar-toggle" data-sidebar-toggle aria-expanded="true" aria-controls="course-outline">收起</button></div>
+      <nav id="course-outline" class="dsa-course-outline" aria-label="数算课程目录" data-course-outline></nav>
+    </aside>
+
+    <section class="dsa-main" aria-labelledby="dsa-title">
+      <header class="dsa-hero">
+        <p class="dsa-kicker">DATA STRUCTURES &amp; ALGORITHMS</p>
+        <h1 id="dsa-title">从零开始的数算</h1>
+        <p>按课复习知识点、C++ 板子、题型识别与百练训练；每一道练习都保留训练目的和复盘状态。</p>
+        <p class="dsa-source-note">课程内容依据课程大纲和参考资料整理；练习优先选择百练，题源不足时由洛谷补充。</p>
+      </header>
+
+      <section class="dsa-controls" aria-label="课程筛选">
+        <label>搜索 <input type="search" data-search placeholder="搜索课程、知识点或题型"></label>
+        <div class="dsa-filter-group" role="group" aria-label="难度筛选">
+          <button type="button" class="is-active" data-level-filter="all">全部</button>
+          <button type="button" data-level-filter="基础">基础</button>
+          <button type="button" data-level-filter="巩固">巩固</button>
+          <button type="button" data-level-filter="提升">提升</button>
+        </div>
+      </section>
+
+      <section class="dsa-lesson-grid" aria-live="polite" data-catalog></section>
+    </section>
+  </main>
+</body>
+</html>

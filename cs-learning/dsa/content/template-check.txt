@@ -1,0 +1,2 @@
+All published snippets compiled; deterministic checks and 400 randomized comparison rounds passed.
+This verifies snippet compilation and selected algorithm properties, not online-judge AC.
