@@ -81,6 +81,11 @@ let state = {
   }
 };
 let editingTaskId = null;
+let taskEditDraft = null;
+let taskIndexMode = 'date';
+try { taskIndexMode = localStorage.getItem('kotori-task-index-mode') === 'category' ? 'category' : 'date'; } catch (_) {}
+let taskCalendarMonth = today().slice(0, 7);
+let taskSelectedDate = taskIndexMode === 'date' ? today() : '';
 
 function save(options = {}) {
   try {
@@ -205,7 +210,10 @@ async function migrateImages() {
 /* ===== Utils ===== */
 function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function now() { return new Date().toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}); }
-function today() { return new Date().toISOString().slice(0,10); }
+function today() {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
 let saveTimer = null;
 function debounceSave() { clearTimeout(saveTimer); saveTimer = setTimeout(save, 500); }
 let nextId = Date.now();
@@ -665,16 +673,90 @@ function taskStepEditRow(step={ id:'', text:'', done:false, ddl:'' }) {
   </div>`;
 }
 
+function taskGroups() {
+  const groups = new Map();
+  state.tasks.forEach((task, index) => {
+    if (taskSelectedDate && task.date !== taskSelectedDate) return;
+    const key = taskIndexMode === 'date' ? task.date : (SUBJECTS[task.subject] ? task.subject : 'general');
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push({ ...task, _idx:index });
+  });
+  const keys = taskIndexMode === 'date'
+    ? [...groups.keys()].sort().reverse()
+    : [...SUBJECT_KEYS, 'general'].filter(key => groups.has(key));
+  return keys.map(key => ({
+    key,
+    label:taskIndexMode === 'date' ? (key === today() ? `今天 (${key})` : key) : (SUBJECTS[key] ? `${SUBJECTS[key].icon} ${SUBJECTS[key].name}` : '📋 通用'),
+    tasks:groups.get(key)
+  }));
+}
+
+function renderTaskCalendar() {
+  const [year, month] = taskCalendarMonth.split('-').map(Number);
+  const firstWeekday = (new Date(year, month - 1, 1).getDay() + 6) % 7;
+  const days = new Date(year, month, 0).getDate();
+  const byDate = new Map();
+  state.tasks.forEach(task => {
+    if (!byDate.has(task.date)) byDate.set(task.date, []);
+    byDate.get(task.date).push(task);
+  });
+  let cells = '<span class="task-calendar-blank" aria-hidden="true"></span>'.repeat(firstWeekday);
+  let total = 0, completed = 0;
+  for (let day = 1; day <= days; day++) {
+    const date = `${taskCalendarMonth}-${String(day).padStart(2, '0')}`;
+    const tasks = byDate.get(date) || [];
+    const done = tasks.filter(task => task.done).length;
+    const rate = tasks.length ? Math.round(done / tasks.length * 100) : 0;
+    const level = tasks.length ? (done === tasks.length ? 4 : (done ? Math.ceil(done / tasks.length * 3) : 0)) : 'empty';
+    const label = `${date}，${tasks.length ? `已完成 ${done}/${tasks.length} 项任务，完成率 ${rate}%` : '无任务'}`;
+    total += tasks.length;
+    completed += done;
+    const isToday = date === today();
+    cells += `<button type="button" class="task-calendar-day${isToday ? ' is-today' : ''}${date === taskSelectedDate ? ' is-selected' : ''}" data-task-calendar-date="${date}" data-level="${level}" title="${label}${isToday ? '，今天' : ''}" aria-label="${label}${isToday ? '，今天' : ''}" aria-pressed="${date === taskSelectedDate}"${isToday ? ' aria-current="date"' : ''}><span>${day}</span>${isToday ? '<small>今天</small>' : ''}</button>`;
+  }
+  return `<section class="task-calendar" aria-label="任务完成日历">
+    <div class="task-calendar-heading"><h4>完成日历</h4><button type="button" class="task-calendar-today" data-task-calendar-today>回到今天</button></div>
+    <p class="task-calendar-current">今天 · ${today()}</p>
+    <div class="task-calendar-controls">
+      <button type="button" data-task-month-shift="-1" aria-label="上个月">‹</button>
+      <label><span class="sr-only">查询月份</span><input type="month" id="task-calendar-month" min="0100-01" max="9999-12" value="${taskCalendarMonth}"></label>
+      <button type="button" data-task-month-shift="1" aria-label="下个月">›</button>
+    </div>
+    <p class="task-calendar-summary">本月完成 ${completed} / ${total} 项任务</p>
+    <div class="task-calendar-weekdays" aria-hidden="true">${['一','二','三','四','五','六','日'].map(day => `<span>${day}</span>`).join('')}</div>
+    <div class="task-calendar-grid">${cells}</div>
+    <div class="task-calendar-legend"><span>无任务 <i data-level="empty"></i></span><span>0% <i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i> 100%</span></div>
+    <p class="task-calendar-hint">按任务所属日期统计，点击日期查询。</p>
+  </section>`;
+}
+
+function refreshTaskBrowser() {
+  taskEditDraft = document.querySelector('.task-card-edit') || taskEditDraft;
+  const groups = taskGroups();
+  document.getElementById('task-browser-sidebar').innerHTML = `<nav class="task-index-panel" aria-label="任务索引">
+    <h4>任务索引</h4>
+    <div class="task-index-tabs" role="group" aria-label="索引方式">
+      <button type="button" data-task-index-mode="date" aria-pressed="${taskIndexMode === 'date'}">日期索引</button>
+      <button type="button" data-task-index-mode="category" aria-pressed="${taskIndexMode === 'category'}">任务索引</button>
+    </div>
+    ${taskIndexMode === 'category' ? `<div class="task-index-entries">${groups.length ? groups.map(group => {
+      const pending = group.tasks.filter(task => !task.done).length;
+      return `<button type="button" class="task-index-entry" data-task-group-scroll="${escHtml(group.key)}"><span>${escHtml(group.label)}</span><small>${pending ? `${pending} 未完成 / ${group.tasks.length}` : `${group.tasks.length} 项已完成`}</small></button>`;
+    }).join('') : '<p class="empty-hint">暂无任务</p>'}</div>` : '<p class="task-calendar-hint">在下方日历选择日期，查看当天任务。</p>'}
+  </nav>${renderTaskCalendar()}`;
+  document.getElementById('task-list-heading').innerHTML = `<h4>${taskSelectedDate ? `${taskSelectedDate} 的任务` : '全部任务'}<span>${groups.reduce((sum, group) => sum + group.tasks.length, 0)} 项</span></h4>${taskSelectedDate ? '<button type="button" class="btn btn-secondary btn-sm" data-task-clear-date>查看全部</button>' : ''}`;
+  renderTaskGroups(groups);
+}
+
 function renderTaskView() {
+  taskEditDraft = null;
   document.getElementById('subject-header').style.display = 'none';
   document.getElementById('view-notes').classList.remove('active');
   document.getElementById('view-tasks').classList.add('active');
 
   const el = document.getElementById('view-tasks');
-  const todayStr = today();
 
-  let html = `<div class="task-input-area">
-    <h4>➕ 添加任务</h4>
+  let html = `<div class="task-browser"><aside id="task-browser-sidebar" class="task-browser-sidebar"></aside><section class="task-browser-content" aria-label="任务列表"><details class="task-composer"><summary>＋ 添加任务</summary><div class="task-input-area">
     <div class="task-form">
       <input type="text" id="task-title-input" placeholder="任务标题">
       <textarea id="task-detail-input" placeholder="详情 (选填)"></textarea>
@@ -690,36 +772,19 @@ function renderTaskView() {
         <button class="btn btn-orange btn-sm" id="task-add-btn">添加</button>
       </div>
     </div>
-  </div>`;
+  </div></details>`;
 
-  const byDate = {};
-  state.tasks.forEach((t,i) => {
-    if (!byDate[t.date]) byDate[t.date] = [];
-    byDate[t.date].push({...t, _idx:i});
-  });
-  const dates = Object.keys(byDate).sort().reverse();
+  html += `<div id="task-list-heading" class="task-list-heading"></div><div id="task-list"></div></section></div>`;
+  el.innerHTML = html;
+  refreshTaskBrowser();
+}
 
-  if (!dates.length) {
-    html += `<div class="task-empty"><div class="big-icon">✅</div><p>还没有任务~</p></div>`;
-  } else {
-    html += `<div class="catalog-card task-catalog-card">
-      <div class="catalog-header" id="task-catalog-toggle">
-        <h4>📅 任务日期索引 (${state.tasks.length})</h4>
-        <span class="catalog-caret">▼</span>
-      </div>
-      <div class="catalog-body" id="task-catalog-body">`;
-    dates.forEach(date => {
-      const tasks = byDate[date];
-      const pending = tasks.filter(task => !task.done).length;
-      const label = date === todayStr ? `今天 (${date})` : date;
-      html += `<button type="button" class="catalog-entry task-catalog-entry" data-task-date-scroll="${date}">→ ${label}<span>${pending ? `${pending} 未完成` : '已完成'}</span></button>`;
-    });
-    html += `</div></div>`;
-  }
-  dates.forEach(date => {
-    const label = date===todayStr ? `📅 今天 (${date})` : `📅 ${date}`;
-    html += `<div class="task-date-group" id="task-date-anchor-${date}"><div class="task-date-label">${label}</div>`;
-    byDate[date].forEach(t => {
+function renderTaskGroups(groups) {
+  let html = '';
+  if (!groups.length) html = `<div class="task-empty"><div class="big-icon">✅</div><p>${taskSelectedDate ? '这一天没有任务' : '还没有任务~'}</p></div>`;
+  groups.forEach(group => {
+    html += `<section class="task-date-group" id="task-group-${encodeURIComponent(group.key)}"><div class="task-date-label">${escHtml(group.label)}</div>`;
+    group.tasks.slice().sort((a, b) => b.date.localeCompare(a.date) || b._idx - a._idx).forEach(t => {
       const tagCls = taskTagClass(t.subject);
       const tagName = SUBJECTS[t.subject]?.name || '通用';
       const steps = Array.isArray(t.steps) ? t.steps : [];
@@ -759,7 +824,7 @@ function renderTaskView() {
               ${ddlBadge(step.ddl, step.done)}
             </div>`).join('')}
           </div>` : ''}
-          <div class="task-meta"><span class="task-tag ${tagCls}">${tagName}</span>${steps.length ? `<span class="task-progress">${completedSteps}/${steps.length} 子步骤</span>` : ddlBadge(t.ddl, t.done)}</div>
+          <div class="task-meta"><span class="task-tag ${tagCls}">${tagName}</span>${taskIndexMode === 'category' ? `<time class="task-progress" datetime="${escHtml(t.date)}">${escHtml(t.date)}</time>` : ''}${steps.length ? `<span class="task-progress">${completedSteps}/${steps.length} 子步骤</span>` : ddlBadge(t.ddl, t.done)}</div>
         </div>
         <div class="task-actions">
           <button class="task-edit" data-task-edit="${t._idx}">编辑</button>
@@ -767,10 +832,12 @@ function renderTaskView() {
         </div>
       </div>`;
     });
-    html += `</div>`;
+    html += `</section>`;
   });
 
-  el.innerHTML = html;
+  document.getElementById('task-list').innerHTML = html;
+  const editor = document.querySelector('.task-card-edit');
+  if (editor && taskEditDraft && editor.dataset.taskIdx === taskEditDraft.dataset.taskIdx) editor.replaceWith(taskEditDraft);
 }
 
 /* ===== Background ===== */
@@ -1134,9 +1201,40 @@ function setupEvents() {
       updateStickerPicker(editor, stickerKeys(editor).filter(key => key !== stickerRemove.dataset.stickerRemove));
       return;
     }
-    const dateIndex = e.target.closest('[data-task-date-scroll]');
-    if (dateIndex) {
-      const target = document.getElementById(`task-date-anchor-${dateIndex.dataset.taskDateScroll}`);
+    const indexMode = e.target.closest('[data-task-index-mode]');
+    if (indexMode) {
+      taskIndexMode = indexMode.dataset.taskIndexMode;
+      taskSelectedDate = taskIndexMode === 'date' ? today() : '';
+      if (taskSelectedDate) taskCalendarMonth = taskSelectedDate.slice(0, 7);
+      try { localStorage.setItem('kotori-task-index-mode', taskIndexMode); } catch (_) {}
+      refreshTaskBrowser();
+      return;
+    }
+    const calendarDay = e.target.closest('[data-task-calendar-date]');
+    if (calendarDay || e.target.closest('[data-task-calendar-today]')) {
+      taskSelectedDate = calendarDay ? calendarDay.dataset.taskCalendarDate : today();
+      taskCalendarMonth = taskSelectedDate.slice(0, 7);
+      refreshTaskBrowser();
+      return;
+    }
+    const monthShift = e.target.closest('[data-task-month-shift]');
+    if (monthShift) {
+      const [year, month] = taskCalendarMonth.split('-').map(Number);
+      const next = new Date(year, month - 1 + Number(monthShift.dataset.taskMonthShift), 1);
+      if (next.getFullYear() >= 100 && next.getFullYear() <= 9999) {
+        taskCalendarMonth = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
+        document.querySelector('.task-calendar').outerHTML = renderTaskCalendar();
+      }
+      return;
+    }
+    if (e.target.closest('[data-task-clear-date]')) {
+      taskSelectedDate = '';
+      refreshTaskBrowser();
+      return;
+    }
+    const groupIndex = e.target.closest('[data-task-group-scroll]');
+    if (groupIndex) {
+      const target = document.getElementById(`task-group-${encodeURIComponent(groupIndex.dataset.taskGroupScroll)}`);
       if (target) {
         target.scrollIntoView({ behavior:'smooth', block:'start' });
         target.classList.remove('task-date-highlight');
@@ -1144,13 +1242,6 @@ function setupEvents() {
         target.classList.add('task-date-highlight');
         setTimeout(() => target.classList.remove('task-date-highlight'), 1700);
       }
-      return;
-    }
-    if (e.target.closest('#task-catalog-toggle')) {
-      const body = document.getElementById('task-catalog-body');
-      const caret = document.querySelector('#task-catalog-toggle .catalog-caret');
-      const collapsed = body.classList.toggle('collapsed');
-      if (caret) caret.textContent = collapsed ? '▶' : '▼';
       return;
     }
     if (e.target.id === 'task-add-btn') {
@@ -1164,6 +1255,7 @@ function setupEvents() {
         .map(text => parseTaskStepLine(text, ddl));
       const stickers = stickerKeys(document.getElementById('task-sticker-input')?.closest('.sticker-editor'));
       state.tasks.push({ id:uid(), title, detail, subject, steps, stickers, ddl:steps.length ? '' : ddl, date:today(), done:false });
+      if (taskSelectedDate) { taskSelectedDate = today(); taskCalendarMonth = today().slice(0, 7); }
       save(); renderAll();
       return;
     }
@@ -1230,6 +1322,13 @@ function setupEvents() {
   });
 
   vt.addEventListener('change', e => {
+    if (e.target.id === 'task-calendar-month') {
+      if (/^\d{4}-\d{2}$/.test(e.target.value) && e.target.validity.valid) {
+        taskCalendarMonth = e.target.value;
+        document.querySelector('.task-calendar').outerHTML = renderTaskCalendar();
+      }
+      return;
+    }
     if (!e.target.matches?.('.sticker-input') || !e.target.files.length) return;
     addStickerFiles(e.target.closest('.sticker-editor'), e.target.files);
     e.target.value = '';
