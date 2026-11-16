@@ -27,3 +27,11 @@
 
 /* Use the same code face for inline snippets and complete templates. */
 .dsa-page pre,.dsa-page code,.dsa-page kbd,.dsa-page samp,.dsa-page pre *{font-family:Consolas,"Courier New",monospace}
+
+.dsa-exam-entry{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:26px;margin-bottom:24px;border:1px solid var(--dsa-line);border-radius:20px;background:linear-gradient(120deg,#e6f0e9,#edf5fa);box-shadow:var(--dsa-shadow)}
+.dsa-exam-entry h2{margin:8px 0;color:var(--dsa-sage);font-size:25px}
+.dsa-exam-entry p:last-child{margin:0;max-width:620px;color:var(--dsa-muted);font-size:14px;line-height:1.8}
+.dsa-exam-entry>a{flex-shrink:0;padding:12px 18px;border-radius:10px;background:var(--dsa-sage);color:#fff;font-size:14px;font-weight:700;text-decoration:none;transition:transform .2s}
+.dsa-exam-entry>a:hover{transform:translateY(-2px)}
+.dsa-course-outline .dsa-exam-shortcut{margin-bottom:10px;background:#e6f0e9;color:var(--dsa-sage);font-weight:700}
+@media(max-width:600px){.dsa-exam-entry{align-items:flex-start;flex-direction:column;gap:16px;padding:22px}.dsa-exam-entry>a{align-self:stretch;text-align:center}}

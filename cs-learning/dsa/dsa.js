@@ -47,7 +47,10 @@
 
   function setCourseOutline(currentId) {
     const node = document.querySelector('[data-course-outline]');
-    if (node) node.innerHTML = outlineMarkup(currentId);
+    if (!node) return;
+    const lesson = DATA.find(item => item.id === currentId);
+    const chapter = lesson && Number(lesson.order) <= 4 ? `#chapter-${Number(lesson.order)}` : '';
+    node.innerHTML = `<a class="dsa-exam-shortcut" href="exam-block-1.html${chapter}">板块一考试帮 · 第 1–4 章 →</a>${outlineMarkup(currentId)}`;
   }
 
   function setupSidebar() {
