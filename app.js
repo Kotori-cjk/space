@@ -506,17 +506,23 @@ function initParticles() {
 
 /* ===== Render ===== */
 function renderAll() {
+  const main = document.getElementById('main-content');
+  const enteringRoom = main.dataset.room !== state.currentView;
+  main.dataset.room = state.currentView;
   renderSubjectNav();
   renderTaskSummary();
   if (state.currentView === 'tasks') { renderTaskView(); }
   else { renderSubjectView(state.currentView); }
+  if (enteringRoom) main.dispatchEvent(new Event('seika:room-change'));
 }
 
 function renderSubjectNav() {
   document.querySelectorAll('.subject-btn[data-subject]').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.subject === state.currentView);
+    const active = btn.dataset.subject === state.currentView;
+    btn.classList.toggle('active', active);
+    if (active) btn.setAttribute('aria-current', 'true');
+    else btn.removeAttribute('aria-current');
   });
-  document.querySelector('.task-nav-btn').classList.toggle('active', state.currentView === 'tasks');
 }
 
 function renderTaskSummary() {
@@ -534,10 +540,10 @@ function renderSubjectView(subj) {
   const folder = state.settings.obsidianFolders[subj];
   const nlm = state.subjectLinks[subj]?.notebookLM;
   const parent = s.parent ? PARENTS[s.parent] : null;
-  const heading = parent ? `${parent.icon} ${parent.name} / ${s.icon} ${s.name}` : `${s.icon} ${s.name}`;
 
   sh.className = 'subject-header ' + subj;
-  sh.innerHTML = `<h2>${heading}</h2>
+  sh.innerHTML = `${parent ? `<span class="subject-room-category">${parent.name}</span>` : ''}
+    <h2>${s.name}</h2>
     <div class="subject-links">
       ${folder ? `<a class="link-obsidian" href="obsidian://open?vault=${vault}&file=${encodeURIComponent(folder)}" title="打开Obsidian">📒 Obsidian</a>` : ''}
       ${nlm ? `<a class="link-nlm" href="${escHtml(nlm)}" target="_blank" title="NotebookLM">📓 NotebookLM</a>` : ''}
@@ -791,11 +797,13 @@ function renderTaskCalendar() {
 }
 
 function updateTaskCalendarVisibility() {
-  document.getElementById('task-browser-sidebar').hidden = taskCalendarCollapsed;
+  document.getElementById('task-browser-sidebar-body').hidden = taskCalendarCollapsed;
   document.querySelector('.task-browser').classList.toggle('is-calendar-collapsed', taskCalendarCollapsed);
   const button = document.querySelector('[data-task-calendar-toggle]');
   button.setAttribute('aria-expanded', String(!taskCalendarCollapsed));
-  button.textContent = taskCalendarCollapsed ? '展开日历栏' : '收起日历栏';
+  button.setAttribute('aria-label', taskCalendarCollapsed ? '展开日历栏' : '收起日历栏');
+  button.title = button.getAttribute('aria-label');
+  button.textContent = taskCalendarCollapsed ? '▦' : '‹';
 }
 
 function renderTaskTodo(refreshChoices = false) {
@@ -862,8 +870,7 @@ function refreshTaskBrowser() {
   if (editingTaskId) taskEditDraft = document.querySelector('.task-card-edit') || taskEditDraft;
   else taskEditDraft = null;
   const groups = taskGroups();
-  document.getElementById('task-browser-sidebar').innerHTML = `<nav class="task-index-panel" aria-label="任务索引">
-    <h4>任务索引</h4>
+  document.getElementById('task-browser-sidebar-body').innerHTML = `<nav class="task-index-panel" aria-label="任务索引">
     <div class="task-index-tabs" role="group" aria-label="索引方式">
       <button type="button" data-task-index-mode="date" aria-pressed="${taskIndexMode === 'date'}">日期索引</button>
       <button type="button" data-task-index-mode="category" aria-pressed="${taskIndexMode === 'category'}">任务索引</button>
@@ -871,7 +878,7 @@ function refreshTaskBrowser() {
     ${taskIndexMode === 'category' ? `<div class="task-index-entries">${groups.length ? groups.map(group => {
       const pending = group.tasks.filter(task => !task.done).length;
       return `<button type="button" class="task-index-entry" data-task-group-scroll="${escHtml(group.key)}"><span>${escHtml(group.label)}</span><small>${pending ? `${pending} 未完成 / ${group.tasks.length}` : `${group.tasks.length} 项已完成`}</small></button>`;
-    }).join('') : '<p class="empty-hint">暂无任务</p>'}</div>` : '<p class="task-calendar-hint">在下方日历选择日期，查看当天任务。</p>'}
+    }).join('') : '<p class="empty-hint">暂无任务</p>'}</div>` : ''}
   </nav>${renderTaskCalendar()}`;
   document.getElementById('task-list-heading').innerHTML = `<h4>${taskSelectedDate ? `${taskSelectedDate} 的任务` : '全部任务'}<span>${groups.reduce((sum, group) => sum + group.tasks.length, 0)} 项</span></h4>${taskSelectedDate ? '<button type="button" class="btn btn-secondary btn-sm" data-task-clear-date>查看全部</button>' : ''}`;
   renderTaskGroups(groups);
@@ -886,8 +893,16 @@ function renderTaskView() {
 
   const el = document.getElementById('view-tasks');
 
-  let html = `<header class="task-workspace-heading"><h2>每日任务</h2><button type="button" class="btn btn-secondary btn-sm" data-task-calendar-toggle aria-controls="task-browser-sidebar"></button></header>
-  <div class="task-browser"><aside id="task-browser-sidebar" class="task-browser-sidebar" aria-label="任务日期与索引"></aside><section class="task-browser-content" aria-label="任务列表">
+  let html = `<header class="task-workspace-heading"><h2>每日任务</h2></header>
+  <div class="task-browser">
+    <aside id="task-browser-sidebar" class="task-browser-sidebar" aria-label="任务日期与索引">
+      <div class="task-calendar-sidebar-heading">
+        <h3>日历与索引</h3>
+        <button type="button" class="task-calendar-fold" data-task-calendar-toggle aria-controls="task-browser-sidebar-body"></button>
+      </div>
+      <div id="task-browser-sidebar-body" class="task-browser-sidebar-body"></div>
+    </aside>
+    <section class="task-browser-content" aria-label="任务列表">
   <details class="task-todo" id="task-todo"${taskTodoOpen ? ' open' : ''}>
     <summary>待办 <span class="task-todo-count"></span></summary>
     <div class="task-todo-tools">
@@ -1168,9 +1183,29 @@ function setupEvents() {
   // Subject navigation
   document.getElementById('sidebar').addEventListener('click', e => {
     const btn = e.target.closest('.subject-btn[data-subject]');
-    if (btn) { state.currentView = btn.dataset.subject; save(); renderAll(); return; }
-    const taskBtn = e.target.closest('.task-nav-btn');
-    if (taskBtn) { state.currentView = 'tasks'; save(); renderAll(); }
+    if (!btn) return;
+    const subject = btn.dataset.subject;
+    const enter = () => {
+      if (state.currentView !== subject) {
+        state.currentView = subject;
+        save();
+        renderAll();
+      }
+      const main = document.getElementById('main-content');
+      const top = main.getBoundingClientRect().top;
+      if (top < 0 || top > innerHeight * .65) main.scrollIntoView({ block:'start', behavior:'instant' });
+      if (e.detail === 0 || matchMedia('(max-width:800px)').matches) {
+        const heading = main.querySelector(subject === 'tasks' ? '.task-workspace-heading h2' : '#subject-header h2');
+        if (heading) {
+          heading.tabIndex = -1;
+          heading.focus({ preventScroll:true });
+        }
+      }
+    };
+    const requested = new CustomEvent('seika:open-room', {
+      cancelable:true, detail:{ subject, enter }
+    });
+    if (document.dispatchEvent(requested)) enter();
   });
 
   const vn = document.getElementById('view-notes');
