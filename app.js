@@ -83,9 +83,18 @@ let state = {
 let editingTaskId = null;
 let taskEditDraft = null;
 let taskIndexMode = 'date';
-try { taskIndexMode = localStorage.getItem('kotori-task-index-mode') === 'category' ? 'category' : 'date'; } catch (_) {}
+let taskCalendarCollapsed = false;
+let taskTodoOpen = true;
+try {
+  taskIndexMode = localStorage.getItem('kotori-task-index-mode') === 'category' ? 'category' : 'date';
+  taskCalendarCollapsed = localStorage.getItem('kotori-task-calendar-collapsed') === 'true';
+  taskTodoOpen = localStorage.getItem('kotori-task-todo-open') !== 'false';
+} catch (_) {}
 let taskCalendarMonth = today().slice(0, 7);
 let taskSelectedDate = taskIndexMode === 'date' ? today() : '';
+const TASK_REMINDER_WINDOW = 24 * 60 * 60 * 1000;
+const TASK_REMINDER_KEY = 'kotori-task-reminders';
+let taskRemindersChecking = false;
 
 function save(options = {}) {
   try {
@@ -153,16 +162,7 @@ function load() {
         if (!state.subjectLinks[k]) state.subjectLinks[k] = { notebookLM:'' };
         if (!state.settings.obsidianFolders[k]) state.settings.obsidianFolders[k] = '';
       });
-      const taskSubjectMigrations = { math:'math-ode', 'math-probability':'math-ode', 'math-analysis':'math-ode', physics:'physics-mech', cs:'cs-ics', ai:'ai-cv' };
-      state.tasks.forEach(task => {
-        if (!task.id) task.id = uid();
-        if (taskSubjectMigrations[task.subject]) task.subject = taskSubjectMigrations[task.subject];
-        if (!Array.isArray(task.steps)) task.steps = [];
-        task.steps = task.steps.map(step => typeof step === 'string'
-          ? { id:uid(), text:step, done:false, ddl:'' }
-          : { id:step.id || uid(), text:step.text || '', done:!!step.done, ddl:step.ddl || '' });
-        task.ddl = task.ddl || '';
-      });
+      normalizeTasks();
       if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-ode';
     }
   } catch(e) { console.warn('Load failed',e); }
@@ -645,11 +645,71 @@ function taskTagClass(subject) {
   return 'task-tag-general';
 }
 
-function parseTaskStepLine(line, fallbackDdl='') {
+function normalizeTasks() {
+  const subjects = { math:'math-ode', 'math-probability':'math-ode', 'math-analysis':'math-ode', physics:'physics-mech', cs:'cs-ics', ai:'ai-cv' };
+  state.tasks.forEach(task => {
+    if (!task.id) task.id = uid();
+    if (Object.hasOwn(subjects, task.subject)) task.subject = subjects[task.subject];
+    task.steps = (Array.isArray(task.steps) ? task.steps : []).filter(Boolean).map(step => typeof step === 'string'
+      ? { id:uid(), text:step, done:false, ddl:'' }
+      : { id:step.id || uid(), text:step.text || '', done:!!step.done, ddl:step.ddl || '' });
+    task.ddl = task.ddl || '';
+    if (task.steps.length && task.steps.every(step => step.done)) task.done = true;
+  });
+}
+
+function parseTaskStepLine(line) {
   const match = line.match(/^(.*?)\s+@\s*(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}))?$/);
   const text = (match ? match[1] : line).trim();
-  const ddl = match ? `${match[2]}T${match[3] || '23:59'}` : fallbackDdl;
+  const ddl = match ? `${match[2]}T${match[3] || '23:59'}` : '';
   return { id:uid(), text, done:false, ddl };
+}
+
+function dueTaskDeadlines(task, time) {
+  if (task.done) return [];
+  const deadlines = new Map();
+  if (task.ddl) deadlines.set(task.ddl, '');
+  task.steps.forEach(step => {
+    if (!step.done && step.ddl && !deadlines.has(step.ddl)) deadlines.set(step.ddl, step.text);
+  });
+  return [...deadlines].map(([ddl, step]) => ({ ddl, step, time:Date.parse(ddl) }))
+    .filter(deadline => deadline.time >= time && deadline.time <= time + TASK_REMINDER_WINDOW)
+    .sort((a, b) => a.time - b.time);
+}
+
+async function checkTaskReminders() {
+  if (window.Notification?.permission !== 'granted' || taskRemindersChecking) return;
+  taskRemindersChecking = true;
+  try {
+    const notify = async () => {
+      const time = Date.now();
+      const sent = JSON.parse(localStorage.getItem(TASK_REMINDER_KEY) || '{}');
+      const remaining = Object.fromEntries(Object.entries(sent).filter(([, deadline]) => deadline >= time));
+      const reminders = state.tasks.flatMap(task => dueTaskDeadlines(task, time).map(deadline => ({
+        key:JSON.stringify([task.id, deadline.ddl]), task, deadline
+      }))).filter(reminder => !remaining[reminder.key]);
+      if (!reminders.length) return;
+      let registration;
+      if (navigator.serviceWorker) {
+        await navigator.serviceWorker.register('./task-notification-sw.js');
+        registration = await navigator.serviceWorker.ready;
+      }
+      for (const { key, task, deadline } of reminders) {
+        if (!state.tasks.includes(task) || !dueTaskDeadlines(task, Date.now()).some(item => item.ddl === deadline.ddl)) continue;
+        const options = {
+          body:`${deadline.step ? `${deadline.step} · ` : ''}截止于 ${new Date(deadline.time).toLocaleString('zh-CN', { hour12:false })}`,
+          tag:key
+        };
+        if (registration) await registration.showNotification(task.title, options);
+        else new Notification(task.title, options);
+        remaining[key] = deadline.time;
+        localStorage.setItem(TASK_REMINDER_KEY, JSON.stringify(remaining));
+      }
+    };
+    if (navigator.locks) await navigator.locks.request(TASK_REMINDER_KEY, notify);
+    else await notify();
+  } catch (error) { console.warn('Task reminder failed', error); }
+  finally { taskRemindersChecking = false; }
 }
 
 function ddlBadge(ddl, done=false) {
@@ -659,7 +719,7 @@ function ddlBadge(ddl, done=false) {
   const diff = deadline.getTime() - Date.now();
   let status = '';
   if (!done && diff < 0) status = ' overdue';
-  else if (!done && diff <= 24 * 60 * 60 * 1000) status = ' soon';
+  else if (!done && diff <= TASK_REMINDER_WINDOW) status = ' soon';
   const label = deadline.toLocaleString('zh-CN', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
   return `<span class="task-ddl${status}" title="截止时间 ${escHtml(deadline.toLocaleString('zh-CN'))}">⏰ ${escHtml(label)}</span>`;
 }
@@ -668,7 +728,7 @@ function taskStepEditRow(step={ id:'', text:'', done:false, ddl:'' }) {
   return `<div class="task-edit-step" data-step-id="${escHtml(step.id || uid())}" data-done="${step.done?'true':'false'}">
     <button type="button" class="task-step-check${step.done?' checked':''}" data-edit-step-toggle aria-label="切换子步骤状态">${step.done?'✓':''}</button>
     <input type="text" class="task-edit-step-input" value="${escHtml(step.text)}" placeholder="子步骤内容">
-    <input type="datetime-local" class="task-edit-step-ddl" value="${escHtml(step.ddl || '')}" aria-label="子步骤 DDL">
+    <input type="datetime-local" class="task-edit-step-ddl" value="${escHtml(step.ddl || '')}" aria-label="子步骤 DDL，留空继承主任务" title="留空继承主任务 DDL">
     <button type="button" class="task-step-remove" data-edit-step-remove aria-label="删除子步骤">✕</button>
   </div>`;
 }
@@ -726,12 +786,81 @@ function renderTaskCalendar() {
     <div class="task-calendar-weekdays" aria-hidden="true">${['一','二','三','四','五','六','日'].map(day => `<span>${day}</span>`).join('')}</div>
     <div class="task-calendar-grid">${cells}</div>
     <div class="task-calendar-legend"><span>无任务 <i data-level="empty"></i></span><span>0% <i data-level="0"></i><i data-level="1"></i><i data-level="2"></i><i data-level="3"></i><i data-level="4"></i> 100%</span></div>
-    <p class="task-calendar-hint">按任务所属日期统计，点击日期查询。</p>
+    <p class="task-calendar-hint">点击日期查询。把任务的拖动手柄拖到日期上即可改期。</p>
   </section>`;
 }
 
+function updateTaskCalendarVisibility() {
+  document.getElementById('task-browser-sidebar').hidden = taskCalendarCollapsed;
+  document.querySelector('.task-browser').classList.toggle('is-calendar-collapsed', taskCalendarCollapsed);
+  const button = document.querySelector('[data-task-calendar-toggle]');
+  button.setAttribute('aria-expanded', String(!taskCalendarCollapsed));
+  button.textContent = taskCalendarCollapsed ? '展开日历栏' : '收起日历栏';
+}
+
+function renderTaskTodo(refreshChoices = false) {
+  const panel = document.getElementById('task-todo');
+  if (!panel) return;
+  const time = Date.now();
+  const pending = state.tasks.filter(task => !task.done);
+  const entries = pending.map(task => ({ task, deadline:dueTaskDeadlines(task, time)[0] }))
+    .filter(({ task, deadline }) => task.inTodo || deadline)
+    .sort((a, b) => (a.deadline?.time ?? Infinity) - (b.deadline?.time ?? Infinity));
+  panel.querySelector('.task-todo-count').textContent = `${entries.length} 项`;
+  const list = panel.querySelector('.task-todo-list');
+  const html = entries.length ? `<ul>${entries.map(({ task, deadline }) => `<li>
+    <button type="button" class="task-todo-link" data-task-todo-open="${escHtml(task.id)}">${escHtml(task.title)}</button>
+    ${deadline ? ddlBadge(deadline.ddl) : ''}
+    ${task.inTodo ? `<button type="button" class="btn btn-secondary btn-sm" data-task-todo-remove="${escHtml(task.id)}" aria-label="将 ${escHtml(task.title)} 移出手动待办">移出</button>` : ''}
+  </li>`).join('')}</ul>` : '<p class="task-calendar-hint">暂无待办</p>';
+  if (list.innerHTML !== html) list.innerHTML = html;
+  if (refreshChoices) {
+    const select = document.getElementById('task-todo-select');
+    const previous = select.value;
+    const choices = pending.filter(task => !task.inTodo);
+    select.innerHTML = '<option value="">选择已有任务</option>' + choices.map(task =>
+      `<option value="${escHtml(task.id)}">${escHtml(task.title)} · ${escHtml(task.date)}</option>`).join('');
+    if (choices.some(task => String(task.id) === previous)) select.value = previous;
+    select.disabled = !choices.length;
+    panel.querySelector('[data-task-todo-pin]').disabled = !choices.length;
+  }
+}
+
+function updateTaskNotificationControl() {
+  const button = document.querySelector('[data-task-notification-enable]');
+  if (!button) return;
+  const permission = window.Notification?.permission;
+  button.disabled = permission !== 'default';
+  button.textContent = {
+    default:'启用截止提醒', granted:'已启用截止提醒', denied:'通知已被浏览器阻止'
+  }[permission] || '此浏览器无法启用通知';
+}
+
+function saveTaskChanges() {
+  save();
+  renderTaskSummary();
+  refreshTaskBrowser();
+  void checkTaskReminders();
+}
+
+function moveTaskToDate(task, date) {
+  if (!task || task.date === date) return;
+  const time = Date.now();
+  const ddl = `${date}T23:59`;
+  if (Date.parse(task.ddl) < time) task.ddl = ddl;
+  task.steps.forEach(step => {
+    if (Date.parse(step.ddl) < time) step.ddl = ddl;
+  });
+  task.date = date;
+  taskSelectedDate = date;
+  taskCalendarMonth = date.slice(0, 7);
+  saveTaskChanges();
+  showToast(`已移动至 ${date}`);
+}
+
 function refreshTaskBrowser() {
-  taskEditDraft = document.querySelector('.task-card-edit') || taskEditDraft;
+  if (editingTaskId) taskEditDraft = document.querySelector('.task-card-edit') || taskEditDraft;
+  else taskEditDraft = null;
   const groups = taskGroups();
   document.getElementById('task-browser-sidebar').innerHTML = `<nav class="task-index-panel" aria-label="任务索引">
     <h4>任务索引</h4>
@@ -746,6 +875,7 @@ function refreshTaskBrowser() {
   </nav>${renderTaskCalendar()}`;
   document.getElementById('task-list-heading').innerHTML = `<h4>${taskSelectedDate ? `${taskSelectedDate} 的任务` : '全部任务'}<span>${groups.reduce((sum, group) => sum + group.tasks.length, 0)} 项</span></h4>${taskSelectedDate ? '<button type="button" class="btn btn-secondary btn-sm" data-task-clear-date>查看全部</button>' : ''}`;
   renderTaskGroups(groups);
+  renderTaskTodo(true);
 }
 
 function renderTaskView() {
@@ -756,26 +886,58 @@ function renderTaskView() {
 
   const el = document.getElementById('view-tasks');
 
-  let html = `<div class="task-browser"><aside id="task-browser-sidebar" class="task-browser-sidebar"></aside><section class="task-browser-content" aria-label="任务列表"><details class="task-composer"><summary>＋ 添加任务</summary><div class="task-input-area">
+  let html = `<header class="task-workspace-heading"><h2>每日任务</h2><button type="button" class="btn btn-secondary btn-sm" data-task-calendar-toggle aria-controls="task-browser-sidebar"></button></header>
+  <div class="task-browser"><aside id="task-browser-sidebar" class="task-browser-sidebar" aria-label="任务日期与索引"></aside><section class="task-browser-content" aria-label="任务列表">
+  <details class="task-todo" id="task-todo"${taskTodoOpen ? ' open' : ''}>
+    <summary>待办 <span class="task-todo-count"></span></summary>
+    <div class="task-todo-tools">
+      <select id="task-todo-select" aria-label="加入待办的已有任务"></select>
+      <button type="button" class="btn btn-secondary btn-sm" data-task-todo-pin>加入</button>
+      <button type="button" class="btn btn-secondary btn-sm" data-task-todo-new>新建待办</button>
+      <button type="button" class="btn btn-secondary btn-sm" data-task-notification-enable></button>
+    </div>
+    <p class="task-calendar-hint">距截止时间不到 24 小时的未完成任务会自动加入。</p>
+    <div class="task-todo-list"></div>
+  </details>
+  <details class="task-composer"><summary>＋ 添加任务</summary><div class="task-input-area">
     <div class="task-form">
       <input type="text" id="task-title-input" placeholder="任务标题">
       <textarea id="task-detail-input" placeholder="详情 (选填)"></textarea>
-      <label class="task-field-label" for="task-ddl-input">⏰ DDL（有子步骤时会批量应用）</label>
+      <label class="task-field-label" for="task-ddl-input">⏰ 主任务 DDL</label>
       <input type="datetime-local" id="task-ddl-input">
       <textarea id="task-steps-input" class="task-steps-input" placeholder="子步骤（选填，每行一个）\n可单独指定：整理例题 @ 2026-07-20 23:00"></textarea>
-      <p class="task-form-hint">有子步骤时，DDL 归属于各子步骤；没有子步骤时，DDL 归属于总任务。</p>
+      <p class="task-form-hint">子步骤默认继承主任务 DDL，也可单独指定。</p>
       ${renderStickerPicker('task-sticker-input')}
       <div class="task-form-bottom">
         <select id="task-subject-select">
           ${taskSubjectOptions()}
         </select>
+        <label class="task-todo-checkbox"><input type="checkbox" id="task-add-todo"> 加入待办</label>
         <button class="btn btn-orange btn-sm" id="task-add-btn">添加</button>
       </div>
     </div>
   </div></details>`;
 
-  html += `<div id="task-list-heading" class="task-list-heading"></div><div id="task-list"></div></section></div>`;
+  html += `<div id="task-list-heading" class="task-list-heading"></div><div id="task-list"></div></section></div>
+  <dialog class="task-move-dialog" id="task-move-dialog" aria-labelledby="task-move-title">
+    <form id="task-move-form">
+      <h4 id="task-move-title">移动任务</h4>
+      <label for="task-move-date">目标日期</label>
+      <input id="task-move-date" type="date" min="0100-01-01" max="9999-12-31" required>
+      <div class="task-edit-actions">
+        <button type="button" class="btn btn-secondary btn-sm" data-task-move-cancel>取消</button>
+        <button type="submit" class="btn btn-primary btn-sm">确认移动</button>
+      </div>
+    </form>
+  </dialog>`;
   el.innerHTML = html;
+  updateTaskCalendarVisibility();
+  updateTaskNotificationControl();
+  el.querySelector('#task-todo').addEventListener('toggle', event => {
+    if (!event.currentTarget.isConnected) return;
+    taskTodoOpen = event.currentTarget.open;
+    try { localStorage.setItem('kotori-task-todo-open', String(taskTodoOpen)); } catch (_) {}
+  });
   refreshTaskBrowser();
 }
 
@@ -795,10 +957,10 @@ function renderTaskGroups(groups) {
             <textarea class="task-edit-detail" placeholder="详情（选填）">${escHtml(t.detail || '')}</textarea>
             <select class="task-edit-subject">${taskSubjectOptions(t.subject)}</select>
             ${renderStickerPicker(`task-sticker-input-${t._idx}`, t.stickers || [])}
-            <label class="task-field-label">⏰ 总任务 DDL（仅无子步骤时使用）</label>
-            <input type="datetime-local" class="task-edit-ddl" value="${escHtml(t.ddl || '')}">
+            <label class="task-field-label" for="task-edit-ddl">⏰ 主任务 DDL</label>
+            <input id="task-edit-ddl" type="datetime-local" class="task-edit-ddl" value="${escHtml(t.ddl || '')}">
             <div class="task-edit-steps">
-              <div class="task-edit-steps-label">子步骤与各自 DDL</div>
+              <div class="task-edit-steps-label">子步骤 DDL 留空时继承主任务</div>
               ${steps.map(taskStepEditRow).join('')}
               <button type="button" class="task-add-step" data-edit-step-add>＋ 添加子步骤</button>
             </div>
@@ -821,12 +983,13 @@ function renderTaskGroups(groups) {
             ${steps.map((step,stepIdx) => `<div class="task-step${step.done?' done':''}">
               <button class="task-step-check${step.done?' checked':''}" data-task-step-toggle="${t._idx}" data-step-idx="${stepIdx}" aria-label="切换子步骤状态">${step.done?'✓':''}</button>
               <span class="task-step-text">${escHtml(step.text)}</span>
-              ${ddlBadge(step.ddl, step.done)}
+              ${ddlBadge(step.ddl || t.ddl, step.done || t.done)}
             </div>`).join('')}
           </div>` : ''}
-          <div class="task-meta"><span class="task-tag ${tagCls}">${tagName}</span>${taskIndexMode === 'category' ? `<time class="task-progress" datetime="${escHtml(t.date)}">${escHtml(t.date)}</time>` : ''}${steps.length ? `<span class="task-progress">${completedSteps}/${steps.length} 子步骤</span>` : ddlBadge(t.ddl, t.done)}</div>
+          <div class="task-meta"><span class="task-tag ${tagCls}">${tagName}</span>${taskIndexMode === 'category' ? `<time class="task-progress" datetime="${escHtml(t.date)}">${escHtml(t.date)}</time>` : ''}${steps.length ? `<span class="task-progress">${completedSteps}/${steps.length} 子步骤</span>` : ''}${ddlBadge(t.ddl, t.done)}</div>
         </div>
         <div class="task-actions">
+          <button type="button" class="task-move" draggable="true" data-task-move="${escHtml(t.id)}" aria-label="移动任务" title="拖到日历，或点击选择日期"><span aria-hidden="true">⠿</span> 移动</button>
           <button class="task-edit" data-task-edit="${t._idx}">编辑</button>
           <button class="task-delete" data-task-del="${t._idx}" aria-label="删除任务">✕</button>
         </div>
@@ -942,16 +1105,7 @@ async function applyImportedData(rawData, options = {}) {
     }
     if (state.currentView === oldKey) state.currentView = newKey;
   });
-  const importedTaskSubjectMigrations = { math:'math-ode', 'math-probability':'math-ode', 'math-analysis':'math-ode', physics:'physics-mech', cs:'cs-ics', ai:'ai-cv' };
-  state.tasks.forEach(task => {
-    if (!task.id) task.id = uid();
-    if (importedTaskSubjectMigrations[task.subject]) task.subject = importedTaskSubjectMigrations[task.subject];
-    if (!Array.isArray(task.steps)) task.steps = [];
-    task.steps = task.steps.map(step => typeof step === 'string'
-      ? { id:uid(), text:step, done:false, ddl:'' }
-      : { id:step.id || uid(), text:step.text || '', done:!!step.done, ddl:step.ddl || '' });
-    task.ddl = task.ddl || '';
-  });
+  normalizeTasks();
   SUBJECT_KEYS.forEach(key => {
     if (!state.notes[key]) state.notes[key] = {};
     if (!state.subjectLinks[key]) state.subjectLinks[key] = { notebookLM:'' };
@@ -960,6 +1114,7 @@ async function applyImportedData(rawData, options = {}) {
   if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-ode';
   save({ sync: options.sync !== false });
   applyBackground(); renderMusic(); updateObsidianLink(); renderAll();
+  void checkTaskReminders();
   if (options.notify !== false) alert('导入成功！');
 }
 
@@ -1194,11 +1349,122 @@ function setupEvents() {
 
   // Task view
   const vt = document.getElementById('view-tasks');
-  vt.addEventListener('click', e => {
+  let draggedTaskId = null;
+  let dropDay = null;
+  const moveDataType = 'application/x-seika-task';
+  function markDropDay(day) {
+    if (dropDay === day) return;
+    dropDay?.classList.remove('is-drop-target');
+    dropDay = day;
+    dropDay?.classList.add('is-drop-target');
+  }
+  vt.addEventListener('dragstart', e => {
+    const handle = e.target.closest('[data-task-move]');
+    if (!handle) return;
+    draggedTaskId = handle.dataset.taskMove;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData(moveDataType, draggedTaskId);
+    const card = handle.closest('.task-card');
+    e.dataTransfer.setDragImage(card, 24, 16);
+    vt.classList.add('is-dragging-task');
+  });
+  vt.addEventListener('dragover', e => {
+    const day = draggedTaskId ? e.target.closest('[data-task-calendar-date]') : null;
+    markDropDay(day);
+    if (!day) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  });
+  vt.addEventListener('dragleave', e => {
+    if (dropDay && !dropDay.contains(e.relatedTarget)) markDropDay(null);
+  });
+  function endTaskDrag() {
+    draggedTaskId = null;
+    markDropDay(null);
+    vt.classList.remove('is-dragging-task');
+  }
+  vt.addEventListener('dragend', endTaskDrag);
+  vt.addEventListener('drop', e => {
+    const day = e.target.closest('[data-task-calendar-date]');
+    if (!day || !draggedTaskId || e.dataTransfer.getData(moveDataType) !== draggedTaskId) return;
+    e.preventDefault();
+    const task = state.tasks.find(task => String(task.id) === draggedTaskId);
+    endTaskDrag();
+    moveTaskToDate(task, day.dataset.taskCalendarDate);
+  });
+  vt.addEventListener('submit', e => {
+    if (e.target.id !== 'task-move-form') return;
+    e.preventDefault();
+    const dialog = e.target.closest('dialog');
+    const task = state.tasks.find(task => String(task.id) === dialog.dataset.taskId);
+    dialog.close();
+    moveTaskToDate(task, document.getElementById('task-move-date').value);
+  });
+  vt.addEventListener('click', async e => {
     const stickerRemove = e.target.closest('[data-sticker-remove]');
     if (stickerRemove) {
       const editor = stickerRemove.closest('.sticker-editor');
       updateStickerPicker(editor, stickerKeys(editor).filter(key => key !== stickerRemove.dataset.stickerRemove));
+      return;
+    }
+    if (e.target.closest('[data-task-calendar-toggle]')) {
+      taskCalendarCollapsed = !taskCalendarCollapsed;
+      try { localStorage.setItem('kotori-task-calendar-collapsed', String(taskCalendarCollapsed)); } catch (_) {}
+      updateTaskCalendarVisibility();
+      return;
+    }
+    const notification = e.target.closest('[data-task-notification-enable]');
+    if (notification) {
+      try { await Notification.requestPermission(); }
+      catch (error) { showToast('无法请求通知权限，请检查浏览器设置'); }
+      updateTaskNotificationControl();
+      void checkTaskReminders();
+      return;
+    }
+    if (e.target.closest('[data-task-todo-new]')) {
+      document.querySelector('.task-composer').open = true;
+      document.getElementById('task-add-todo').checked = true;
+      document.getElementById('task-title-input').focus();
+      return;
+    }
+    const todoRemove = e.target.closest('[data-task-todo-remove]');
+    const todoPin = e.target.closest('[data-task-todo-pin]');
+    if (todoRemove || todoPin) {
+      const id = todoRemove ? todoRemove.dataset.taskTodoRemove : document.getElementById('task-todo-select').value;
+      const task = state.tasks.find(task => String(task.id) === id);
+      if (task && !task.done) {
+        task.inTodo = !todoRemove;
+        save();
+        renderTaskTodo(true);
+      }
+      return;
+    }
+    const todoLink = e.target.closest('[data-task-todo-open]');
+    if (todoLink) {
+      const index = state.tasks.findIndex(task => String(task.id) === todoLink.dataset.taskTodoOpen);
+      if (index !== -1) {
+        taskSelectedDate = state.tasks[index].date;
+        taskCalendarMonth = taskSelectedDate.slice(0, 7);
+        refreshTaskBrowser();
+        const card = document.querySelector(`.task-card[data-task-idx="${index}"]`);
+        card?.scrollIntoView({ block:'center' });
+        card?.querySelector('.task-check')?.focus({ preventScroll:true });
+      }
+      return;
+    }
+    const move = e.target.closest('[data-task-move]');
+    if (move) {
+      const task = state.tasks.find(task => String(task.id) === move.dataset.taskMove);
+      if (task) {
+        const dialog = document.getElementById('task-move-dialog');
+        dialog.dataset.taskId = String(task.id);
+        document.getElementById('task-move-date').value = task.date;
+        dialog.showModal();
+      }
+      return;
+    }
+    if (e.target.closest('[data-task-move-cancel]')) {
+      document.getElementById('task-move-dialog').close();
       return;
     }
     const indexMode = e.target.closest('[data-task-index-mode]');
@@ -1252,30 +1518,44 @@ function setupEvents() {
       const ddl = document.getElementById('task-ddl-input').value;
       const steps = document.getElementById('task-steps-input').value.split('\n')
         .map(text => text.trim()).filter(Boolean)
-        .map(text => parseTaskStepLine(text, ddl));
+        .map(parseTaskStepLine).filter(step => step.text);
       const stickers = stickerKeys(document.getElementById('task-sticker-input')?.closest('.sticker-editor'));
-      state.tasks.push({ id:uid(), title, detail, subject, steps, stickers, ddl:steps.length ? '' : ddl, date:today(), done:false });
+      const inTodo = document.getElementById('task-add-todo').checked;
+      state.tasks.push({ id:uid(), title, detail, subject, steps, stickers, ddl, date:today(), done:false, inTodo });
       if (taskSelectedDate) { taskSelectedDate = today(); taskCalendarMonth = today().slice(0, 7); }
       save(); renderAll();
+      void checkTaskReminders();
       return;
     }
     const stepToggle = e.target.closest('[data-task-step-toggle]');
     if (stepToggle) {
       const task = state.tasks[+stepToggle.dataset.taskStepToggle];
       const step = task?.steps?.[+stepToggle.dataset.stepIdx];
-      if (step) { step.done = !step.done; save(); renderAll(); }
+      if (step) {
+        step.done = !step.done;
+        task.done = task.steps.every(step => step.done);
+        saveTaskChanges();
+      }
       return;
     }
     const tog = e.target.closest('[data-task-toggle]');
-    if (tog) { const idx=+tog.dataset.taskToggle; state.tasks[idx].done=!state.tasks[idx].done; save(); renderAll(); return; }
+    if (tog) {
+      const task = state.tasks[+tog.dataset.taskToggle];
+      task.done = !task.done;
+      task.steps.forEach(step => { step.done = task.done; });
+      saveTaskChanges();
+      return;
+    }
     const edit = e.target.closest('[data-task-edit]');
     if (edit) {
       editingTaskId = state.tasks[+edit.dataset.taskEdit]?.id || null;
-      renderTaskView();
+      taskEditDraft = null;
+      document.querySelector('.task-card-edit')?.remove();
+      refreshTaskBrowser();
       document.querySelector('.task-card-edit')?.scrollIntoView({behavior:'smooth', block:'center'});
       return;
     }
-    if (e.target.closest('[data-task-cancel]')) { editingTaskId = null; renderTaskView(); return; }
+    if (e.target.closest('[data-task-cancel]')) { editingTaskId = null; refreshTaskBrowser(); return; }
     const editStepToggle = e.target.closest('[data-edit-step-toggle]');
     if (editStepToggle) {
       const row = editStepToggle.closest('.task-edit-step');
@@ -1289,9 +1569,7 @@ function setupEvents() {
     if (editStepRemove) { editStepRemove.closest('.task-edit-step')?.remove(); return; }
     if (e.target.closest('[data-edit-step-add]')) {
       const steps = e.target.closest('.task-edit-steps');
-      const hasSteps = steps.querySelector('.task-edit-step');
-      const fallbackDdl = hasSteps ? '' : e.target.closest('.task-card-edit').querySelector('.task-edit-ddl').value;
-      e.target.insertAdjacentHTML('beforebegin', taskStepEditRow({ ddl:fallbackDdl }));
+      e.target.insertAdjacentHTML('beforebegin', taskStepEditRow());
       steps.querySelector('.task-edit-step:last-of-type .task-edit-step-input')?.focus();
       return;
     }
@@ -1312,13 +1590,14 @@ function setupEvents() {
         done: row.dataset.done === 'true',
         ddl: row.querySelector('.task-edit-step-ddl').value
       })).filter(step => step.text);
-      task.ddl = task.steps.length ? '' : card.querySelector('.task-edit-ddl').value;
+      task.ddl = card.querySelector('.task-edit-ddl').value;
+      if (task.steps.length) task.done = task.steps.every(step => step.done);
       editingTaskId = null;
-      save(); renderAll();
+      saveTaskChanges();
       return;
     }
     const del = e.target.closest('[data-task-del]');
-    if (del) { state.tasks.splice(+del.dataset.taskDel,1); editingTaskId = null; save(); renderAll(); }
+    if (del) { state.tasks.splice(+del.dataset.taskDel,1); editingTaskId = null; saveTaskChanges(); }
   });
 
   vt.addEventListener('change', e => {
@@ -1441,8 +1720,17 @@ async function init() {
   renderMusic();
   setupEvents();
   renderAll();
-  await window.spaceSync?.init();
+  const refreshDeadlines = () => {
+    renderTaskTodo();
+    updateTaskNotificationControl();
+    void checkTaskReminders();
+  };
+  refreshDeadlines();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshDeadlines();
+  });
   window.addEventListener('beforeunload', () => save({ sync:false }));
-  setInterval(() => save({ sync:false }), 30000);
+  setInterval(() => { save({ sync:false }); refreshDeadlines(); }, 30000);
+  await window.spaceSync?.init();
 }
 document.addEventListener('DOMContentLoaded', () => init());

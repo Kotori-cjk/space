@@ -66,15 +66,19 @@
       const profile = document.createElement('section'); profile.className = 'seika-profile';
       profile.innerHTML = `<img src="${new URL('theme/avatar.webp', root)}" alt="Kotori 头像"><strong>Kotori</strong><p>Learning is a colorful journey.</p>`;
       sidebar.prepend(profile);
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'seika-control'; button.setAttribute('aria-controls', 'sidebar'); toolbar.prepend(button);
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'seika-control seika-sidebar-control'; button.setAttribute('aria-controls', 'sidebar'); toolbar.prepend(button);
       const shade = document.createElement('button'); shade.className = 'seika-drawer-shade'; shade.setAttribute('aria-label', '关闭侧栏'); document.body.append(shade);
+      const dismiss = document.createElement('button'); dismiss.type = 'button'; dismiss.className = 'seika-control seika-drawer-dismiss'; dismiss.textContent = '收起左侧栏'; sidebar.prepend(dismiss);
       const collapseKey = area === 'space' ? 'kotori-seika-sidebar-collapsed' : `kotori-${area}-sidebar-collapsed`;
       let collapsed = false; try { collapsed = localStorage.getItem(collapseKey) === 'true'; } catch {}
       document.body.classList.toggle('sidebar-collapsed', collapsed);
-      function update() { const expanded = mobile.matches ? document.body.classList.contains('seika-drawer-open') : !document.body.classList.contains('sidebar-collapsed'); button.textContent = expanded ? '◧' : '☰'; button.setAttribute('aria-expanded', String(expanded)); button.setAttribute('aria-label', expanded ? '收起侧栏' : '展开侧栏'); sidebar.inert = !expanded; }
+      function update() { const expanded = mobile.matches ? document.body.classList.contains('seika-drawer-open') : !document.body.classList.contains('sidebar-collapsed'); button.textContent = expanded ? '◧' : '☰'; button.title = expanded ? '收起左侧栏' : '展开左侧栏'; button.setAttribute('aria-expanded', String(expanded)); button.setAttribute('aria-label', button.title); sidebar.inert = !expanded; }
       function close() { document.body.classList.remove('seika-drawer-open'); update(); }
-      button.addEventListener('click', () => { if (mobile.matches) document.body.classList.toggle('seika-drawer-open'); else { collapsed = document.body.classList.toggle('sidebar-collapsed'); try { localStorage.setItem(collapseKey, String(collapsed)); } catch {} } update(); });
-      shade.addEventListener('click', close); document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+      button.addEventListener('click', () => { if (mobile.matches) document.body.classList.toggle('seika-drawer-open'); else { collapsed = document.body.classList.toggle('sidebar-collapsed'); try { localStorage.setItem(collapseKey, String(collapsed)); } catch {} } update(); if (mobile.matches && document.body.classList.contains('seika-drawer-open')) dismiss.focus(); });
+      function dismissDrawer() { close(); button.focus(); }
+      shade.addEventListener('click', dismissDrawer);
+      dismiss.addEventListener('click', dismissDrawer);
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('seika-drawer-open')) dismissDrawer(); });
       sidebar.addEventListener('click', e => { if (mobile.matches && e.target.closest('a, .subject-btn, .day-btn')) close(); });
       mobile.addEventListener('change', close); update();
     }
