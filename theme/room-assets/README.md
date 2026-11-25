@@ -4,6 +4,8 @@
 under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/).
 `study-room.webp` and `computer-room.webp` are original illustrated
 backgrounds generated using a layout made from the same kit as reference.
+`study-room-reader.webp` adds a reader to the study room using the supplied
+character references, with the same wide composition and window lighting.
 `desk-wood.webp` is a seamless tile cropped and mirrored from the tabletop
 in `study-room.webp`.
 
