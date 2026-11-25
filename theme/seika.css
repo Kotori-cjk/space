@@ -525,18 +525,48 @@ html body:is(.seika-study-space, .seika-project-room) {
   --seika-door-art: url("room-assets/door.webp");
   --seika-wood: #c8a477;
   --seika-wood-edge: #ac855a;
-  --seika-worktop: #e9d5b9;
+  --seika-worktop: #e6bd88;
+  --desk-wash: #fff8e81a;
+  --room-card: color-mix(in srgb, var(--seika-card) 94%, transparent);
+  --room-border: #5f4e4524;
+  --room-radius: 24px;
+  --seika-shadow: 0 18px 50px #4137311a;
+  --shadow-hover: 0 20px 42px #41373126;
   --room-ink: #4d6b56;
   --room-light: transparent;
   --room-height: clamp(327px, 40vw, 650px);
   --room-layout-start: clamp(62px, 8.3vw, 139px);
   --room-desk-line: calc(var(--room-height) * .75);
-  background: linear-gradient(var(--seika-worktop) 50%, var(--seika-warm));
+  background-color: var(--seika-worktop);
+  background-image: linear-gradient(var(--desk-wash), var(--desk-wash)), url("room-assets/desk-wood.webp");
+  background-position: center top;
+  background-size: auto, 1440px auto;
 }
+html[data-seika-theme="light"] :is(.seika-study-space, .seika-project-room) {
+  --seika-text: #403b4e;
+  --seika-muted: #676173;
+  --seika-line: #56484421;
+  --seika-soft: #f6f3eb;
+  --seika-sky: #e8f5fb;
+  --seika-halo: #e9945b;
+}
+html[data-seika-theme="light"][data-seika-accent="green"] :is(.seika-study-space, .seika-project-room) {
+  --seika-accent: #527d70;
+  --seika-tint: #eaf5ed;
+  --seika-edge: #a9d5c7;
+}
+html[data-seika-theme="light"] .seika-study-space .task-calendar [data-level="1"] { background: #e4f3e9; }
+html[data-seika-theme="light"] .seika-study-space .task-calendar [data-level="2"] { background: #c8e7d8; }
+html[data-seika-theme="light"] .seika-study-space .task-calendar [data-level="3"] { background: #a9d5c7; }
+html[data-seika-theme="light"] .seika-study-space .task-calendar [data-level="4"] { background: #87c1af; color: #25443b; }
 html[data-seika-theme="dark"] :is(.seika-study-space, .seika-project-room) {
   --seika-wood: #6e5c4b;
   --seika-wood-edge: #574638;
   --seika-worktop: #403737;
+  --desk-wash: #25232ac4;
+  --room-border: var(--seika-line);
+  --seika-shadow: 0 16px 46px #07101250;
+  --shadow-hover: 0 18px 42px #07101269;
   --room-light: #25232a97;
 }
 html[data-seika-accent="blue"] :is(.seika-study-space, .seika-project-room) { --room-ink: #3b6571; }
@@ -549,11 +579,11 @@ html[data-seika-accent="blue"] :is(.seika-study-space, .seika-project-room) { --
   height: var(--room-height);
   border: 0;
   background-image:
-    linear-gradient(transparent 81%, var(--seika-worktop) 100%),
     linear-gradient(var(--room-light), var(--room-light)),
     var(--seika-banner-art, var(--seika-study-art));
   background-position: center top;
   background-size: cover;
+  mask-image: linear-gradient(#000 85%, transparent);
 }
 .seika-study-space .seika-banner-water {
   width: 35%;
@@ -687,36 +717,35 @@ html[data-seika-motion="off"] .seika-door-icon::before { transition: none; }
 .seika-project-room.seika-document .topbar { display: none; }
 .seika-project-room .tabs .tab { white-space: nowrap; }
 
-/* A door directory, a clipped calendar and a stack of working papers. */
+/* Warm paper panels and pale accents over the illustrated tabletop. */
 @media (min-width:801px) {
   body.seika-study-space:not(.sidebar-collapsed) .main-layout #sidebar {
     width: auto;
-    border: 4px solid var(--seika-wood);
-    border-radius: 12px 12px 8px 8px;
-    background: var(--seika-card);
-    box-shadow: 0 4px 0 var(--seika-wood-edge), 1px 9px 20px #49352336;
+    border-color: var(--room-border);
+    border-radius: var(--room-radius);
+    background: var(--room-card);
   }
   .seika-study-space #sidebar .seika-profile {
-    border-radius: 7px 7px 0 0;
-    background: var(--seika-tint);
+    border-radius: calc(var(--room-radius) - 1px) calc(var(--room-radius) - 1px) 0 0;
+    background: linear-gradient(110deg, var(--seika-tint), var(--seika-sky));
   }
 }
 .seika-study-space #sidebar .sidebar-section h3 {
   font: 700 17px/1.2 var(--seika-heading);
 }
 .seika-study-space .task-browser-sidebar {
-  border: 3px solid var(--seika-wood);
-  border-radius: 7px 7px 10px 10px;
-  background: var(--seika-card);
-  box-shadow: 0 4px 0 var(--seika-wood-edge), 0 9px 21px #4b382c28;
+  border: 1px solid var(--room-border);
+  border-radius: var(--room-radius);
+  background: linear-gradient(145deg, var(--seika-tint), var(--room-card) 44%, var(--seika-sky));
+  box-shadow: var(--seika-shadow);
 }
 .seika-study-space .task-browser:not(.is-calendar-collapsed) .task-browser-sidebar::before {
   content: "";
   position: absolute;
-  inset: -11px calc(50% - 24px) auto;
-  height: 17px;
+  inset: -8px calc(50% - 22px) auto;
+  height: 12px;
   border: 1px solid var(--seika-wood-edge);
-  border-radius: 5px;
+  border-radius: 6px;
   background: linear-gradient(180deg, var(--seika-wood), var(--seika-wood-edge));
   pointer-events: none;
 }
@@ -725,24 +754,43 @@ html[data-seika-motion="off"] .seika-door-icon::before { transition: none; }
   background: none;
   box-shadow: none;
 }
-.seika-study-space :is(.task-browser-content, .note-input-area, .note-card, .catalog-card),
-.seika-project-room :is(.post-card, .hero-section, .coming-card, .problem-card) {
+:is(.seika-study-space, .seika-project-room) :is(
+  .task-browser-content, .note-input-area, .note-card, .catalog-card, .post-card, .hero-section, .coming-card,
+  .day-header, .problem-card, .journal-card, .wrong-card, .method-card, .think-card, .bailian-board, .bailian-embed-card
+) {
   position: relative;
-  border: 1px solid var(--seika-line);
-  border-radius: 5px 13px 13px 5px;
-  background: var(--seika-card);
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--seika-card) 75%, var(--seika-wood)),
-    0 6px 0 color-mix(in srgb, var(--seika-card) 49%, var(--seika-wood)), 0 8px 18px #4b382c24;
+  border: 1px solid var(--room-border);
+  border-radius: var(--room-radius);
+  background: var(--room-card);
+  box-shadow: var(--seika-shadow);
 }
 .seika-study-space :is(.task-browser-content, .note-input-area) {
   padding: clamp(14px, 2.4vw, 32px);
-  border-left: 4px solid var(--seika-edge);
+  background: linear-gradient(155deg, var(--room-card) 58%, color-mix(in srgb, var(--seika-sky) 48%, var(--seika-card)));
 }
 .seika-study-space .task-browser .task-card {
   border: 1px solid var(--seika-line);
-  border-left: 3px solid var(--seika-edge);
-  border-radius: 3px 8px 8px 3px;
-  background: var(--seika-soft);
+  border-radius: 16px;
+  background: linear-gradient(125deg, var(--seika-tint), var(--seika-card) 74%);
+  box-shadow: 0 4px 14px #4137310d;
+}
+.seika-study-space .task-browser .task-card.done {
+  background: linear-gradient(125deg, var(--seika-sky), var(--seika-card) 74%);
+}
+.seika-study-space .task-tag-math { background: var(--seika-warm); color: var(--seika-rose); }
+.seika-study-space :is(.task-tag-physics, .task-tag-ai) { background: var(--seika-sky); color: var(--seika-blue); }
+.seika-study-space .task-tag-cs { background: var(--seika-tint); color: var(--seika-accent); }
+.seika-study-space .task-tag-general { background: var(--seika-soft); color: var(--seika-muted); }
+.seika-study-space .save-indicator.ok { color: var(--seika-accent); }
+:is(.seika-study-space, .seika-project-room) :is(.note-card, .note-input-area, .task-card):focus-within {
+  border-color: color-mix(in srgb, var(--seika-halo) 65%, var(--seika-line));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--seika-halo) 24%, transparent), var(--seika-shadow);
+}
+@media (hover:hover) {
+  :is(.seika-study-space, .seika-project-room) :is(.note-card, .note-input-area, .task-card, .catalog-card, .post-card, .problem-card):hover {
+    border-color: color-mix(in srgb, var(--seika-halo) 62%, var(--seika-line));
+    box-shadow: 0 0 21px color-mix(in srgb, var(--seika-halo) 30%, transparent), var(--shadow-hover);
+  }
 }
 .seika-study-space .task-calendar-sidebar-heading h3,
 .seika-study-space :is(.task-list-heading h4, .note-input-area h4, .catalog-header h4) { font-size: 18px; }
@@ -750,6 +798,40 @@ html[data-seika-motion="off"] .seika-door-icon::before { transition: none; }
   margin-top: 9px;
   padding: clamp(20px, 4vw, 45px);
 }
+.seika-project-room.seika-document :is(.primary-link, .secondary-link, .dsa-entry-link) {
+  border: 1px solid var(--room-border);
+  border-radius: 12px;
+  background: var(--seika-tint);
+  color: var(--seika-accent);
+  box-shadow: none;
+}
+.seika-project-room.seika-document .secondary-link {
+  background: var(--seika-sky);
+  color: var(--seika-blue);
+}
+.seika-project-room.seika-document :is(.primary-link, .secondary-link, .dsa-entry-link):hover {
+  border-color: var(--seika-halo);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--seika-halo) 26%, transparent);
+}
+.seika-study-space .save-toast {
+  border: 1px solid var(--seika-edge);
+  background: var(--seika-card);
+  color: var(--seika-text);
+  box-shadow: var(--seika-shadow);
+}
+.settings-group .seika-appearance-fields > label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 0;
+  font-size: 14px;
+}
+.seika-appearance-fields select { min-width: 98px; padding: 6px 9px; }
+.seika-appearance-fields input[type="checkbox"] { accent-color: var(--seika-accent); }
+.seika-study-space .settings-shortcut { margin-top: 12px; text-decoration: none; }
+:is(.seika-study-space, .seika-project-room) #bg-view-btn[hidden],
+.seika-study-space #note-cancel-edit-btn[hidden] { display: none; }
 @media (max-width:1100px) {
   .seika-study-space .task-browser-sidebar { position: relative; margin-bottom: 2px; }
 }
@@ -773,14 +855,12 @@ html[data-seika-motion="off"] .seika-door-icon::before { transition: none; }
 @media (max-width:600px) {
   .seika-study-space #header {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 8px;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 6px 8px;
   }
   .seika-study-space #header .seika-sidebar-control { grid-area: 1 / 1; }
   .seika-study-space #header .header-left { grid-area: 1 / 2; }
-  .seika-study-space #header .seika-controls { grid-area: 1 / 3; gap: 1px; }
-  .seika-study-space #header .seika-controls .seika-control { min-width: 32px; padding-inline: 8px; }
-  .seika-study-space #header .header-right, .seika-study-space #header .seika-nav { grid-column: 1 / -1; }
+  .seika-study-space #header .header-right { grid-column: 1 / -1; }
   .seika-study-space #header .header-right .header-btn { padding-inline: 7px; }
   .seika-project-room .tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .seika-project-room .tabs .tab { padding: 8px 4px; font-size: 13px; }

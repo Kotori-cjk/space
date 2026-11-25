@@ -18,7 +18,7 @@
     if (!ripplet || !prefs.motion || reducedMotion.matches) return;
     const target = event.target.closest(rippleTargets);
     if (!target || target.closest('[inert], [draggable="true"]') || target.matches(':disabled, [aria-disabled="true"]') || !target.offsetWidth || !target.offsetHeight) return;
-    const localLayer = target.closest('dialog[open], #sidebar, .modal.active, .image-lightbox');
+    const localLayer = target.closest('dialog[open], #sidebar, .modal.active, .modal.open, .image-lightbox');
     const effect = ripplet({ currentTarget:target, clientX:event.clientX, clientY:event.clientY }, {
       centered:keyboard,
       appendTo:localLayer ? 'parent' : 'body',
@@ -80,7 +80,7 @@
     document.body.append(doors);
     const frame = doors.querySelector('.seika-door-frame');
     const leaf = doors.querySelector('.seika-door-leaf');
-    const entries = [...nav.querySelectorAll('a'), ...(sidebar?.querySelectorAll('[data-subject], .subject-link') || [])];
+    const entries = [...(nav?.querySelectorAll('a') || []), ...(sidebar?.querySelectorAll('[data-subject], .subject-link') || [])];
     entries.forEach(entry => {
       const icon = document.createElement('span');
       icon.className = 'seika-door-icon';
@@ -133,6 +133,56 @@
     updateBannerWater();
   }
   function save() { try { localStorage.setItem(key, JSON.stringify(prefs)); } catch {} apply(); }
+
+  function initAppearance(toolbar, projectRoom, settingsBody) {
+    const fields = document.createElement('div');
+    fields.className = 'seika-appearance-fields';
+    fields.innerHTML = '<label>显示模式<select name="theme"><option value="light">浅色</option><option value="dark">深色</option><option value="system">跟随系统</option></select></label><label>主题色<select name="accent"><option value="green">浅绿</option><option value="blue">天蓝</option></select></label><label>淡入淡出、悬停与涟漪<input name="motion" type="checkbox"></label>';
+    const theme = fields.querySelector('[name="theme"]');
+    const accent = fields.querySelector('[name="accent"]');
+    const motion = fields.querySelector('[name="motion"]');
+    function syncFields() {
+      theme.value = prefs.theme;
+      accent.value = prefs.accent;
+      motion.checked = prefs.motion;
+    }
+    fields.addEventListener('change', () => {
+      prefs = { theme:theme.value, accent:accent.value, motion:motion.checked };
+      save();
+    });
+
+    if (settingsBody) {
+      const group = document.createElement('section');
+      group.className = 'settings-group';
+      group.innerHTML = '<h3>外观</h3>';
+      group.append(fields);
+      settingsBody.prepend(group);
+      document.getElementById('settings-btn').addEventListener('click', syncFields);
+      syncFields();
+      return;
+    }
+
+    const controls = document.createElement('div');
+    controls.className = 'seika-controls';
+    const appearanceButton = '<button class="seika-control" type="button" aria-label="外观设置" title="外观设置">⚙</button>';
+    controls.innerHTML = projectRoom ? appearanceButton : '<button class="seika-control seika-theme-toggle" type="button" aria-label="切换深浅主题" title="切换深浅主题">◐</button>' + appearanceButton;
+    controls.querySelector('.seika-theme-toggle')?.addEventListener('click', () => {
+      prefs.theme = document.documentElement.dataset.seikaTheme === 'dark' ? 'light' : 'dark';
+      save();
+    });
+    toolbar.append(controls);
+
+    const dialog = document.createElement('dialog');
+    dialog.className = 'seika-appearance';
+    dialog.innerHTML = '<form method="dialog"><h2>外观设置</h2><button type="submit">完成</button></form>';
+    dialog.querySelector('button').before(fields);
+    document.body.append(dialog);
+    controls.lastElementChild.addEventListener('click', () => { syncFields(); dialog.showModal(); });
+    function closeDialog(e) { e.preventDefault(); if (!prefs.motion || reducedMotion.matches) { dialog.close(); return; } dialog.classList.add('seika-closing'); setTimeout(() => { dialog.close(); dialog.classList.remove('seika-closing'); }, 160); }
+    dialog.addEventListener('submit', closeDialog);
+    dialog.addEventListener('cancel', closeDialog);
+  }
+
   apply();
   media.addEventListener('change', apply);
   window.addEventListener('storage', event => { if (event.key === key) { try { prefs = { ...prefs, ...JSON.parse(event.newValue || '{}') }; apply(); } catch {} } });
@@ -162,20 +212,30 @@
     const sidebar = document.getElementById('sidebar');
     const pathname = location.pathname;
     const area = pathname.includes('/algorithm/') || pathname.includes('/code-analysis/') ? 'algorithm' : pathname.includes('/cs-learning/') ? 'cs' : 'space';
+    const projectRoom = document.body.classList.contains('seika-project-room');
     const toolbar = header || document.createElement('header');
-    if (!header) { toolbar.className = 'seika-toolbar'; toolbar.innerHTML = `<a class="seika-brand" href="${root.href}">葉 Kotori's Seika</a>`; document.body.prepend(toolbar); document.body.classList.add('seika-document'); }
-    const nav = document.createElement('nav'); nav.className = 'seika-nav'; nav.setAttribute('aria-label', '学习站导航');
-    nav.innerHTML = [['space', '', '学习空间'], ['algorithm', 'algorithm/', '算法'], ['cs', 'cs-learning/', 'CS Learning']].map(([id, url, name]) => `<a href="${new URL(url, root)}" ${id === area ? 'class="active" aria-current="page"' : ''}>${name}</a>`).join('');
-    toolbar.append(nav);
-    if (document.body.matches('.seika-study-space, .seika-project-room')) initRoomDoors(nav, sidebar);
-    const controls = document.createElement('div'); controls.className = 'seika-controls';
-    controls.innerHTML = '<button class="seika-control" type="button" aria-label="切换深浅主题" title="切换深浅主题">◐</button><button class="seika-control" type="button" aria-label="外观设置" title="外观设置">⚙</button>';
-    toolbar.append(controls);
-    controls.children[0].addEventListener('click', () => { prefs.theme = document.documentElement.dataset.seikaTheme === 'dark' ? 'light' : 'dark'; save(); });
+    if (!header) {
+      toolbar.className = 'seika-toolbar';
+      toolbar.innerHTML = projectRoom ? '<span class="seika-brand">CS Learning</span>' : `<a class="seika-brand" href="${root.href}">葉 Kotori's Seika</a>`;
+      document.body.prepend(toolbar);
+      document.body.classList.add('seika-document');
+    }
+    let nav;
+    if (!room) {
+      nav = document.createElement('nav');
+      nav.className = 'seika-nav';
+      nav.setAttribute('aria-label', '学习站导航');
+      nav.innerHTML = [['space', '', '学习空间'], ['algorithm', 'algorithm/', '算法'], ['cs', 'cs-learning/', 'CS Learning']]
+        .filter(([id]) => !projectRoom || id !== area)
+        .map(([id, url, name]) => `<a href="${new URL(url, root)}" ${id === area ? 'class="active" aria-current="page"' : ''}>${name}</a>`).join('');
+      toolbar.append(nav);
+    }
+    if (room || projectRoom) initRoomDoors(nav, sidebar);
+    initAppearance(toolbar, projectRoom, room || projectRoom ? document.querySelector('#settings-modal .modal-body') : null);
     const banner = document.createElement('section'); banner.className = 'seika-banner'; banner.setAttribute('aria-label', '学习空间插画');
     if (room) {
       banner.setAttribute('aria-hidden', 'true');
-    } else if (document.body.classList.contains('seika-project-room')) {
+    } else if (projectRoom) {
       banner.innerHTML = `<div class="seika-banner-copy"><p>${area === 'algorithm' ? '算法研习室' : '计算机研习室'}</p></div>`;
     } else {
       banner.innerHTML = '<div class="seika-banner-copy"><small>KOTORI’S LEARNING SPACE</small><p>风经过的地方，<br>知识也在慢慢生长。</p><span>日々、少しずつ。</span></div>';
@@ -244,13 +304,6 @@
       sidebar.addEventListener('click', e => { if (mobile.matches && e.target.closest('a, .subject-btn, .day-btn')) close(); });
       mobile.addEventListener('change', close); update();
     }
-    const dialog = document.createElement('dialog'); dialog.className = 'seika-appearance';
-    dialog.innerHTML = '<form method="dialog"><h2>外观设置</h2><label>显示模式<select name="theme"><option value="light">浅色</option><option value="dark">深色</option><option value="system">跟随系统</option></select></label><label>主题色<select name="accent"><option value="green">浅绿</option><option value="blue">天蓝</option></select></label><label>淡入淡出、悬停与涟漪<input name="motion" type="checkbox"></label><button type="submit">完成</button></form>';
-    document.body.append(dialog);
-    controls.children[1].addEventListener('click', () => { dialog.querySelector('[name=theme]').value = prefs.theme; dialog.querySelector('[name=accent]').value = prefs.accent; dialog.querySelector('[name=motion]').checked = prefs.motion; dialog.showModal(); });
-    dialog.addEventListener('change', e => { prefs[e.target.name] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; save(); });
-    function closeDialog(e) { e.preventDefault(); if (!prefs.motion || reducedMotion.matches) { dialog.close(); return; } dialog.classList.add('seika-closing'); setTimeout(() => { dialog.close(); dialog.classList.remove('seika-closing'); }, 160); }
-    dialog.addEventListener('submit', closeDialog); dialog.addEventListener('cancel', closeDialog);
     // The Lab already owns its theme button; mirror its visual state without touching its progress.
     const labToggle = document.getElementById('theme-toggle');
     if (labToggle) {

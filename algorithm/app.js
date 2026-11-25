@@ -878,6 +878,7 @@ function applyBackground() {
     bg.style.backgroundImage = '';
     bg.classList.remove('has-bg');
   }
+  document.getElementById('bg-view-btn').hidden = !bg.classList.contains('has-bg');
 }
 
 function renderBgPreviews() {
@@ -1603,7 +1604,7 @@ function setupEvents() {
 
   // ---- Background viewing mode ----
   document.getElementById('bg-view-btn').addEventListener('click', () => {
-    if (state.settings.currentBg < 0) { alert('请先在设置中上传背景图片'); return; }
+    closeSettings();
     document.body.classList.add('bg-viewing');
   });
   document.getElementById('bg-view-exit').addEventListener('click', () => {
@@ -1614,7 +1615,7 @@ function setupEvents() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       if (document.body.classList.contains('bg-viewing')) { document.body.classList.remove('bg-viewing'); }
-      else { closeSettings(); }
+      else if (document.getElementById('settings-modal').classList.contains('open')) { closeSettings(); }
     }
   });
 }

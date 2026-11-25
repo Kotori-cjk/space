@@ -11,8 +11,8 @@
     <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="theme/seika.css?v=cottage-2">
-    <script src="theme/seika.js?v=cottage-2" defer></script>
+    <link rel="stylesheet" href="theme/seika.css?v=cottage-3">
+    <script src="theme/seika.js?v=cottage-3" defer></script>
 </head>
 <body class="seika-study-space">
     <div id="bg-layer"></div>
@@ -26,17 +26,8 @@
             </div>
             <div class="header-right">
                 <a href="https://kotori-cjk.github.io/" class="header-btn" title="返回主站">← 返回主站</a>
-                <a href="https://bangumi.tv/user/1151382" class="header-btn" target="_blank" title="Bangumi">
-                    <span class="btn-icon">📺</span> Bangumi
-                </a>
-                <a id="obsidian-link" class="header-btn" title="Obsidian笔记">
-                    <span class="btn-icon">📒</span> Obsidian
-                </a>
                 <button id="settings-btn" class="header-btn" title="设置">
                     <span class="btn-icon">⚙️</span> 设置
-                </button>
-                <button id="bg-view-btn" class="header-btn" title="观赏背景">
-                    <span class="btn-icon">🖼️</span> 观赏
                 </button>
                 <button class="header-btn" type="button" title="退出登录" onclick="SpaceGate.logout()">
                     <span class="btn-icon">🔒</span> 退出
@@ -45,7 +36,6 @@
         </header>
 
         <div class="main-layout">
-            <button id="sidebar-toggle" class="sidebar-toggle" type="button" aria-controls="sidebar" aria-expanded="true" title="收起左侧面板">◀</button>
             <aside id="sidebar">
                 <div class="sidebar-section">
                     <h3>今日待办</h3>
@@ -131,6 +121,7 @@
                     <input type="text" id="set-obs-ai-cv" placeholder="例：计算机视觉">
                     <label>🔬 科研 笔记文件夹</label>
                     <input type="text" id="set-obs-research" placeholder="例：科研">
+                    <a id="obsidian-link" class="btn btn-secondary btn-sm settings-shortcut">打开 Obsidian</a>
                 </div>
                 <div class="settings-group">
                     <h3>🔗 NotebookLM 链接</h3>
@@ -158,6 +149,7 @@
                     </div>
                     <div id="bg-preview-list" class="bg-preview-list"></div>
                     <button id="bg-reset-btn" class="btn btn-secondary">恢复默认背景</button>
+                    <button id="bg-view-btn" class="btn btn-secondary" type="button" hidden>观赏背景</button>
                 </div>
                 <div class="settings-group">
                     <h3>🎵 网易云音乐</h3>
@@ -212,7 +204,7 @@
     <script src="sync/github-gist-sync.bundle.js"></script>
     <button class="bg-view-exit" id="bg-view-exit">🖼️ 点击或按 Esc 退出观赏</button>
     <div class="save-toast" id="save-toast"></div>
-    <script src="app.js?v=cottage-2"></script>
+    <script src="app.js?v=cottage-3"></script>
     <script type="module">
         import { SITE_CONFIG } from './site-config.js';
         document.getElementById('public-recite-link').href = SITE_CONFIG.reciteUrl;

@@ -576,7 +576,7 @@ function renderNotes(subj) {
     <div class="note-preview" id="note-preview" style="display:none"></div>
     <div class="note-input-row">
       <button class="btn btn-primary btn-sm" id="note-submit-btn">发布笔记</button>
-      <button class="btn btn-secondary btn-sm hidden" id="note-cancel-edit-btn">取消编辑</button>
+      <button class="btn btn-secondary btn-sm" id="note-cancel-edit-btn" hidden>取消编辑</button>
     </div>
   </div>`;
 
@@ -1026,6 +1026,7 @@ function applyBackground() {
     const data = imageCache[bgs[idx]] || bgs[idx]; // key from cache, or legacy raw data
     bg.style.backgroundImage=`url(${data})`; bg.classList.add('has-bg');
   } else { bg.style.backgroundImage=''; bg.classList.remove('has-bg'); }
+  document.getElementById('bg-view-btn').hidden = !bg.classList.contains('has-bg');
 }
 function renderBgPreviews() {
   const el = document.getElementById('bg-preview-list');
@@ -1277,7 +1278,7 @@ function setupEvents() {
       if (pv) { pv.style.display = 'none'; pv.innerHTML = ''; }
       const submit = document.getElementById('note-submit-btn');
       if (submit) submit.textContent = '发布笔记';
-      e.target.classList.add('hidden');
+      e.target.hidden = true;
       return;
     }
     if (e.target.id === 'note-preview-btn') {
@@ -1319,7 +1320,7 @@ function setupEvents() {
       const submit = document.getElementById('note-submit-btn');
       const cancel = document.getElementById('note-cancel-edit-btn');
       if (submit) submit.textContent = '更新笔记';
-      if (cancel) cancel.classList.remove('hidden');
+      if (cancel) cancel.hidden = false;
       document.querySelector('.note-input-area')?.scrollIntoView({behavior:'smooth', block:'start'});
       if (titleInput) titleInput.focus();
       return;
@@ -1718,30 +1719,16 @@ function setupEvents() {
   document.addEventListener('keydown', e => {
     if (e.key==='Escape') {
       if (document.body.classList.contains('bg-viewing')) { document.body.classList.remove('bg-viewing'); }
-      else { closeSettings(); }
+      else if (document.getElementById('settings-modal').classList.contains('open')) { closeSettings(); }
     }
   });
   document.getElementById('bg-view-btn').addEventListener('click', () => {
-    if (state.settings.currentBg < 0) { alert('请先在设置中上传背景图片'); return; }
+    closeSettings();
     document.body.classList.add('bg-viewing');
   });
   document.getElementById('bg-view-exit').addEventListener('click', () => {
     document.body.classList.remove('bg-viewing');
   });
-}
-
-function setupSidebarToggle() {
-  const toggle = document.getElementById('sidebar-toggle');
-  const storageKey = 'kotori-seika-sidebar-collapsed';
-  const setCollapsed = collapsed => {
-    document.body.classList.toggle('sidebar-collapsed', collapsed);
-    toggle.setAttribute('aria-expanded', String(!collapsed));
-    toggle.textContent = collapsed ? '▶' : '◀';
-    toggle.title = collapsed ? '展开左侧面板' : '收起左侧面板';
-    localStorage.setItem(storageKey, String(collapsed));
-  };
-  setCollapsed(localStorage.getItem(storageKey) === 'true');
-  toggle.addEventListener('click', () => setCollapsed(!document.body.classList.contains('sidebar-collapsed')));
 }
 
 /* ===== Init (async: opens IndexedDB first) ===== */
