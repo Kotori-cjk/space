@@ -41,12 +41,11 @@
 | `/space/code-analysis/` | Code Analysis | 洛谷刷题、代码诊断与思维沉淀工作台 |
 | `/recite/` | 课程背诵 | 独立公开课程背诵站 |
 
-```mermaid
-flowchart LR
-  E["HomePageEditor (Space 模式)"] -->|导出 JSON 资料包| S["Space 浏览器 IndexedDB"]
-  S <-->|可选 Secret Gist 同步| G["GitHub Gist (仅 gist scope)"]
-  S -->|导出完整 JSON 备份| B["多设备本地恢复与留档"]
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/workflow-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/workflow-light.svg">
+  <img src="docs/workflow-light.svg" alt="Colorful Seika Space 数据与同步流转">
+</picture>
 
 > 公开构建仅打包白名单内的静态文件至 `.public-pages/`；编辑器、个人资料预设及本机留存的旧交互目录（`algorithm/`、`cs-learning/`、`ai-recite/`、`seed.js`）均不进入 GitHub Pages 产物。
 
