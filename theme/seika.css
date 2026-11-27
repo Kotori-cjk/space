@@ -544,7 +544,8 @@ html body:is(.seika-study-space, .seika-project-room) {
   background-color: var(--seika-worktop);
   background-image: linear-gradient(var(--desk-wash), var(--desk-wash)), url("room-assets/desk-wood.webp");
   background-position: center top;
-  background-size: auto, 1440px auto;
+  background-size: 100% 100%, max(100%, 1440px) auto;
+  background-repeat: no-repeat, repeat-y;
 }
 html[data-seika-theme="light"] :is(.seika-study-space, .seika-project-room) {
   --seika-text: #403b4e;
