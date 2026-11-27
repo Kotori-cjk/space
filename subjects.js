@@ -1,6 +1,25 @@
-export const MATERIAL_STORE = 'materials';
+export const SPACE_STATE_KEY = 'kotori-seika-v1';
+export const IMAGE_STORE = 'images';
+const MATERIAL_STORE = 'materials';
 const CATALOG_KEY = 'catalog';
 const COLORS = { green:'草绿', blue:'天蓝', plum:'淡紫', amber:'暖棕' };
+
+export function openSpaceDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('kotori-seika-images', 2);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(IMAGE_STORE)) db.createObjectStore(IMAGE_STORE);
+      db.createObjectStore(MATERIAL_STORE);
+    };
+    request.onsuccess = () => {
+      const db = request.result;
+      db.onversionchange = () => db.close();
+      resolve(db);
+    };
+    request.onerror = () => reject(request.error);
+  });
+}
 
 export const LEGACY_SUBJECTS = [
   { id:'math-ode', name:'常微分方程', icon:'〰️', category:'数学', color:'green' },
@@ -17,7 +36,7 @@ export const isLocalSubject = id => typeof id === 'string' && id.startsWith('sub
 export function resourceUrl(value) {
   if (typeof value !== 'string' || !value.trim()) return '';
   try {
-    const url = new URL(value, location.href);
+    const url = new URL(value, import.meta.url);
     return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
   } catch {
     return '';
@@ -37,6 +56,7 @@ function validateCatalog(subjects) {
   for (const subject of subjects) {
     register(subject.id, legacyIds.has(subject.id) ? /^[a-z-]+$/ : /^subject-[0-9a-f-]{36}$/);
     [subject.name, subject.icon, subject.category, subject.description].forEach(checkText);
+    if (subject.url != null && subject.url !== '' && !resourceUrl(subject.url)) throw new Error('学科跳转地址不正确。');
     if (!subject.name.trim() || !Object.hasOwn(COLORS, subject.color) || !Array.isArray(subject.pages)) {
       throw new Error('学科卡片格式不正确。');
     }
@@ -52,6 +72,13 @@ function validateCatalog(subjects) {
   }
 }
 
+function validateProjectLinks(links) {
+  if (links == null) return;
+  if (!Array.isArray(links) || links.some(link =>
+    typeof link?.title !== 'string' || !link.title.trim() || !resourceUrl(link.url) || typeof link.localOnly !== 'boolean'
+  )) throw new Error('项目跳转链接格式不正确。');
+}
+
 function legacyCard(subject) {
   return { ...subject, description:'', archived:false, pages:[] };
 }
@@ -60,7 +87,7 @@ function fileIds(subjects) {
   return subjects.flatMap(subject => subject.pages.flatMap(page => page.files.map(file => file.id)));
 }
 
-export async function openSubjectLibrary(db, hadLegacyState) {
+export async function openSubjectLibrary(db) {
   function read(key) {
     return new Promise((resolve, reject) => {
       const request = db.transaction(MATERIAL_STORE).objectStore(MATERIAL_STORE).get(key);
@@ -70,11 +97,11 @@ export async function openSubjectLibrary(db, hadLegacyState) {
   }
   let catalog = await read(CATALOG_KEY);
   if (!catalog) {
-    catalog = { revision:0, subjects:hadLegacyState ? LEGACY_SUBJECTS.map(legacyCard) : [] };
+    catalog = { revision:0, subjects:[] };
   }
-  let { subjects, revision } = catalog;
+  let { subjects, revision, projectLinks = null } = catalog;
 
-  async function write(next, files = new Map(), replace = false) {
+  async function write(next, files = new Map(), replace = false, nextProjectLinks = projectLinks) {
     const previousRevision = revision;
     const nextRevision = revision + 1;
     await new Promise((resolve, reject) => {
@@ -95,26 +122,28 @@ export async function openSubjectLibrary(db, hadLegacyState) {
             if (!kept.has(id)) store.delete(id);
           }
         }
-        store.put({ revision:nextRevision, subjects:next }, CATALOG_KEY);
+        store.put({ revision:nextRevision, subjects:next, projectLinks:nextProjectLinks }, CATALOG_KEY);
       };
       transaction.oncomplete = resolve;
       transaction.onabort = () => reject(stale ? new DOMException('学科目录已在另一处更新，请刷新后再编辑。', 'InvalidStateError') : transaction.error);
     });
     subjects = next;
     revision = nextRevision;
+    projectLinks = nextProjectLinks;
   }
 
-  if (!revision) {
-    try { await write(subjects); }
+  // The first local-first release wrote an empty catalog at revision 1.
+  if (!revision || (revision === 1 && !subjects.length)) {
+    try { await write(LEGACY_SUBJECTS.map(legacyCard)); }
     catch (error) {
       if (error.name !== 'InvalidStateError') throw error;
-      ({ subjects, revision } = await read(CATALOG_KEY));
+      ({ subjects, revision, projectLinks = null } = await read(CATALOG_KEY));
     }
   }
 
   return {
     get subjects() { return subjects; },
-    write(next, files) { return write(next, files, true); },
+    get projectLinks() { return projectLinks; },
     readFile: read,
     async restoreLegacy(ids) {
       const present = new Set(subjects.map(subject => subject.id));
@@ -123,6 +152,7 @@ export async function openSubjectLibrary(db, hadLegacyState) {
     },
     async exportBackup() {
       const catalog = subjects;
+      const links = projectLinks;
       // Read all blobs before another edit can remove an attachment from the catalog.
       const ids = fileIds(catalog);
       const blobs = await Promise.all(ids.map(read));
@@ -136,11 +166,12 @@ export async function openSubjectLibrary(db, hadLegacyState) {
           reader.readAsDataURL(blobs[index]);
         });
       }
-      return { version:1, subjects:catalog, files };
+      return { version:1, subjects:catalog, files, projectLinks:links ?? undefined };
     },
     async importBackup(backup) {
       if (backup?.version !== 1) throw new Error('学科备份版本不受支持。');
       validateCatalog(backup.subjects);
+      validateProjectLinks(backup.projectLinks);
       const files = new Map();
       for (const id of fileIds(backup.subjects)) {
         const data = backup.files?.[id];
@@ -148,7 +179,7 @@ export async function openSubjectLibrary(db, hadLegacyState) {
         const response = await fetch(data);
         files.set(id, await response.blob());
       }
-      await write(backup.subjects, files, true);
+      await write(backup.subjects, files, true, backup.projectLinks ?? null);
     }
   };
 }
@@ -157,255 +188,63 @@ function escapeText(value) {
   return String(value).replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[char]);
 }
 
-function move(list, id, direction) {
-  const from = list.findIndex(item => item.id === id);
-  const to = from + direction;
-  if (from < 0 || to < 0 || to >= list.length) return;
-  [list[from], list[to]] = [list[to], list[from]];
-}
-
-function orderButtons(item, index, length, scope) {
-  return `<button type="button" class="btn btn-secondary btn-sm" data-action="${scope}-up" data-id="${item.id}" aria-label="上移 ${escapeText(item.name || item.title)}" ${index === 0 ? 'disabled' : ''}>↑</button>
-    <button type="button" class="btn btn-secondary btn-sm" data-action="${scope}-down" data-id="${item.id}" aria-label="下移 ${escapeText(item.name || item.title)}" ${index === length - 1 ? 'disabled' : ''}>↓</button>`;
-}
-
-export function setupSubjectEditor(library, onChange, renderPageBody, showToast) {
-  const dialog = document.getElementById('subject-editor');
-  const heading = document.getElementById('subject-editor-title');
-  const body = document.getElementById('subject-editor-body');
-  const status = document.getElementById('subject-editor-status');
-  const pages = document.getElementById('subject-pages');
+export function setupSubjectPages(library, renderBody, onError) {
+  const region = document.getElementById('subject-pages');
   const selection = new Map();
-  let subjectId = '';
-  let pageId = '';
-  let busy = false;
-  let stagedFiles = new Map();
-  let removedFiles = new Set();
+  let subject;
 
-  function button(action, text, id = '') {
-    return `<button class="btn btn-secondary btn-sm" type="button" data-action="${action}" data-id="${id}">${text}</button>`;
-  }
-
-  function show(title, html) {
-    heading.textContent = title;
-    body.innerHTML = html;
-    status.hidden = true;
-    if (!dialog.open) dialog.showModal();
-    body.querySelector('input:not([type=file]), button')?.focus();
-  }
-
-  function showList() {
-    const cards = library.subjects.map((subject, index, all) => `<li>
-      <span><strong>${escapeText(subject.icon)} ${escapeText(subject.name)}</strong>
-      <small>${escapeText([subject.category, subject.archived ? '已归档' : ''].filter(Boolean).join(' · '))}</small></span>
-      <div class="subject-actions">${orderButtons(subject, index, all.length, 'subject')}
-      ${button('edit-subject', '编辑', subject.id)}
-      ${button('archive-subject', subject.archived ? '恢复' : '归档', subject.id)}</div></li>`).join('');
-    show('管理学科', `<p class="subject-hint">学科和页面保存在当前浏览器。用上下箭头调整顺序，归档后仍可恢复原有资料。</p>
-      ${cards ? `<ul class="subject-editor-list">${cards}</ul>` : ''}${button('edit-subject', '新增学科')}`);
-  }
-
-  function editSubject(id) {
-    subjectId = id;
-    const subject = library.subjects.find(item => item.id === id);
-    show(subject ? '编辑学科' : '新增学科', `<form data-editor="subject" class="subject-editor-form">
-      <label>学科名称<input name="name" maxlength="48" required value="${escapeText(subject?.name || '')}"></label>
-      <div class="subject-editor-fields">
-        <label>图标<input name="icon" maxlength="12" value="${escapeText(subject?.icon || '')}" placeholder="📚"></label>
-        <label>分类<input name="category" maxlength="30" value="${escapeText(subject?.category || '')}"></label>
-        <label>颜色<select name="color">${Object.entries(COLORS).map(([key, label]) => `<option value="${key}" ${subject?.color === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label>
-      </div>
-      <label>简介<textarea name="description" rows="2" maxlength="240">${escapeText(subject?.description || '')}</textarea></label>
-      <div class="subject-actions"><button class="btn btn-primary" type="submit">保存学科</button>${button('subject-list', '返回学科列表')}</div>
-    </form>`);
-  }
-
-  function editPage(id) {
-    pageId = id;
-    stagedFiles = new Map();
-    removedFiles = new Set();
-    const subject = library.subjects.find(item => item.id === subjectId);
-    const page = subject?.pages.find(item => item.id === id);
-    if (!subject) return;
-    show(page ? '编辑页面' : '新增页面', `<form data-editor="page" class="subject-editor-form">
-      <label>页面标题<input name="title" maxlength="90" required value="${escapeText(page?.title || '')}"></label>
-      <label>正文（Markdown）<textarea name="markdown" rows="9">${escapeText(page?.body || '')}</textarea></label>
-      <label class="subject-import-label">从文件插入正文<input type="file" name="markdownFile" accept=".md,.markdown,.txt,.text"></label>
-      <label>资料链接<input name="url" placeholder="https://… 或站内相对路径" value="${escapeText(page?.url || '')}"></label>
-      <label class="subject-import-label">附加本地文件<input type="file" name="attachments" multiple></label>
-      <ul class="subject-editor-list" id="subject-file-list"></ul>
-      <div class="subject-actions"><button class="btn btn-primary" type="submit">保存页面</button>
-      ${button('close', '取消')}${page ? button('delete-page', '删除页面', page.id) : ''}</div>
-    </form>`);
-    renderFiles();
-  }
-
-  function renderFiles() {
-    const current = library.subjects.find(item => item.id === subjectId)?.pages.find(item => item.id === pageId);
-    const pending = Array.from(stagedFiles, ([id, file]) => ({ id, name:file.name }));
-    const files = [...(current?.files || []).filter(file => !removedFiles.has(file.id)), ...pending];
-    body.querySelector('#subject-file-list').innerHTML = files.map(file => `<li><span>${escapeText(file.name)}</span>${button('remove-file', '移除', file.id)}</li>`).join('');
-  }
-
-  function render(subject) {
-    pages.hidden = !subject;
-    if (!subject) return;
-    subjectId = subject.id;
+  function render(next) {
+    subject = next;
+    region.hidden = !subject?.pages.length;
+    if (region.hidden) return;
     const page = subject.pages.find(item => item.id === selection.get(subject.id)) || subject.pages[0];
-    const selected = page?.id;
-    const links = subject.pages.map((item, index) => `<li><button type="button" class="subject-page-link" data-action="read-page" data-id="${item.id}" aria-pressed="${item.id === selected}">${escapeText(item.title)}</button>
-      <div class="subject-actions">${orderButtons(item, index, subject.pages.length, 'page')}</div></li>`).join('');
+    const links = subject.pages.map(item => `<li>
+      <button type="button" class="subject-page-link" data-action="read-page" data-id="${item.id}" aria-pressed="${item.id === page?.id}">${escapeText(item.title)}</button>
+    </li>`).join('');
     const url = resourceUrl(page?.url);
-    pages.innerHTML = `<header><h3>学科页面</h3>${button('edit-page', '新增页面')}</header>
-      ${links ? `<div class="subject-page-layout"><ul class="subject-page-nav" aria-label="页面目录">${links}</ul>
-      <article class="subject-page-reader"><header><h4>${escapeText(page.title)}</h4>${button('edit-page', '编辑页面', page.id)}</header>
+    region.innerHTML = `<header><h3>学科页面</h3></header>
+      ${page ? `<div class="subject-page-layout"><ul class="subject-page-nav" aria-label="页面目录">${links}</ul>
+      <article class="subject-page-reader"><header><h4>${escapeText(page.title)}</h4></header>
       <div class="note-body"></div>
       ${url ? `<a class="btn btn-secondary btn-sm subject-resource-link" href="${escapeText(url)}" target="_blank" rel="noreferrer">打开资料链接 ↗</a>` : ''}
-      ${page.files.length ? `<ul class="subject-file-list">${page.files.map(file => `<li>${button('download', escapeText(file.name), file.id)}</li>`).join('')}</ul>` : ''}
-      </article></div>` : '<p class="subject-hint">添加讲义、复习提纲或本地文件。</p>'}`;
-    if (page) renderPageBody(pages.querySelector('.subject-page-reader .note-body'), page.body);
+      ${page.files.length ? `<ul class="subject-file-list">${page.files.map(file => `<li><button class="btn btn-secondary btn-sm" type="button" data-action="download" data-id="${file.id}">${escapeText(file.name)}</button></li>`).join('')}</ul>` : ''}
+      </article></div>` : '<p class="subject-hint">还没有学科页面。</p>'}`;
+    if (page) renderBody(region.querySelector('.subject-page-reader .note-body'), page.body);
   }
 
-  async function change(operation) {
-    if (busy) return;
-    busy = true;
-    try { await operation(); }
-    catch (error) {
-      console.warn('Subject edit failed', error);
-      const message = error?.name === 'InvalidStateError' ? error.message : '操作失败，请检查文件格式和浏览器存储空间后重试。';
-      if (dialog.open) {
-        status.textContent = message;
-        status.hidden = false;
-      } else showToast(message);
-    } finally {
-      busy = false;
+  region.addEventListener('click', async event => {
+    const button = event.target.closest('[data-action]');
+    if (!button || !subject) return;
+    const { action, id } = button.dataset;
+    if (action === 'read-page') {
+      selection.set(subject.id, id);
+      render(subject);
+      region.querySelector('[aria-pressed="true"]')?.focus();
     }
-  }
-
-  async function handleAction(action, id) {
-    if (action === 'subject-list') { showList(); return; }
-    if (action === 'edit-subject') { editSubject(id); return; }
-    if (action === 'edit-page') { editPage(id); return; }
-    if (action === 'close') { dialog.close(); return; }
-    if (action === 'remove-file') {
-      if (!stagedFiles.delete(id)) removedFiles.add(id);
-      renderFiles();
-      return;
-    }
-    if (action === 'download') {
-      const file = library.subjects.find(item => item.id === subjectId)?.pages.flatMap(page => page.files).find(item => item.id === id);
+    if (action !== 'download') return;
+    try {
+      const file = subject.pages.flatMap(page => page.files).find(item => item.id === id);
       const blob = await library.readFile(id);
       if (!file || !blob) throw new Error('找不到附件。');
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = file.name;
-      link.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      return;
+      downloadBlob(blob, file.name);
+    } catch {
+      onError('附件读取失败，请刷新后重试。');
     }
-    const next = structuredClone(library.subjects);
-    const subject = next.find(item => item.id === subjectId);
-    if (action === 'read-page') {
-      selection.set(subjectId, id);
-      render(subject);
-      pages.querySelector('[aria-pressed="true"]')?.focus();
-      return;
-    }
-    if (action === 'archive-subject') {
-      const card = next.find(item => item.id === id);
-      card.archived = !card.archived;
-    } else if (action.startsWith('subject-')) {
-      move(next, id, action.endsWith('-up') ? -1 : 1);
-    } else if (action === 'delete-page') {
-      if (!confirm('删除这个页面及其附件？')) return;
-      subject.pages = subject.pages.filter(item => item.id !== id);
-    } else if (action.startsWith('page-')) {
-      move(subject.pages, id, action.endsWith('-up') ? -1 : 1);
-    } else return;
-    await library.write(next);
-    onChange();
-    if (action === 'delete-page') dialog.close();
-    if (action.startsWith('subject-') || action === 'archive-subject') showList();
-  }
-
-  document.addEventListener('click', event => {
-    const manage = event.target.closest('[data-subject-manager]');
-    if (manage) {
-      if (manage.dataset.subjectManager) editSubject(manage.dataset.subjectManager);
-      else showList();
-      return;
-    }
-    const action = event.target.closest('#subject-editor [data-action], #subject-pages [data-action]');
-    if (action) void change(() => handleAction(action.dataset.action, action.dataset.id));
-  });
-
-  body.addEventListener('change', event => {
-    const input = event.target;
-    if (!input.files?.length) return;
-    if (input.name === 'attachments') {
-      for (const file of input.files) stagedFiles.set('file-' + crypto.randomUUID(), file);
-      input.value = '';
-      renderFiles();
-    } else if (input.name === 'markdownFile') {
-      const file = input.files[0];
-      const form = input.form;
-      input.value = '';
-      void change(async () => {
-        const text = await file.text();
-        const textarea = form.elements.markdown;
-        textarea.value = textarea.value ? textarea.value + '\n\n' + text : text;
-        if (!form.elements.title.value) form.elements.title.value = file.name.replace(/\.[^.]+$/, '').slice(0, 90);
-      });
-    }
-  });
-
-  body.addEventListener('submit', event => {
-    event.preventDefault();
-    const form = event.target;
-    const data = new FormData(form);
-    const value = name => data.get(name).trim();
-    void change(async () => {
-      const next = structuredClone(library.subjects);
-      let subject = next.find(item => item.id === subjectId);
-      if (form.dataset.editor === 'subject') {
-        const name = value('name');
-        if (!name) { form.elements.name.focus(); return; }
-        const isNew = !subject;
-        if (!subject) {
-          subject = { id:'subject-' + crypto.randomUUID(), archived:false, pages:[] };
-          next.push(subject);
-        }
-        Object.assign(subject, { name, icon:value('icon') || '📚', category:value('category'),
-          description:value('description'), color:value('color') });
-        await library.write(next);
-        onChange(isNew ? subject.id : undefined);
-        dialog.close();
-        return;
-      }
-      const title = value('title');
-      const url = value('url');
-      if (!title) { form.elements.title.focus(); return; }
-      if (url && !resourceUrl(url)) {
-        status.textContent = '请填写 HTTP、HTTPS 或站内链接。';
-        status.hidden = false;
-        form.elements.url.focus();
-        return;
-      }
-      let page = subject.pages.find(item => item.id === pageId);
-      if (!page) {
-        page = { id:'page-' + crypto.randomUUID(), files:[] };
-        subject.pages.push(page);
-      }
-      const files = page.files.filter(file => !removedFiles.has(file.id));
-      for (const [id, file] of stagedFiles) files.push({ id, name:file.name });
-      Object.assign(page, { title, body:data.get('markdown'), url, files });
-      await library.write(next, stagedFiles);
-      selection.set(subjectId, page.id);
-      onChange();
-      dialog.close();
-    });
   });
 
   return { render };
+}
+
+export function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export async function readSubjectPack(file) {
+  const payload = JSON.parse(await file.text());
+  return payload?.subjectLibrary ?? payload;
 }

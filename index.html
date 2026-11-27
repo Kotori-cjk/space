@@ -12,8 +12,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="theme/seika.css?v=cottage-4">
-    <link rel="stylesheet" href="subjects.css">
-    <script src="theme/seika.js?v=subjects-1" defer></script>
+    <link rel="stylesheet" href="subjects.css?v=subjects-4">
+    <script src="theme/seika.js?v=subjects-4" defer></script>
 </head>
 <body class="seika-study-space">
     <div id="bg-layer"></div>
@@ -47,13 +47,10 @@
                 </div>
                 <div class="sidebar-section">
                     <h3>学科与项目</h3>
-                    <div id="subject-nav" class="subject-nav"></div>
-                    <button class="btn btn-secondary btn-sm" type="button" data-subject-manager>管理学科</button>
-                    <div class="subject-projects">
-                        <a class="subject-btn subject-link private-only" href="algorithm/"><span class="subj-icon">🏆</span> 算法 ↗</a>
-                        <a class="subject-btn subject-link private-only" href="cs-learning/"><span class="subj-icon">💻</span> CS Learning ↗</a>
-                        <a class="subject-btn subject-link" href="code-analysis/"><span class="subj-icon">⌨️</span> Code Analysis ↗</a>
-                        <a id="public-recite-link" class="subject-btn subject-link" href="https://kotori-cjk.github.io/recite/"><span class="subj-icon">📕</span> 课程背诵 ↗</a>
+                    <div id="subject-nav" class="subject-nav">
+                        <a class="subject-btn subject-link private-only" data-default-project href="algorithm/"><span class="subj-icon">🏆</span> 算法 ↗</a>
+                        <a id="public-recite-link" class="subject-btn subject-link" data-default-project href="https://kotori-cjk.github.io/recite/"><span class="subj-icon">📕</span> 课程背诵 ↗</a>
+                        <a class="subject-btn subject-link private-only" data-default-project href="cs-learning/"><span class="subj-icon">💻</span> CS Learning ↗</a>
                     </div>
                 </div>
 
@@ -79,15 +76,6 @@
             </main>
         </div>
     </div>
-
-    <dialog id="subject-editor" class="subject-editor" aria-labelledby="subject-editor-title">
-        <div class="subject-editor-heading">
-            <h2 id="subject-editor-title">管理学科</h2>
-            <form method="dialog"><button class="btn btn-secondary btn-sm" type="submit">关闭</button></form>
-        </div>
-        <div id="subject-editor-body"></div>
-        <p id="subject-editor-status" role="alert" hidden></p>
-    </dialog>
 
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal">
@@ -157,6 +145,8 @@
                     <h3>💾 数据管理</h3>
                     <p class="empty-hint">备份包含学科目录、页面、附件、笔记和任务。</p>
                     <div class="data-actions">
+                        <button class="btn btn-secondary" type="button" onclick="document.getElementById('subject-pack-file').click()">导入学科资料包</button>
+                        <input type="file" id="subject-pack-file" accept=".json,application/json" hidden>
                         <button id="export-btn" class="btn btn-secondary">📤 导出数据</button>
                         <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">📥 导入数据</button>
                         <input type="file" id="import-file" accept=".json" hidden>
@@ -173,7 +163,7 @@
     <script src="sync/github-gist-sync.bundle.js"></script>
     <button class="bg-view-exit" id="bg-view-exit">🖼️ 点击或按 Esc 退出观赏</button>
     <div class="save-toast" id="save-toast"></div>
-    <script type="module" src="app.js?v=subjects-1"></script>
+    <script type="module" src="app.js?v=subjects-4"></script>
     <script type="module">
         import { SITE_CONFIG } from './site-config.js';
         document.getElementById('public-recite-link').href = SITE_CONFIG.reciteUrl;

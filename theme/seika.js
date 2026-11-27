@@ -21,7 +21,7 @@
     const localLayer = target.closest('dialog[open], #sidebar, .modal.active, .modal.open, .image-lightbox');
     const effect = ripplet({ currentTarget:target, clientX:event.clientX, clientY:event.clientY }, {
       centered:keyboard,
-      appendTo:localLayer ? 'parent' : 'body',
+      appendTo:localLayer ? 'target' : 'body',
       color:'var(--seika-ripple)', opacity:.26,
       spreadingDuration:'420ms', spreadingTimingFunction:'cubic-bezier(.2,.62,.28,1)',
       clearingDuration:'470ms', clearingDelay:'60ms'
@@ -82,6 +82,7 @@
     const leaf = doors.querySelector('.seika-door-leaf');
     const entries = [...(nav?.querySelectorAll('a') || []), ...(sidebar?.querySelectorAll('[data-subject], .subject-link') || [])];
     entries.forEach(entry => {
+      if (entry.querySelector('.seika-door-icon')) return;
       const icon = document.createElement('span');
       icon.className = 'seika-door-icon';
       icon.setAttribute('aria-hidden', 'true');
@@ -114,13 +115,13 @@
     document.addEventListener('seika:open-room', event => {
       if (open(event.detail.enter, event.detail.subject)) event.preventDefault();
     });
-    entries.filter(entry => entry.matches('a[href]')).forEach(link => {
-      link.addEventListener('click', event => {
-        if (event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || link.target || link.href === location.href) return;
-        const path = new URL(link.href).pathname;
-        const project = path.startsWith(new URL('algorithm/', root).pathname) || path.startsWith(new URL('cs-learning/', root).pathname);
-        if (open(() => location.assign(link.href), project ? 'cs-project' : 'math-ode')) event.preventDefault();
-      });
+    document.addEventListener('click', event => {
+      const link = event.target.closest('.seika-nav a[href], #sidebar a.subject-link[href], #sidebar a.subject-card[href]');
+      if (!link || event.defaultPrevented || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || link.target || link.href === location.href) return;
+      const path = new URL(link.href).pathname;
+      const project = path.startsWith(new URL('algorithm/', root).pathname) || path.startsWith(new URL('cs-learning/', root).pathname);
+      const subject = link.dataset.subject || (project ? 'cs-project' : 'math-ode');
+      if (open(() => location.assign(link.href), subject)) event.preventDefault();
     });
   }
 

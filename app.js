@@ -1,29 +1,21 @@
-import { MATERIAL_STORE, openSubjectLibrary, setupSubjectEditor, resourceUrl, isLocalSubject } from './subjects.js';
+import {
+  IMAGE_STORE as IDB_STORE, LEGACY_SUBJECTS, SPACE_STATE_KEY as STORAGE_KEY, downloadBlob, isLocalSubject,
+  openSpaceDatabase, openSubjectLibrary, readSubjectPack, resourceUrl, setupSubjectPages
+} from './subjects.js?v=4';
 
-const STORAGE_KEY = 'kotori-seika-v1';
 const EMOJIS = ['✿','❀','🌸','⭐','💫','🎀','🦋','🌙'];
+const CATEGORY_ICONS = { 数学:'📐', 物理:'⚛️', 计算机:'💻', AI:'🤖' };
+const DEFAULT_SUBJECT_COLORS = new Map(LEGACY_SUBJECTS.map(({ id, color }) => [id, color]));
 let subjectLibrary;
-let subjectEditor;
+let subjectPages;
+let renderedCatalog;
+let renderedProjects;
 const subjectById = id => subjectLibrary.subjects.find(subject => subject.id === id);
 
 /* ===== IndexedDB Image Store (50MB+) ===== */
-const IDB_NAME = 'kotori-seika-images';
-const IDB_STORE = 'images';
 let idb = null;
 let imageCache = {}; // key → dataURL, loaded on init
 
-function idbOpen() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(IDB_NAME, 2);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
-      db.createObjectStore(MATERIAL_STORE);
-    };
-    req.onsuccess = e => { idb = e.target.result; resolve(); };
-    req.onerror = e => reject(e.target.error);
-  });
-}
 function idbPut(key, data) {
   return new Promise((resolve, reject) => {
     const tx = idb.transaction(IDB_STORE, 'readwrite');
@@ -57,7 +49,7 @@ function idbGetAll() {
 
 /* ===== State ===== */
 let state = {
-  currentView: 'tasks',
+  currentView: 'math-ode',
   notes: {},
   tasks: [],
   subjectLinks: {},
@@ -547,11 +539,37 @@ function renderAll() {
 
 function renderSubjectNav() {
   const nav = document.getElementById('subject-nav');
-  nav.innerHTML = subjectLibrary.subjects.filter(subject => !subject.archived).map(subject =>
-    `<button class="subject-btn subject-card" type="button" data-subject="${subject.id}" data-color="${subject.color}">
-      <span class="subject-card-icon" aria-hidden="true">${escHtml(subject.icon)}</span>
-      <span><strong>${escHtml(subject.name)}</strong>${subject.category ? `<small>${escHtml(subject.category)}</small>` : ''}</span>
-    </button>`).join('');
+  if (renderedCatalog !== subjectLibrary.subjects) {
+    const groups = [];
+    for (const subject of subjectLibrary.subjects) {
+      if (subject.archived) continue;
+      if (groups.at(-1)?.category !== subject.category) groups.push({ category:subject.category, cards:[] });
+      const url = resourceUrl(subject.url);
+      const attributes = `class="subject-btn subject-card${subject.category ? ' sub' : ''}" data-subject="${subject.id}"`;
+      const label = `<span class="seika-door-icon" aria-hidden="true"></span>${escHtml(subject.name)}`;
+      groups.at(-1).cards.push(url
+        ? `<a ${attributes} href="${escHtml(url)}">${label} ↗</a>`
+        : `<button ${attributes} type="button">${label}</button>`);
+    }
+    const cards = groups.map(({ category, cards }) => {
+      if (!category) return cards.join('');
+      const icon = Object.hasOwn(CATEGORY_ICONS, category) ? CATEGORY_ICONS[category] + ' ' : '';
+      return `<div class="subject-group"><div class="subject-group-header">${icon}${escHtml(category)}</div>${cards.join('')}</div>`;
+    }).join('');
+    for (const previous of nav.querySelectorAll('.subject-group, .subject-card')) previous.remove();
+    nav.insertAdjacentHTML('afterbegin', cards);
+    renderedCatalog = subjectLibrary.subjects;
+  }
+  const { projectLinks } = subjectLibrary;
+  if (renderedProjects !== projectLinks) {
+    for (const link of nav.querySelectorAll('[data-default-project]')) link.hidden = projectLinks !== null;
+    for (const link of nav.querySelectorAll('.custom-project-link')) link.remove();
+    for (const link of projectLinks || []) {
+      nav.insertAdjacentHTML('beforeend', `<a class="subject-btn subject-link custom-project-link${link.localOnly ? ' private-only' : ''}"
+        href="${escHtml(resourceUrl(link.url))}"><span class="seika-door-icon" aria-hidden="true"></span>${escHtml(link.title)} ↗</a>`);
+    }
+    renderedProjects = projectLinks;
+  }
   document.querySelectorAll('.subject-btn[data-subject]').forEach(btn => {
     const active = btn.dataset.subject === state.currentView;
     btn.classList.toggle('active', active);
@@ -567,7 +585,7 @@ function renderTaskSummary() {
 }
 
 /* ===== Subject View ===== */
-function renderSubjectView(subj, refreshNotes = true) {
+function renderSubjectView(subj) {
   const s = subjectById(subj);
   if (!s) return;
   const sh = document.getElementById('subject-header');
@@ -576,21 +594,21 @@ function renderSubjectView(subj, refreshNotes = true) {
   const nlm = resourceUrl(state.subjectLinks[subj]?.notebookLM);
 
   sh.className = 'subject-header ' + subj;
-  sh.dataset.color = s.color;
+  if (s.color === DEFAULT_SUBJECT_COLORS.get(subj)) delete sh.dataset.color;
+  else sh.dataset.color = s.color;
   sh.innerHTML = `${s.category ? `<span class="subject-room-category">${escHtml(s.category)}</span>` : ''}
     <h2>${escHtml(s.name)}</h2>
     ${s.description ? `<p class="subject-description">${escHtml(s.description)}</p>` : ''}
     <div class="subject-links">
       ${folder ? `<a class="link-obsidian" href="obsidian://open?vault=${vault}&file=${encodeURIComponent(folder)}" title="打开Obsidian">📒 Obsidian</a>` : ''}
       ${nlm ? `<a class="link-nlm" href="${escHtml(nlm)}" target="_blank" rel="noreferrer" title="NotebookLM">📓 NotebookLM</a>` : ''}
-      <button class="btn btn-secondary btn-sm" type="button" data-subject-manager="${subj}">编辑学科</button>
     </div>`;
   sh.style.display = '';
 
   document.getElementById('view-notes').classList.add('active');
   document.getElementById('view-tasks').classList.remove('active');
-  subjectEditor.render(s);
-  if (refreshNotes) renderNotes(subj);
+  subjectPages.render(s);
+  renderNotes(subj);
 }
 
 function renderNotes(subj) {
@@ -613,7 +631,7 @@ function renderNotes(subj) {
     <textarea id="note-textarea" placeholder="支持 Markdown 语法，可直接粘贴图片..."></textarea>
     <div class="note-preview" id="note-preview" style="display:none"></div>
     <div class="note-input-row">
-      <button class="btn btn-primary btn-sm" id="note-submit-btn">保存笔记</button>
+      <button class="btn btn-primary btn-sm" id="note-submit-btn">发布笔记</button>
       <button class="btn btn-secondary btn-sm" id="note-cancel-edit-btn" hidden>取消编辑</button>
     </div>
   </div>`;
@@ -925,14 +943,13 @@ function refreshTaskBrowser() {
 function renderTaskView() {
   taskEditDraft = null;
   document.getElementById('subject-header').style.display = 'none';
-  subjectEditor.render(null);
+  subjectPages.render(null);
   document.getElementById('view-notes').classList.remove('active');
   document.getElementById('view-tasks').classList.add('active');
 
   const el = document.getElementById('view-tasks');
 
-  let html = `<header class="task-workspace-heading"><h2>每日任务</h2>
-    ${subjectLibrary.subjects.some(subject => !subject.archived) ? '' : '<button class="btn btn-secondary btn-sm" type="button" data-subject-manager>管理学科</button>'}</header>
+  let html = `<header class="task-workspace-heading"><h2>每日任务</h2></header>
   <div class="task-browser">
     <aside id="task-browser-sidebar" class="task-browser-sidebar" aria-label="任务日期与索引">
       <div class="task-calendar-sidebar-heading">
@@ -1137,9 +1154,7 @@ async function exportData() {
     const [allImages, subjectLibraryBackup] = await Promise.all([idbGetAll(), subjectLibrary.exportBackup()]);
     const exportObj = { ...state, _images:allImages, subjectLibrary:subjectLibraryBackup };
     const blob = new Blob([JSON.stringify(exportObj,null,2)],{type:'application/json'});
-    const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
-    a.download='kotori-seika-backup.json'; a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    downloadBlob(blob, 'kotori-seika-backup.json');
     showToast('📤 已导出学科、资料、笔记和任务');
   } catch(error) {
     console.warn('Backup export failed', error);
@@ -1198,12 +1213,32 @@ async function applyImportedData(rawData, options = {}) {
 async function importData(file) {
   try {
     const data = JSON.parse(await file.text());
-    if (data?.subjectLibrary && subjectLibrary.subjects.length &&
-        !confirm('导入会替换当前学科目录、页面和附件。是否继续？')) return;
+    if (data?.subjectLibrary && (subjectLibrary.subjects.length || subjectLibrary.projectLinks !== null) &&
+        !confirm('导入会替换当前学科目录、页面、附件和项目链接。是否继续？')) return;
     await applyImportedData(data);
   } catch(error) {
     console.warn('Backup import failed', error);
     alert('导入失败，请检查备份文件和浏览器存储空间。');
+  }
+}
+
+async function importSubjectPack(file) {
+  try {
+    const pack = await readSubjectPack(file);
+    if ((subjectLibrary.subjects.length || subjectLibrary.projectLinks !== null) &&
+        !confirm('导入会替换当前学科目录、页面、附件和项目链接。是否继续？')) return;
+    await subjectLibrary.importBackup(pack);
+    if (state.currentView === 'tasks') {
+      state.currentView = subjectLibrary.subjects.find(subject => !subject.archived)?.id || 'tasks';
+    }
+    applySubjectCatalog();
+    renderAll();
+    save({ sync:false });
+    closeSettings();
+    showToast('已导入学科资料包');
+  } catch (error) {
+    console.warn('Subject pack import failed', error);
+    showToast(error?.name === 'InvalidStateError' ? error.message : '导入失败，请检查资料包和浏览器存储空间。');
   }
 }
 
@@ -1261,7 +1296,7 @@ function setupEvents() {
   setupImageLightbox();
   // Subject navigation
   document.getElementById('sidebar').addEventListener('click', e => {
-    const btn = e.target.closest('.subject-btn[data-subject]');
+    const btn = e.target.closest('button.subject-btn[data-subject]');
     if (!btn) return;
     const subject = btn.dataset.subject;
     const enter = () => {
@@ -1792,6 +1827,11 @@ function setupEvents() {
   document.getElementById('import-file').addEventListener('change', e => {
     if (e.target.files[0]) importData(e.target.files[0]); e.target.value='';
   });
+  document.getElementById('subject-pack-file').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (file) void importSubjectPack(file);
+    e.target.value = '';
+  });
 
   // Esc + bg viewing
   document.addEventListener('keydown', e => {
@@ -1811,21 +1851,12 @@ function setupEvents() {
 
 /* ===== Init (async: opens IndexedDB first) ===== */
 async function init() {
-  await idbOpen();
+  idb = await openSpaceDatabase();
   imageCache = await idbGetAll();
-  subjectLibrary = await openSubjectLibrary(idb, load());
+  load();
+  subjectLibrary = await openSubjectLibrary(idb);
   applySubjectCatalog();
-  subjectEditor = setupSubjectEditor(subjectLibrary, selected => {
-    const previous = state.currentView;
-    if (selected) state.currentView = selected;
-    applySubjectCatalog();
-    if (previous !== state.currentView || previous === 'tasks') renderAll();
-    else {
-      renderSubjectNav();
-      renderSubjectView(state.currentView, false);
-    }
-    if (previous !== state.currentView) save({ sync:false });
-  }, renderLocalPage, showToast);
+  subjectPages = setupSubjectPages(subjectLibrary, renderLocalPage, showToast);
   await migrateImages();
   updateObsidianLink();
   applyBackground();

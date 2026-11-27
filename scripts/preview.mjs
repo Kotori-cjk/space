@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const source = fileURLToPath(new URL('../', import.meta.url));
 const root = process.argv.includes('--public') ? path.join(source, '.public-pages') : path.resolve(source);
+const port = Number(process.argv.find(arg => arg.startsWith('--port='))?.slice(7) || 8000);
 const types = { '.css':'text/css', '.html':'text/html; charset=utf-8', '.js':'text/javascript', '.json':'application/json',
   '.webp':'image/webp', '.png':'image/png', '.jpg':'image/jpeg', '.woff2':'font/woff2', '.pdf':'application/pdf' };
 
@@ -23,4 +24,4 @@ createServer(async (request, response) => {
   } catch {
     response.writeHead(404).end('Not found');
   }
-}).listen(8000, '127.0.0.1', () => console.log('Preview: http://localhost:8000/'));
+}).listen(port, '127.0.0.1', () => console.log(`Preview: http://127.0.0.1:${port}/`));
