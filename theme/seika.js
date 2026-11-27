@@ -225,7 +225,9 @@
       nav = document.createElement('nav');
       nav.className = 'seika-nav';
       nav.setAttribute('aria-label', '学习站导航');
-      nav.innerHTML = [['space', '', '学习空间'], ['algorithm', 'algorithm/', '算法'], ['cs', 'cs-learning/', 'CS Learning']]
+      const destinations = [['space', '', '学习空间']];
+      if (window.SPACE_PUBLIC !== true) destinations.push(['algorithm', 'algorithm/', '算法'], ['cs', 'cs-learning/', 'CS Learning']);
+      nav.innerHTML = destinations
         .filter(([id]) => !projectRoom || id !== area)
         .map(([id, url, name]) => `<a href="${new URL(url, root)}" ${id === area ? 'class="active" aria-current="page"' : ''}>${name}</a>`).join('');
       toolbar.append(nav);

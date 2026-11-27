@@ -1,2 +1,8 @@
 node_modules/
 .npm-cache/
+/.public-pages/
+/algorithm/
+/cs-learning/
+/ai-recite/
+/seed.js
+kotori-seika-backup*.json

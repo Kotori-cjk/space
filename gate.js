@@ -1,4 +1,8 @@
 (function () {
+  if (window.SPACE_PUBLIC === true) {
+    document.documentElement.setAttribute('data-space-public', '');
+    return;
+  }
   const config = window.SPACE_GATE_CONFIG;
   const scriptUrl = new URL(document.currentScript.src);
   const rootUrl = new URL('./', scriptUrl);

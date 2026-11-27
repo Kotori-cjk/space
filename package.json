@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node scripts/build-sync.mjs",
+    "build:public": "npm run build && node scripts/build-public.mjs",
     "preview": "node scripts/preview.mjs",
     "test": "node --test sync/sync-core.test.mjs"
   },

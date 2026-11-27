@@ -1,21 +1,10 @@
+import { MATERIAL_STORE, openSubjectLibrary, setupSubjectEditor, resourceUrl, isLocalSubject } from './subjects.js';
+
 const STORAGE_KEY = 'kotori-seika-v1';
 const EMOJIS = ['✿','❀','🌸','⭐','💫','🎀','🦋','🌙'];
-const PARENTS = {
-  math:    { name:'数学', icon:'📐' },
-  physics: { name:'物理', icon:'⚛️' },
-  computer:{ name:'计算机', icon:'💻' },
-  ai:      { name:'AI', icon:'🤖' }
-};
-const SUBJECTS = {
-  'math-ode':      { name:'常微分方程', icon:'〰️', color:'var(--c-math)', parent:'math' },
-  'physics-mech':  { name:'理力', icon:'⚙️', color:'var(--c-physics)', parent:'physics' },
-  'physics-general': { name:'普物', icon:'🧲', color:'var(--c-physics)', parent:'physics' },
-  'cs-ics':        { name:'ICS', icon:'🖥️', color:'var(--c-cs)', parent:'computer' },
-  'cs-dsa':        { name:'数算', icon:'🧮', color:'var(--c-cs)', parent:'computer' },
-  'ai-cv':         { name:'计算机视觉', icon:'👁️', color:'var(--c-ai)', parent:'ai' },
-  'research':      { name:'科研', icon:'🔬', color:'var(--c-ai)', parent:'ai' }
-};
-const SUBJECT_KEYS = Object.keys(SUBJECTS);
+let subjectLibrary;
+let subjectEditor;
+const subjectById = id => subjectLibrary.subjects.find(subject => subject.id === id);
 
 /* ===== IndexedDB Image Store (50MB+) ===== */
 const IDB_NAME = 'kotori-seika-images';
@@ -25,8 +14,12 @@ let imageCache = {}; // key → dataURL, loaded on init
 
 function idbOpen() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open(IDB_NAME, 1);
-    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
+    const req = indexedDB.open(IDB_NAME, 2);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
+      db.createObjectStore(MATERIAL_STORE);
+    };
     req.onsuccess = e => { idb = e.target.result; resolve(); };
     req.onerror = e => reject(e.target.error);
   });
@@ -64,17 +57,13 @@ function idbGetAll() {
 
 /* ===== State ===== */
 let state = {
-  currentView: 'math-ode',
-  notes: { 'math-ode':{}, 'physics-mech':{}, 'physics-general':{}, 'cs-ics':{}, 'cs-dsa':{}, 'ai-cv':{}, research:{} },
+  currentView: 'tasks',
+  notes: {},
   tasks: [],
-  subjectLinks: {
-    'math-ode':{ notebookLM:'' },
-    'physics-mech':{ notebookLM:'' }, 'physics-general':{ notebookLM:'' },
-    'cs-ics':{ notebookLM:'' }, 'cs-dsa':{ notebookLM:'' }, 'ai-cv':{ notebookLM:'' }, research:{ notebookLM:'' }
-  },
+  subjectLinks: {},
   settings: {
     obsidianVault: 'Obsidian Vault',
-    obsidianFolders: { 'math-ode':'', 'physics-mech':'', 'physics-general':'', 'cs-ics':'', 'cs-dsa':'', 'ai-cv':'', research:'' },
+    obsidianFolders: {},
     musicIds: [],
     backgrounds: [],
     currentBg: -1
@@ -133,6 +122,8 @@ function load() {
       if (state.currentView==='math') state.currentView='math-ode';
       if (state.currentView==='physics') state.currentView='physics-mech';
       const subjectMigrations = {
+        math:'math-ode',
+        physics:'physics-mech',
         'math-probability':'math-ode',
         'math-analysis':'math-ode',
         'math-linalg':'math-ode',
@@ -157,15 +148,18 @@ function load() {
       if (of.math) { if(!of['math-ode']) of['math-ode']=of.math; delete of.math; }
       if (of.physics) { if(!of['physics-mech']) of['physics-mech']=of.physics; delete of.physics; }
       state.settings.obsidianFolders = of;
-      SUBJECT_KEYS.forEach(k => {
-        if (!state.notes[k]) state.notes[k] = {};
-        if (!state.subjectLinks[k]) state.subjectLinks[k] = { notebookLM:'' };
-        if (!state.settings.obsidianFolders[k]) state.settings.obsidianFolders[k] = '';
-      });
       normalizeTasks();
-      if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-ode';
+      return true;
     }
   } catch(e) { console.warn('Load failed',e); }
+  return false;
+}
+
+function applySubjectCatalog() {
+  for (const { id } of subjectLibrary.subjects) state.notes[id] ||= {};
+  if (state.currentView !== 'tasks' && subjectById(state.currentView)?.archived !== false) {
+    state.currentView = subjectLibrary.subjects.find(subject => !subject.archived)?.id || 'tasks';
+  }
 }
 
 /* ===== Migrate old base64 data into IndexedDB ===== */
@@ -183,7 +177,7 @@ async function migrateImages() {
     }
   }
   // Note images: replace inline data:image URLs with idb: references
-  for (const subj of SUBJECT_KEYS) {
+  for (const subj of Object.keys(state.notes)) {
     for (const date of Object.keys(state.notes[subj] || {})) {
       for (const note of (state.notes[subj][date] || [])) {
         if (note.content && note.content.includes('](data:image')) {
@@ -261,6 +255,41 @@ function renderMarkdown(text) {
     return restoreDisplayMath(marked.parse(math.text), math.blocks);
   }
   return escHtml(text).replace(/\n/g,'<br>');
+}
+
+function renderLocalPage(target, text) {
+  const template = document.createElement('template');
+  template.innerHTML = renderMarkdown(text);
+  const allowed = new Set('A BLOCKQUOTE BR CODE DD DEL DIV DL DT EM H1 H2 H3 H4 H5 H6 HR IMG INPUT LI OL P PRE S SPAN STRONG TABLE TBODY TD TH THEAD TR UL'.split(' '));
+  for (const element of template.content.querySelectorAll('*')) {
+    if (!allowed.has(element.tagName)) { element.remove(); continue; }
+    const href = element.tagName === 'A' ? resourceUrl(element.getAttribute('href')) : '';
+    const src = element.tagName === 'IMG' ? element.getAttribute('src') || '' : '';
+    const alt = element.getAttribute('alt') || '';
+    const math = element.classList.contains('math-block');
+    const checkbox = element.tagName === 'INPUT' && element.type === 'checkbox';
+    const checked = element.checked;
+    for (const { name } of [...element.attributes]) element.removeAttribute(name);
+    if (href) {
+      element.href = href;
+      element.target = '_blank';
+      element.rel = 'noreferrer';
+    }
+    if (element.tagName === 'IMG') {
+      if (!/^data:image\/(png|jpeg|gif|webp|avif);base64,[\w+/=]+$/i.test(src)) { element.replaceWith(alt); continue; }
+      element.src = src;
+      element.alt = alt;
+    }
+    if (element.tagName === 'INPUT') {
+      if (!checkbox) { element.remove(); continue; }
+      element.type = 'checkbox';
+      element.checked = checked;
+      element.disabled = true;
+    }
+    if (math) element.className = 'math-block';
+  }
+  target.replaceChildren(template.content);
+  renderLatex(target);
 }
 function renderLatex(root) {
   if (!root) return;
@@ -393,15 +422,15 @@ function insertImageAtCursor(ta, ref) {
   ta.dispatchEvent(new Event('input',{bubbles:true}));
 }
 
-function attachmentImageKeys() {
+function attachmentImageKeys(tasks, notesBySubject) {
   const keys = new Set();
   const collect = item => {
     (item?.stickers || []).forEach(key => keys.add(key));
     const matches = String(item?.content || '').matchAll(/\(idb:([^)]+)\)/g);
     for (const match of matches) keys.add(match[1]);
   };
-  state.tasks.forEach(collect);
-  Object.values(state.notes).forEach(days => {
+  tasks.forEach(collect);
+  Object.values(notesBySubject).forEach(days => {
     Object.values(days || {}).forEach(notes => notes.forEach(collect));
   });
   return keys;
@@ -517,6 +546,12 @@ function renderAll() {
 }
 
 function renderSubjectNav() {
+  const nav = document.getElementById('subject-nav');
+  nav.innerHTML = subjectLibrary.subjects.filter(subject => !subject.archived).map(subject =>
+    `<button class="subject-btn subject-card" type="button" data-subject="${subject.id}" data-color="${subject.color}">
+      <span class="subject-card-icon" aria-hidden="true">${escHtml(subject.icon)}</span>
+      <span><strong>${escHtml(subject.name)}</strong>${subject.category ? `<small>${escHtml(subject.category)}</small>` : ''}</span>
+    </button>`).join('');
   document.querySelectorAll('.subject-btn[data-subject]').forEach(btn => {
     const active = btn.dataset.subject === state.currentView;
     btn.classList.toggle('active', active);
@@ -532,27 +567,30 @@ function renderTaskSummary() {
 }
 
 /* ===== Subject View ===== */
-function renderSubjectView(subj) {
-  const s = SUBJECTS[subj];
+function renderSubjectView(subj, refreshNotes = true) {
+  const s = subjectById(subj);
   if (!s) return;
   const sh = document.getElementById('subject-header');
   const vault = encodeURIComponent(state.settings.obsidianVault);
   const folder = state.settings.obsidianFolders[subj];
-  const nlm = state.subjectLinks[subj]?.notebookLM;
-  const parent = s.parent ? PARENTS[s.parent] : null;
+  const nlm = resourceUrl(state.subjectLinks[subj]?.notebookLM);
 
   sh.className = 'subject-header ' + subj;
-  sh.innerHTML = `${parent ? `<span class="subject-room-category">${parent.name}</span>` : ''}
-    <h2>${s.name}</h2>
+  sh.dataset.color = s.color;
+  sh.innerHTML = `${s.category ? `<span class="subject-room-category">${escHtml(s.category)}</span>` : ''}
+    <h2>${escHtml(s.name)}</h2>
+    ${s.description ? `<p class="subject-description">${escHtml(s.description)}</p>` : ''}
     <div class="subject-links">
       ${folder ? `<a class="link-obsidian" href="obsidian://open?vault=${vault}&file=${encodeURIComponent(folder)}" title="打开Obsidian">📒 Obsidian</a>` : ''}
-      ${nlm ? `<a class="link-nlm" href="${escHtml(nlm)}" target="_blank" title="NotebookLM">📓 NotebookLM</a>` : ''}
+      ${nlm ? `<a class="link-nlm" href="${escHtml(nlm)}" target="_blank" rel="noreferrer" title="NotebookLM">📓 NotebookLM</a>` : ''}
+      <button class="btn btn-secondary btn-sm" type="button" data-subject-manager="${subj}">编辑学科</button>
     </div>`;
   sh.style.display = '';
 
   document.getElementById('view-notes').classList.add('active');
   document.getElementById('view-tasks').classList.remove('active');
-  renderNotes(subj);
+  subjectEditor.render(s);
+  if (refreshNotes) renderNotes(subj);
 }
 
 function renderNotes(subj) {
@@ -575,7 +613,7 @@ function renderNotes(subj) {
     <textarea id="note-textarea" placeholder="支持 Markdown 语法，可直接粘贴图片..."></textarea>
     <div class="note-preview" id="note-preview" style="display:none"></div>
     <div class="note-input-row">
-      <button class="btn btn-primary btn-sm" id="note-submit-btn">发布笔记</button>
+      <button class="btn btn-primary btn-sm" id="note-submit-btn">保存笔记</button>
       <button class="btn btn-secondary btn-sm" id="note-cancel-edit-btn" hidden>取消编辑</button>
     </div>
   </div>`;
@@ -636,10 +674,9 @@ function renderNotes(subj) {
 
 /* ===== Task View ===== */
 function taskSubjectOptions(selected='') {
-  return `<option value="">通用</option>` + SUBJECT_KEYS.map(key => {
-    const subject = SUBJECTS[key];
-    const parent = subject.parent ? `${PARENTS[subject.parent].name} · ` : '';
-    return `<option value="${key}"${selected===key?' selected':''}>${subject.icon} ${parent}${subject.name}</option>`;
+  return `<option value="">通用</option>` + subjectLibrary.subjects.filter(subject => !subject.archived || subject.id === selected).map(subject => {
+    const label = [subject.category, subject.name].filter(Boolean).join(' · ');
+    return `<option value="${subject.id}"${selected===subject.id?' selected':''}>${escHtml(subject.icon)} ${escHtml(label)}${subject.archived ? '（已归档）' : ''}</option>`;
   }).join('');
 }
 
@@ -743,16 +780,16 @@ function taskGroups() {
   const groups = new Map();
   state.tasks.forEach((task, index) => {
     if (taskSelectedDate && task.date !== taskSelectedDate) return;
-    const key = taskIndexMode === 'date' ? task.date : (SUBJECTS[task.subject] ? task.subject : 'general');
+    const key = taskIndexMode === 'date' ? task.date : (subjectById(task.subject) ? task.subject : 'general');
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push({ ...task, _idx:index });
   });
   const keys = taskIndexMode === 'date'
     ? [...groups.keys()].sort().reverse()
-    : [...SUBJECT_KEYS, 'general'].filter(key => groups.has(key));
+    : [...subjectLibrary.subjects.map(subject => subject.id), 'general'].filter(key => groups.has(key));
   return keys.map(key => ({
     key,
-    label:taskIndexMode === 'date' ? (key === today() ? `今天 (${key})` : key) : (SUBJECTS[key] ? `${SUBJECTS[key].icon} ${SUBJECTS[key].name}` : '📋 通用'),
+    label:taskIndexMode === 'date' ? (key === today() ? `今天 (${key})` : key) : (subjectById(key) ? `${subjectById(key).icon} ${subjectById(key).name}` : '📋 通用'),
     tasks:groups.get(key)
   }));
 }
@@ -888,12 +925,14 @@ function refreshTaskBrowser() {
 function renderTaskView() {
   taskEditDraft = null;
   document.getElementById('subject-header').style.display = 'none';
+  subjectEditor.render(null);
   document.getElementById('view-notes').classList.remove('active');
   document.getElementById('view-tasks').classList.add('active');
 
   const el = document.getElementById('view-tasks');
 
-  let html = `<header class="task-workspace-heading"><h2>每日任务</h2></header>
+  let html = `<header class="task-workspace-heading"><h2>每日任务</h2>
+    ${subjectLibrary.subjects.some(subject => !subject.archived) ? '' : '<button class="btn btn-secondary btn-sm" type="button" data-subject-manager>管理学科</button>'}</header>
   <div class="task-browser">
     <aside id="task-browser-sidebar" class="task-browser-sidebar" aria-label="任务日期与索引">
       <div class="task-calendar-sidebar-heading">
@@ -963,7 +1002,7 @@ function renderTaskGroups(groups) {
     html += `<section class="task-date-group" id="task-group-${encodeURIComponent(group.key)}"><div class="task-date-label">${escHtml(group.label)}</div>`;
     group.tasks.slice().sort((a, b) => b.date.localeCompare(a.date) || b._idx - a._idx).forEach(t => {
       const tagCls = taskTagClass(t.subject);
-      const tagName = SUBJECTS[t.subject]?.name || '通用';
+      const tagName = escHtml(subjectById(t.subject)?.name || '通用');
       const steps = Array.isArray(t.steps) ? t.steps : [];
       if (editingTaskId === t.id) {
         html += `<div class="task-card task-card-edit" data-task-idx="${t._idx}">
@@ -1063,19 +1102,25 @@ function parseMusicId(input) {
 /* ===== Settings ===== */
 function openSettings() {
   document.getElementById('set-obsidian-vault').value = state.settings.obsidianVault;
-  SUBJECT_KEYS.forEach(k => {
-    document.getElementById('set-obs-'+k).value = state.settings.obsidianFolders[k]||'';
-    document.getElementById('set-nlm-'+k).value = state.subjectLinks[k]?.notebookLM||'';
-  });
+  function renderFields(containerId, prefix, valueFor, placeholder) {
+    document.getElementById(containerId).innerHTML = subjectLibrary.subjects.map(subject => {
+      const id = prefix + subject.id;
+      return `<label for="${id}">${escHtml(subject.icon + ' ' + subject.name)}${subject.archived ? '（已归档）' : ''}</label>
+        <input type="text" id="${id}" placeholder="${placeholder}" value="${escHtml(valueFor(subject.id) || '')}">`;
+    }).join('');
+  }
+  renderFields('subject-obsidian-settings', 'set-obs-', k => state.settings.obsidianFolders[k], '笔记文件夹');
+  renderFields('subject-notebook-settings', 'set-nlm-', k => state.subjectLinks[k]?.notebookLM, 'NotebookLM URL');
   renderBgPreviews(); renderMusicManageList();
   document.getElementById('settings-modal').classList.add('open');
 }
 function closeSettings() {
   state.settings.obsidianVault = document.getElementById('set-obsidian-vault').value.trim()||'Obsidian Vault';
-  SUBJECT_KEYS.forEach(k => {
-    state.settings.obsidianFolders[k] = document.getElementById('set-obs-'+k).value.trim();
-    if (!state.subjectLinks[k]) state.subjectLinks[k]={};
-    state.subjectLinks[k].notebookLM = document.getElementById('set-nlm-'+k).value.trim();
+  subjectLibrary.subjects.forEach(({ id }) => {
+    const folder = document.getElementById('set-obs-'+id);
+    const notebook = document.getElementById('set-nlm-'+id);
+    if (folder) state.settings.obsidianFolders[id] = folder.value.trim();
+    if (notebook) state.subjectLinks[id] = { ...state.subjectLinks[id], notebookLM:notebook.value.trim() };
   });
   save(); updateObsidianLink();
   document.getElementById('settings-modal').classList.remove('open');
@@ -1088,15 +1133,29 @@ function updateObsidianLink() {
 
 /* ===== Export / Import (includes IndexedDB images) ===== */
 async function exportData() {
-  const allImages = await idbGetAll();
-  const exportObj = { ...state, _images: allImages };
-  const blob = new Blob([JSON.stringify(exportObj,null,2)],{type:'application/json'});
-  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='kotori-seika-backup.json'; a.click(); URL.revokeObjectURL(a.href);
-  showToast('📤 导出成功（含全部图片）');
+  try {
+    const [allImages, subjectLibraryBackup] = await Promise.all([idbGetAll(), subjectLibrary.exportBackup()]);
+    const exportObj = { ...state, _images:allImages, subjectLibrary:subjectLibraryBackup };
+    const blob = new Blob([JSON.stringify(exportObj,null,2)],{type:'application/json'});
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='kotori-seika-backup.json'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    showToast('📤 已导出学科、资料、笔记和任务');
+  } catch(error) {
+    console.warn('Backup export failed', error);
+    showToast('⚠ 导出失败，请检查浏览器存储和附件');
+  }
 }
 async function applyImportedData(rawData, options = {}) {
-  const d = structuredClone(rawData || {});
+  if (!rawData || typeof rawData !== 'object' || Array.isArray(rawData)) throw new Error('无效备份');
+  const { subjectLibrary:subjectBackup, ...d } = rawData;
+  for (const field of ['notes', 'subjectLinks', 'settings', '_images']) {
+    if (d[field] != null && (typeof d[field] !== 'object' || Array.isArray(d[field]))) throw new Error('无效备份字段');
+  }
+  if (d.tasks != null && (!Array.isArray(d.tasks) || d.tasks.some(task => !task || typeof task !== 'object'))) {
+    throw new Error('无效备份任务');
+  }
+  if (subjectBackup) await subjectLibrary.importBackup(subjectBackup);
   // Restore images to IndexedDB
   if (d._images) {
     for (const [key, data] of Object.entries(d._images)) {
@@ -1105,11 +1164,13 @@ async function applyImportedData(rawData, options = {}) {
     }
     delete d._images;
   }
-  state={...state,...d,settings:{...state.settings,...(d.settings||{})},
+  state={...state,...d,settings:{...state.settings,...(d.settings||{}),
+      obsidianFolders:{...state.settings.obsidianFolders,...d.settings?.obsidianFolders}},
     subjectLinks:{...state.subjectLinks,...(d.subjectLinks||{})},
     notes:{...state.notes,...(d.notes||{})}};
   if(!state.tasks) state.tasks=[];
   const importedSubjectMigrations = {
+    math:'math-ode', physics:'physics-mech',
     'math-probability':'math-ode', 'math-analysis':'math-ode', 'math-linalg':'math-ode', 'physics-elec':'physics-general', 'cs':'cs-ics', 'ai':'ai-cv'
   };
   Object.entries(importedSubjectMigrations).forEach(([oldKey,newKey]) => {
@@ -1122,12 +1183,12 @@ async function applyImportedData(rawData, options = {}) {
     if (state.currentView === oldKey) state.currentView = newKey;
   });
   normalizeTasks();
-  SUBJECT_KEYS.forEach(key => {
-    if (!state.notes[key]) state.notes[key] = {};
-    if (!state.subjectLinks[key]) state.subjectLinks[key] = { notebookLM:'' };
-    if (!state.settings.obsidianFolders[key]) state.settings.obsidianFolders[key] = '';
-  });
-  if (state.currentView !== 'tasks' && !SUBJECTS[state.currentView]) state.currentView = 'math-ode';
+  if (!subjectBackup) {
+    const ids = new Set([...Object.keys(state.notes), ...Object.keys(state.subjectLinks),
+      ...Object.keys(state.settings.obsidianFolders), ...state.tasks.map(task => task.subject)]);
+    await subjectLibrary.restoreLegacy(ids);
+  }
+  applySubjectCatalog();
   save({ sync: options.sync !== false });
   applyBackground(); renderMusic(); updateObsidianLink(); renderAll();
   void checkTaskReminders();
@@ -1135,29 +1196,37 @@ async function applyImportedData(rawData, options = {}) {
 }
 
 async function importData(file) {
-  const reader = new FileReader();
-  reader.onload = async e => {
-    try {
-      await applyImportedData(JSON.parse(e.target.result));
-    } catch(err) { alert('导入失败：文件格式不正确'); }
-  };
-  reader.readAsText(file);
+  try {
+    const data = JSON.parse(await file.text());
+    if (data?.subjectLibrary && subjectLibrary.subjects.length &&
+        !confirm('导入会替换当前学科目录、页面和附件。是否继续？')) return;
+    await applyImportedData(data);
+  } catch(error) {
+    console.warn('Backup import failed', error);
+    alert('导入失败，请检查备份文件和浏览器存储空间。');
+  }
+}
+
+function legacyEntries(entries) {
+  return Object.fromEntries(Object.entries(entries || {}).filter(([id]) => !isLocalSubject(id)));
 }
 
 window.SpaceDataBridge = Object.freeze({
   async exportSnapshot({ includeImages = true } = {}) {
+    const notes = legacyEntries(state.notes);
+    const tasks = state.tasks.filter(task => !isLocalSubject(task.subject));
     const allImages = includeImages ? await idbGetAll() : {};
     const images = {};
     if (includeImages) {
-      attachmentImageKeys().forEach(key => {
+      attachmentImageKeys(tasks, notes).forEach(key => {
         if (allImages[key]) images[key] = allImages[key];
       });
     }
     return {
       data: {
-        notes: structuredClone(state.notes),
-        tasks: structuredClone(state.tasks),
-        subjectLinks: structuredClone(state.subjectLinks),
+        notes: structuredClone(notes),
+        tasks: structuredClone(tasks),
+        subjectLinks: structuredClone(legacyEntries(state.subjectLinks)),
         settings: {
           musicIds: structuredClone(state.settings.musicIds || []),
           backgrounds: structuredClone(state.settings.backgrounds || []),
@@ -1171,8 +1240,17 @@ window.SpaceDataBridge = Object.freeze({
     if (snapshot?.kind !== 'kotori-seika-space' || snapshot?.schemaVersion !== 1 || !snapshot?.data) {
       throw new Error('云端同步数据格式不受支持。');
     }
-    const data = structuredClone(snapshot.data);
-    data._images = snapshot.images || {};
+    const { notes, tasks, subjectLinks, settings } = structuredClone(snapshot.data);
+    const incomingTasks = tasks?.filter(task => !isLocalSubject(task.subject));
+    const localTasks = state.tasks.filter(task => isLocalSubject(task.subject));
+    const data = {
+      notes:legacyEntries(notes), subjectLinks:legacyEntries(subjectLinks),
+      _images:snapshot.images || {}
+    };
+    if (incomingTasks) data.tasks = [...incomingTasks, ...localTasks];
+    for (const key of ['musicIds', 'backgrounds', 'currentBg']) {
+      if (settings && Object.hasOwn(settings, key)) (data.settings ||= {})[key] = settings[key];
+    }
     await applyImportedData(data, { notify: false, sync: false });
     showToast('☁️ 已载入云端同步数据');
   }
@@ -1277,7 +1355,7 @@ function setupEvents() {
       const pv = document.getElementById('note-preview');
       if (pv) { pv.style.display = 'none'; pv.innerHTML = ''; }
       const submit = document.getElementById('note-submit-btn');
-      if (submit) submit.textContent = '发布笔记';
+      if (submit) submit.textContent = '保存笔记';
       e.target.hidden = true;
       return;
     }
@@ -1735,7 +1813,19 @@ function setupEvents() {
 async function init() {
   await idbOpen();
   imageCache = await idbGetAll();
-  load();
+  subjectLibrary = await openSubjectLibrary(idb, load());
+  applySubjectCatalog();
+  subjectEditor = setupSubjectEditor(subjectLibrary, selected => {
+    const previous = state.currentView;
+    if (selected) state.currentView = selected;
+    applySubjectCatalog();
+    if (previous !== state.currentView || previous === 'tasks') renderAll();
+    else {
+      renderSubjectNav();
+      renderSubjectView(state.currentView, false);
+    }
+    if (previous !== state.currentView) save({ sync:false });
+  }, renderLocalPage, showToast);
   await migrateImages();
   updateObsidianLink();
   applyBackground();
