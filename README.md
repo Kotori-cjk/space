@@ -112,7 +112,8 @@ npm run preview
 ```
 
 - **本机学习**：运行 `npm run preview` 后访问 `http://127.0.0.1:8000/`（也可用 `npm run preview -- --port=8001`）。登录后可从抽屉打开算法和 CS Learning，后者包含 ICS 习题、Lab 和数算课程。已有资料包中的同一路径优先显示其自定义标题。
-- **从公开 Space 进入私有学习站**：在「设置 → 私有学习入口」保存本机 Space 根地址，或填写已启用服务端登录的私有站点根地址。入口设置只记录在当前浏览器。远程访问的权限由目标站点验证，私有课程与资料仍需存放在公开构建和公开仓库之外。
+- **从公开 Space 进入 CS Learning**：侧栏默认打开本机的 `http://127.0.0.1:8000/cs-learning/`，由本机 Space 验证访问密码。如使用其他端口或已启用服务端登录的私有站点，在「设置 → 私有学习入口」保存对应的 Space 根地址。入口设置只记录在当前浏览器。
+- **洛谷学习站**：侧栏连接 [洛谷学习计划](https://kotori-cjk.github.io/luogu-journey/) 和 [洛谷 AI](https://kotori-cjk.github.io/luogu-ai-journey/)。两个站会把未登录的访客送到 Space 的 `luogu-login.html`。输入原访问密码后回到原页面，同一标签页内可通行两个站。此门禁运行在浏览器端，GitHub Pages 上的静态文件仍可公开读取。
 - **公开产物验证**：
   ```powershell
   npm run build:public

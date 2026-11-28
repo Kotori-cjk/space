@@ -1,12 +1,13 @@
 (function () {
-  const config = window.SPACE_GATE_CONFIG;
+  const luogu = document.documentElement.hasAttribute('data-luogu-login');
+  const config = luogu ? window.LUOGU_GATE_CONFIG : window.SPACE_GATE_CONFIG;
   const accessKey = 'kotori-space-gate-v1';
   const form = document.getElementById('gate-form');
   const input = document.getElementById('gate-password');
   const message = document.getElementById('gate-message');
   const params = new URLSearchParams(location.search);
 
-  if (params.get('logout') === '1') localStorage.removeItem(accessKey);
+  if (!luogu && params.get('logout') === '1') localStorage.removeItem(accessKey);
 
   function decodeBase64(value) {
     return Uint8Array.from(atob(value), character => character.charCodeAt(0));
@@ -37,11 +38,22 @@
 
   function safeNext() {
     const next = params.get('next') || '';
+    if (luogu) {
+      const fallback = new URL('/luogu-journey/', location.origin);
+      try {
+        const target = new URL(next, location.origin);
+        if (target.origin === fallback.origin && !target.username && !target.password &&
+          /^\/luogu-(?:ai-)?journey\//.test(target.pathname)) return target.href;
+      } catch (_) {}
+      return fallback.href;
+    }
     if (!next) return './';
     const rootUrl = new URL('./', location.href);
-    const targetUrl = new URL(next, rootUrl);
-    if (targetUrl.origin !== rootUrl.origin || !targetUrl.pathname.startsWith(rootUrl.pathname)) return './';
-    return targetUrl.href;
+    try {
+      const target = new URL(next, rootUrl);
+      if (target.origin === rootUrl.origin && target.pathname.startsWith(rootUrl.pathname)) return target.href;
+    } catch (_) {}
+    return './';
   }
 
   form.addEventListener('submit', async event => {
@@ -55,10 +67,14 @@
         input.select();
         return;
       }
-      localStorage.setItem(accessKey, JSON.stringify({
-        hash: config.hash,
-        expires: Date.now() + 7 * 24 * 60 * 60 * 1000
-      }));
+      if (luogu) {
+        sessionStorage.setItem('kotori-child-site-auth', 'ok');
+      } else {
+        localStorage.setItem(accessKey, JSON.stringify({
+          hash: config.hash,
+          expires: Date.now() + 7 * 24 * 60 * 60 * 1000
+        }));
+      }
       location.replace(safeNext());
     } catch (_) {
       message.textContent = '浏览器无法完成验证。';

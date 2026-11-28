@@ -6,6 +6,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const output = path.join(root, '.public-pages');
 const paths = [
   'index.html', 'gate.js', 'app.js', 'style.css', 'subjects.js', 'subjects.css',
+  'luogu-login.html', 'luogu-gate-config.js', 'login.js', 'login.css',
   'site-config.js', 'sync-config.js', 'sync/github-gist-sync.bundle.js',
   'sync/sync-core.js', 'sync/google-drive-sync.js',
   'task-notification-sw.js', 'politics-recite/index.html',

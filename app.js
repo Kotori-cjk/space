@@ -9,6 +9,7 @@ const EMOJIS = ['✿','❀','🌸','⭐','💫','🎀','🦋','🌙'];
 const CATEGORY_ICONS = { 数学:'📐', 物理:'⚛️', 计算机:'💻', AI:'🤖' };
 const DEFAULT_SUBJECT_COLORS = new Map(LEGACY_SUBJECTS.map(({ id, color }) => [id, color]));
 const SPACE_ROOT = new URL('./', import.meta.url).href;
+const LOCAL_STUDY_BASE = 'http://127.0.0.1:8000/';
 const PRIVATE_STUDY_URL_KEY = 'kotori-seika-private-study-url';
 const SYNC_PROVIDER_KEY = 'kotori-seika-sync-provider';
 let privateStudyBase = window.SPACE_PUBLIC === true ? '' : SPACE_ROOT;
@@ -588,6 +589,7 @@ function renderSubjectNav() {
   const { projectLinks } = subjectLibrary;
   if (renderedProjects !== projectLinks) {
     const privateDefaults = Array.from(nav.querySelectorAll('[data-private-project]'));
+    const studyBaseFor = link => privateStudyBase || (link?.hasAttribute('data-local-launch') ? LOCAL_STUDY_BASE : '');
     const customTargets = new Set();
     for (const link of nav.querySelectorAll('[data-default-project]')) link.hidden = projectLinks !== null;
     for (const link of nav.querySelectorAll('.custom-project-link')) link.remove();
@@ -599,22 +601,25 @@ function renderSubjectNav() {
       let path = sourceRoot ? url.pathname.slice(new URL(sourceRoot).pathname.length) : '';
       const privateDefault = privateDefaults.find(({ dataset }) =>
         path === dataset.privateProject.slice(0, -1) || path.startsWith(dataset.privateProject));
+      const studyBase = studyBaseFor(privateDefault);
       if (link.localOnly || privateDefault) {
-        if (!privateStudyBase) continue;
+        if (!studyBase) continue;
         if (privateDefault && path + '/' === privateDefault.dataset.privateProject) path += '/';
       }
       const target = (link.localOnly || privateDefault) && sourceRoot
-        ? new URL('./' + path + url.search + url.hash, privateStudyBase).href : href;
+        ? new URL('./' + path + url.search + url.hash, studyBase).href : href;
       customTargets.add(target);
       nav.insertAdjacentHTML('beforeend', `<a class="subject-btn subject-link custom-project-link"
         href="${escHtml(target)}"><span class="seika-door-icon" aria-hidden="true"></span>${escHtml(link.title)} ↗</a>`);
     }
     for (const link of privateDefaults) {
-      const target = privateStudyBase ? new URL(link.dataset.privateProject, privateStudyBase).href : '';
+      const studyBase = studyBaseFor(link);
+      const target = studyBase ? new URL(link.dataset.privateProject, studyBase).href : '';
       link.hidden = !target || customTargets.has(target);
       if (link.hidden) link.removeAttribute('href');
       else link.href = target;
     }
+    for (const link of nav.querySelectorAll('[data-luogu-project]')) link.hidden = customTargets.has(link.href);
     renderedProjects = projectLinks;
   }
   document.querySelectorAll('.subject-btn[data-subject]').forEach(btn => {
@@ -1239,7 +1244,7 @@ function savePrivateStudyBase() {
   input.value = base;
   renderedProjects = undefined;
   renderSubjectNav();
-  showToast(base ? '已保存私有学习入口' : '已隐藏私有学习入口');
+  showToast(base ? '已保存私有学习入口' : 'CS Learning 已恢复为本机入口');
 }
 function closeSettings() {
   state.settings.obsidianVault = document.getElementById('set-obsidian-vault').value.trim()||'Obsidian Vault';
