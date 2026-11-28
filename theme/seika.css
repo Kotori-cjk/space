@@ -19,8 +19,8 @@
   --seika-banner-mid: #eef6eeb0;
   --seika-shadow: 0 8px 28px #4137310d;
   --shadow-hover: 0 15px 36px #41373117;
-  --seika-heading: Georgia,"Noto Serif SC","Songti SC",SimSun,serif;
-  --bg:var(--seika-bg);--card:var(--seika-card);--card-solid:var(--seika-card);--paper:var(--seika-card);--text:var(--seika-text);--ink:var(--seika-text);--text-light:var(--seika-muted);--muted:var(--seika-muted);--border:var(--seika-line);--line:var(--seika-line);--primary:var(--seika-accent);--primary-dark:#226750;--primary-light:#a8d8bf;--secondary:var(--seika-blue);--secondary-light:#b9deed;--accent:var(--seika-accent);--accent2:var(--seika-blue);--soft:var(--seika-soft);--rose:var(--seika-tint);--rose-dark:var(--seika-accent);--sage:var(--seika-accent);--blue:var(--seika-blue);--blue-dark:var(--seika-blue);--mint:#91c9b0;--shadow:var(--seika-shadow);--radius:20px;--radius-sm:12px;--radius-xs:9px;--sidebar-w:248px;--header-h:76px;--font-body:"Segoe UI","Microsoft YaHei","Noto Sans SC",sans-serif;--font-cute:var(--font-body);--font-note:var(--font-body);--font-note-heading:var(--font-body);--title:var(--font-body);--cute:var(--font-body);--body:var(--font-body);--c-math:var(--seika-accent);--c-physics:var(--seika-blue);--c-cs:var(--seika-accent);--c-ai:var(--seika-blue);--c-algo:var(--seika-accent);
+  --seika-heading: "Seika Hand","Cottage Nunito","Noto Sans SC","Microsoft YaHei",sans-serif;
+  --bg:var(--seika-bg);--card:var(--seika-card);--card-solid:var(--seika-card);--paper:var(--seika-card);--text:var(--seika-text);--ink:var(--seika-text);--text-light:var(--seika-muted);--muted:var(--seika-muted);--border:var(--seika-line);--line:var(--seika-line);--primary:var(--seika-accent);--primary-dark:#226750;--primary-light:#a8d8bf;--secondary:var(--seika-blue);--secondary-light:#b9deed;--accent:var(--seika-accent);--accent2:var(--seika-blue);--soft:var(--seika-soft);--rose:var(--seika-tint);--rose-dark:var(--seika-accent);--sage:var(--seika-accent);--blue:var(--seika-blue);--blue-dark:var(--seika-blue);--mint:#91c9b0;--shadow:var(--seika-shadow);--radius:20px;--radius-sm:12px;--radius-xs:9px;--sidebar-w:248px;--header-h:76px;--font-body:"Seika Hand","Cottage Nunito","Microsoft YaHei","Noto Sans SC",sans-serif;--font-cute:var(--font-body);--font-note:var(--font-body);--font-note-heading:var(--font-body);--title:var(--font-body);--cute:var(--font-body);--body:var(--font-body);--c-math:var(--seika-accent);--c-physics:var(--seika-blue);--c-cs:var(--seika-accent);--c-ai:var(--seika-blue);--c-algo:var(--seika-accent);
 }
 html[data-seika-theme="dark"] {
   color-scheme: dark;
@@ -504,6 +504,43 @@ html[data-seika-motion="off"] .seika-document .post-card:hover { transform: none
   .seika-study-space #sidebar .save-indicator { margin: 0 15px; }
 }
 @font-face {
+  font-family: "Seika Hand";
+  src: url("room-assets/SeikaHand-Light-more-1.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+  unicode-range: U+4E01-61AE;
+}
+@font-face {
+  font-family: "Seika Hand";
+  src: url("room-assets/SeikaHand-Light-more-2.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+  unicode-range: U+61B2-76C5;
+}
+@font-face {
+  font-family: "Seika Hand";
+  src: url("room-assets/SeikaHand-Light-more-3.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+  unicode-range: U+76C6-8B0C;
+}
+@font-face {
+  font-family: "Seika Hand";
+  src: url("room-assets/SeikaHand-Light-more-4.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+  unicode-range: U+8B0E-9FA0;
+}
+@font-face {
+  font-family: "Seika Hand";
+  src: url("room-assets/SeikaHand-Light-core.woff2") format("woff2");
+  font-weight: 300;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00A0-024F, U+0370-03FF, U+2000-206F, U+2070-209F,
+    U+2190-22FF, U+2500-26FF, U+270E-270F, U+2713, U+2715, U+273F-2740,
+    U+3000-31FF, U+4E00-9FFF, U+FF00-FFEF;
+}
+@font-face {
   font-family: "Cottage Nunito";
   src: url("room-assets/Nunito-Variable.woff2") format("woff2");
   font-weight: 200 1000;
@@ -518,9 +555,9 @@ html[data-seika-motion="off"] .seika-document .post-card:hover { transform: none
 
 /* The wall image meets the work surface behind the live HTML controls. */
 html body:is(.seika-study-space, .seika-project-room) {
-  --font-body: "Cottage Nunito", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-body: "Seika Hand", "Cottage Nunito", "Microsoft YaHei", "Noto Sans SC", sans-serif;
   --font-note: var(--font-body);
-  --seika-heading: "Cottage Nunito", "Cottage KuaiLe", "Microsoft YaHei", sans-serif;
+  --seika-heading: "Seika Hand", "Cottage Nunito", "Microsoft YaHei", "Noto Sans SC", sans-serif;
   --seika-study-art: url("room-assets/study-room.webp");
   --seika-door-art: url("room-assets/door.webp");
   --seika-wood: #c8a477;

@@ -22,8 +22,8 @@
     --radius: 18px;
     --radius-sm: 12px;
     --radius-xs: 8px;
-    --font-cute: "WanYuanTi", "ZCOOL KuaiLe", cursive;
-    --font-body: "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-cute: "Seika Hand", "Noto Sans SC", cursive, sans-serif;
+    --font-body: "Seika Hand", "Microsoft YaHei", "Noto Sans SC", -apple-system, BlinkMacSystemFont, sans-serif;
     --sidebar-w: 300px;
     --header-h: 74px;
 }

@@ -9,10 +9,10 @@
     --shadow: 0 14px 36px rgba(65,55,49,0.10);
     --shadow-hover: 0 22px 46px rgba(65,55,49,0.16);
     --radius: 18px; --radius-sm: 12px; --radius-xs: 8px;
-    --font-cute: 'WanYuanTi','ZCOOL KuaiLe',cursive;
-    --font-body: 'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;
-    --font-note: Consolas,'Noto Sans SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,sans-serif;
-    --font-note-heading: Consolas,'WanYuanTi','ZCOOL KuaiLe','Noto Sans SC',cursive;
+    --font-cute: 'Seika Hand','Noto Sans SC',cursive,sans-serif;
+    --font-body: 'Seika Hand','Microsoft YaHei','Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;
+    --font-note: var(--font-body);
+    --font-note-heading: var(--font-body);
     --sidebar-w: 260px; --header-h: 72px;
     /* subject colors */
     --c-math: #FF6B9D; --c-physics: #6C9FFF; --c-cs: #7DCEA0; --c-ai: #B4A0E5; --c-algo: #FFB86C;

@@ -18,8 +18,12 @@ const paths = [
   'theme/room-assets/computer-room.webp', 'theme/room-assets/desk-wood.webp',
   'theme/room-assets/door.webp', 'theme/room-assets/study-room-reader.webp',
   'theme/room-assets/study-room.webp', 'theme/room-assets/Nunito-Variable.woff2',
-  'theme/room-assets/ZCOOLKuaiLe-Regular.woff2', 'theme/room-assets/OFL-Nunito.txt',
-  'theme/room-assets/OFL-ZCOOL-KuaiLe.txt', 'theme/vendor/ripplet-1.1.0/ripplet.js',
+  'theme/room-assets/ZCOOLKuaiLe-Regular.woff2', 'theme/room-assets/SeikaHand-Light-core.woff2',
+  'theme/room-assets/SeikaHand-Light-more-1.woff2', 'theme/room-assets/SeikaHand-Light-more-2.woff2',
+  'theme/room-assets/SeikaHand-Light-more-3.woff2', 'theme/room-assets/SeikaHand-Light-more-4.woff2',
+  'theme/room-assets/OFL-Nunito.txt',
+  'theme/room-assets/OFL-ZCOOL-KuaiLe.txt', 'theme/room-assets/OFL-Seika-Hand.txt',
+  'theme/vendor/ripplet-1.1.0/ripplet.js',
   'theme/vendor/ripplet-1.1.0/LICENSE', 'theme/vendor/liquid-ripple-0.1.1/index.js',
   'theme/vendor/liquid-ripple-0.1.1/chunk-5DBRBCS5.js', 'theme/vendor/liquid-ripple-0.1.1/LICENSE'
 ];

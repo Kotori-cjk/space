@@ -24,7 +24,7 @@
   color: var(--ink);
   background: #e8cc9d;
   min-width: 0;
-  font-family: "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  font-family: var(--font-body, "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif);
 }
 
 [data-seika-theme="dark"] .folio-room {
@@ -73,7 +73,7 @@
   top: clamp(28px, 8vw, 108px);
   margin: 0;
   color: #3d5446;
-  font: 660 clamp(22px, 5.2vw, 58px)/1.2 "Songti SC", SimSun, serif;
+  font: 660 clamp(22px, 5.2vw, 58px)/1.2 var(--seika-heading, "Songti SC", SimSun, serif);
   letter-spacing: .13em;
   text-shadow: 0 1px 7px #fff7de;
   pointer-events: none;
@@ -84,7 +84,7 @@
   display: block;
   margin-top: 10px;
   color: inherit;
-  font: 500 clamp(10px, 1.5vw, 14px)/1.5 "Microsoft YaHei", system-ui, sans-serif;
+  font: 500 clamp(10px, 1.5vw, 14px)/1.5 var(--font-body, "Microsoft YaHei", system-ui, sans-serif);
   letter-spacing: .13em;
 }
 .folio-room[data-open] .folio-room-title small { visibility: hidden; }
@@ -110,7 +110,7 @@
 }
 .folio-lamp span {
   transform: translateY(63%);
-  font: 600 11px/1.5 "Microsoft YaHei", system-ui, sans-serif;
+  font: 600 11px/1.5 var(--font-body, "Microsoft YaHei", system-ui, sans-serif);
   padding: 1px 7px;
   border: 1px solid #86735158;
   border-radius: 12px;
@@ -168,7 +168,7 @@ body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
   margin: 1px 2px 8px;
   color: #fff0d4;
   text-align: center;
-  font: 650 13px/1.7 "Songti SC", SimSun, serif;
+  font: 650 13px/1.7 var(--seika-heading, "Songti SC", SimSun, serif);
   letter-spacing: .15em;
   text-shadow: 0 1px 2px #3d251a83;
 }
@@ -196,7 +196,7 @@ body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
   cursor: pointer;
   text-align: center;
   text-decoration: none;
-  font: 650 clamp(10px, 1.65vw, 14px)/1.3 "Microsoft YaHei", system-ui, sans-serif;
+  font: 650 clamp(10px, 1.65vw, 14px)/1.3 var(--font-body, "Microsoft YaHei", system-ui, sans-serif);
   transition: transform .31s cubic-bezier(.22,.8,.26,1), box-shadow .31s, filter .2s;
 }
 
@@ -346,7 +346,7 @@ body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
   border-radius: 4px;
   color: #584123;
   background: #fff3dce8;
-  font: 600 clamp(10px, 1.25vw, 12px)/1.5 "Microsoft YaHei", system-ui, sans-serif;
+  font: 600 clamp(10px, 1.25vw, 12px)/1.5 var(--font-body, "Microsoft YaHei", system-ui, sans-serif);
 }
 .folio-jacket:is(:hover, :focus-visible) .folio-jacket-label,
 .folio-shut-album:is(:hover, :focus-visible) { color: #fff4db; background: #62472e; }
@@ -594,12 +594,12 @@ body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
 }
 .folio-live .folio-book [data-folio-task-page] .task-workspace-heading h2 {
   color: var(--ink);
-  font: 700 clamp(21px, 2.8vw, 32px)/1.18 "Songti SC", SimSun, serif;
+  font: 700 clamp(21px, 2.8vw, 32px)/1.18 var(--seika-heading, "Songti SC", SimSun, serif);
   text-shadow: none;
 }
 .folio-live .folio-book [data-folio-task-page="detail"] .task-workspace-heading h2 {
   color: var(--muted);
-  font: 650 13px/1.4 "Microsoft YaHei", system-ui, sans-serif;
+  font: 650 13px/1.4 var(--font-body, "Microsoft YaHei", system-ui, sans-serif);
 }
 .folio-book .task-browser { min-width: 0; gap: 17px; }
 .folio-live .folio-book :is(.task-browser-content, .task-browser-sidebar) {
@@ -634,11 +634,11 @@ body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
 .folio-book .task-card.folio-task-active .task-content { min-width: 0; }
 .folio-book .task-card.folio-task-active .task-title {
   color: var(--ink);
-  font: 700 clamp(19px, 2.8vw, 30px)/1.28 "Songti SC", SimSun, serif;
+  font: 700 clamp(19px, 2.8vw, 30px)/1.28 var(--seika-heading, "Songti SC", SimSun, serif);
 }
 .folio-book .task-card.folio-task-active .task-detail {
   color: var(--ink);
-  font: 400 clamp(14px, 1.2vw, 17px)/1.75 "Microsoft YaHei", system-ui, sans-serif;
+  font: 400 clamp(14px, 1.2vw, 17px)/1.75 var(--font-body, "Microsoft YaHei", system-ui, sans-serif);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -728,7 +728,7 @@ body.folio-live #header.folio-toolbar {
   border: 0;
   border-bottom: 1px solid #7c9268;
   box-shadow: 0 4px 17px #152b2960, inset 0 1px 0 #f4e0a848;
-  font-family: "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  font-family: var(--font-body, "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif);
 }
 .folio-toolbar::before,
 .folio-toolbar::after {
@@ -763,7 +763,7 @@ body .folio-toolbar .site-title,
 body.folio-live #header.folio-toolbar .site-title {
   margin: 0;
   color: #faf1d7;
-  font: 600 clamp(17px, 2.3vw, 26px)/1.12 Georgia, "Songti SC", SimSun, serif;
+  font: 600 clamp(17px, 2.3vw, 26px)/1.12 var(--seika-heading, Georgia, "Songti SC", SimSun, serif);
   text-shadow: 0 1px 8px #f4d78d36;
   letter-spacing: .015em;
 }
@@ -793,7 +793,7 @@ body.folio-live #header.folio-toolbar :is(.header-btn, .seika-sidebar-control) {
   color: #fff4da;
   background: #13272266;
   box-shadow: inset 0 1px #f4e3b91a;
-  font: 600 12px/1.35 "Microsoft YaHei", system-ui, sans-serif;
+  font: 600 12px/1.35 var(--font-body, "Microsoft YaHei", system-ui, sans-serif);
   white-space: nowrap;
   cursor: pointer;
 }
