@@ -133,15 +133,15 @@
                         <strong id="sync-account">尚未连接 GitHub Gist</strong>
                         <p id="sync-status">正在初始化同步功能…</p>
                         <div id="sync-token-row" class="sync-token-row">
-                            <input id="sync-token-input" type="password" autocomplete="off" placeholder="粘贴有 Gist 写入权限的 GitHub Token">
+                            <input id="sync-token-input" type="password" autocomplete="off" aria-label="GitHub Gist 令牌" placeholder="粘贴有 Gists 写入权限的令牌">
                         </div>
                         <div class="data-actions sync-actions">
+                            <button id="sync-replace-btn" class="btn btn-accent" type="button" hidden>更换令牌</button>
                             <button id="sync-connect-btn" class="btn btn-primary" type="button">连接 GitHub Gist</button>
                             <button id="sync-now-btn" class="btn btn-secondary" type="button" hidden>立即同步</button>
                             <button id="sync-pull-btn" class="btn btn-secondary" type="button" hidden>从云端下载数据</button>
                             <button id="sync-push-btn" class="btn btn-secondary" type="button" hidden>上传本机数据到云端</button>
                             <button id="sync-pause-btn" class="btn btn-secondary" type="button" hidden>暂停同步</button>
-                            <button id="sync-replace-btn" class="btn btn-secondary" type="button" hidden>更换令牌</button>
                         </div>
                         <div id="sync-confirm" class="sync-confirm" hidden>
                             <p id="sync-confirm-message"></p>
@@ -172,7 +172,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="sync-config.js"></script>
-    <script src="sync/github-gist-sync.bundle.js?v=gist-access-1"></script>
+    <script src="sync/github-gist-sync.bundle.js?v=gist-access-2"></script>
     <button class="bg-view-exit" id="bg-view-exit">🖼️ 点击或按 Esc 退出观赏</button>
     <div class="save-toast" id="save-toast"></div>
     <script type="module" src="app.js?v=album-recovery-1"></script>

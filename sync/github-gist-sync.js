@@ -84,7 +84,7 @@ function render() {
   ui.tokenRow.hidden = Boolean(account) && !replacingToken;
   ui.connect.hidden = !configured() || connected;
   ui.connect.disabled = busy;
-  ui.connect.textContent = isPaused() && !replacingToken ? '恢复同步' : '连接 GitHub Gist';
+  ui.connect.textContent = replacingToken ? '保存新令牌并连接' : isPaused() ? '恢复同步' : '连接 GitHub Gist';
   ui.sync.hidden = !connected;
   ui.pull.hidden = !connected;
   ui.push.hidden = !connected;
