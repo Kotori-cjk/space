@@ -16,6 +16,7 @@
   --leaf-height: clamp(475px, calc(var(--screen-height, 1000px) * .58), 700px);
   --leaf-limit: clamp(650px, calc(var(--screen-height, 1000px) - 67px), 1040px);
   --shelf-width: clamp(170px, 17vw, 238px);
+  --shelf-inset: clamp(8px, 1.2vw, 19px);
   --drawer-travel: 27px;
   --desk-line: calc(var(--art-height) * .798);
   --desk-inset: clamp(14px, 2.2vw, 35px);
@@ -131,7 +132,7 @@ body .folio-room .folio-grid {
   box-sizing: border-box;
   max-width: none;
   min-height: calc(var(--desk-line) + 300px);
-  padding: 0 clamp(8px, 1.2vw, 19px) 30px;
+  padding: 0 var(--shelf-inset) 30px;
   gap: clamp(15px, 2.2vw, 34px);
   margin: 0;
 }
@@ -530,15 +531,16 @@ body.folio-live .folio-room .folio-grid {
 .folio-live #header { position: sticky; top: 0; }
 .folio-live .seika-banner { display: none; }
 .folio-live.bg-viewing .folio-room { display: none; }
-body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
-  position: sticky;
-  align-self: start;
-  inset: var(--rail-top, 76px) auto auto;
-  margin-top: 15px;
-  overflow: visible;
-  height: auto;
-}
 @media (min-width: 801px) {
+  body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
+    position: fixed;
+    inset: var(--rail-top, 76px) auto auto var(--shelf-inset);
+    width: var(--shelf-width);
+    height: auto;
+    max-height: calc(var(--screen-height, 100dvh) - var(--rail-top, 76px) - 15px);
+    overflow: auto;
+    scrollbar-width: thin;
+  }
   body.folio-live.sidebar-collapsed .folio-grid #sidebar.folio-shelf { display: none; }
 }
 .folio-live .folio-grid #main-content { margin: 0; }
@@ -680,12 +682,14 @@ body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
 @media (max-width: 800px) {
   body .folio-room .folio-grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
   body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
+    --drawer-top: calc(var(--rail-top, 82px) - 15px);
     position: fixed;
     z-index: 301;
-    inset: 0 auto 0 0;
+    inset: var(--drawer-top) auto auto 0;
     width: min(245px, calc(100% - 42px));
-    height: auto;
+    height: calc(100dvh - var(--drawer-top));
     overflow: auto;
+    overscroll-behavior-y: contain;
     margin: 0;
     padding: 56px 12px 20px;
   }
@@ -885,11 +889,6 @@ body.folio-live #header.folio-toolbar :is(.header-btn, .seika-sidebar-control):i
 @media (max-width: 820px) {
   .folio-strand { scale: .6; }
   .folio-toolbar .subtitle { letter-spacing: 0; }
-}
-@media (max-width: 800px) {
-  body.folio-live.seika-study-space .folio-grid #sidebar.folio-shelf {
-    inset-block-start: calc(var(--rail-top) - 15px);
-  }
 }
 @media (max-width: 600px) {
   body .folio-toolbar,
