@@ -401,8 +401,8 @@ function compressImage(file, maxW, q) {
     }; img.src=e.target.result; }; reader.readAsDataURL(file);
   });
 }
-async function saveImageToIDB(dataUrl) {
-  const key = 'img_' + uid();
+async function saveImageToIDB(dataUrl, prefix = 'img_') {
+  const key = prefix + uid();
   await idbPut(key, dataUrl);
   imageCache[key] = dataUrl;
   return key;
@@ -1075,22 +1075,57 @@ function renderTaskGroups(groups) {
 }
 
 /* ===== Background ===== */
+function backgroundSource(ref) {
+  if (typeof ref !== 'string') return '';
+  return imageCache[ref] || (/^(?:data:image\/|https?:\/\/)/i.test(ref) ? ref : '');
+}
 function applyBackground() {
   const bg = document.getElementById('bg-layer');
-  const idx = state.settings.currentBg, bgs = state.settings.backgrounds;
-  if (idx>=0 && bgs[idx]) {
-    const data = imageCache[bgs[idx]] || bgs[idx]; // key from cache, or legacy raw data
-    bg.style.backgroundImage=`url(${data})`; bg.classList.add('has-bg');
-  } else { bg.style.backgroundImage=''; bg.classList.remove('has-bg'); }
-  document.getElementById('bg-view-btn').hidden = !bg.classList.contains('has-bg');
+  const src = backgroundSource(state.settings.backgrounds[state.settings.currentBg]);
+  bg.style.backgroundImage = src ? `url(${JSON.stringify(src)})` : '';
+  bg.classList.toggle('has-bg', Boolean(src));
+  document.getElementById('bg-view-btn').hidden = !src;
+}
+function recoverableBackgrounds() {
+  const used = attachmentImageKeys(state.tasks, state.notes);
+  state.settings.backgrounds.forEach(key => used.add(key));
+  return Object.entries(imageCache).filter(([key, src]) =>
+    /^(?:bg|img)_/.test(key) && !used.has(key) && typeof src === 'string' && src.startsWith('data:image/'));
+}
+function renderBackgroundRecovery() {
+  const recovery = document.getElementById('bg-recovery');
+  const images = recoverableBackgrounds();
+  recovery.hidden = !images.length;
+  const list = document.getElementById('bg-recovery-list');
+  list.replaceChildren();
+  if (!recovery.open) return;
+  for (const [key, src] of images) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'bg-preview-item';
+    button.dataset.recoverBg = key;
+    const image = new Image();
+    image.loading = 'lazy';
+    image.alt = `恢复图片 ${list.childElementCount + 1}`;
+    image.src = src;
+    button.append(image);
+    list.append(button);
+  }
 }
 function renderBgPreviews() {
   const el = document.getElementById('bg-preview-list');
   el.innerHTML = state.settings.backgrounds.map((key,i) => {
-    const src = imageCache[key] || key;
+    const src = backgroundSource(key);
+    const preview = src ? `<img src="${escHtml(src)}" alt="背景图片 ${i + 1}">` : '<span>图片缺失</span>';
     return `<div class="bg-preview-item${state.settings.currentBg===i?' active':''}" data-bg-select="${i}">
-      <img src="${src}" alt="bg"><button class="bg-preview-delete" data-bg-del="${i}">✕</button></div>`;
+      ${preview}<button class="bg-preview-delete" data-bg-del="${i}">✕</button></div>`;
   }).join('');
+  renderBackgroundRecovery();
+}
+function saveBackgrounds() {
+  save({ sync: false });
+  applyBackground();
+  renderBgPreviews();
 }
 
 /* ===== Music ===== */
@@ -1262,11 +1297,7 @@ window.SpaceDataBridge = Object.freeze({
         notes: structuredClone(notes),
         tasks: structuredClone(tasks),
         subjectLinks: structuredClone(legacyEntries(state.subjectLinks)),
-        settings: {
-          musicIds: structuredClone(state.settings.musicIds || []),
-          backgrounds: structuredClone(state.settings.backgrounds || []),
-          currentBg: Number.isInteger(state.settings.currentBg) ? state.settings.currentBg : -1
-        }
+        settings: { musicIds: structuredClone(state.settings.musicIds || []) }
       },
       images
     };
@@ -1283,9 +1314,7 @@ window.SpaceDataBridge = Object.freeze({
       _images:snapshot.images || {}
     };
     if (incomingTasks) data.tasks = [...incomingTasks, ...localTasks];
-    for (const key of ['musicIds', 'backgrounds', 'currentBg']) {
-      if (settings && Object.hasOwn(settings, key)) (data.settings ||= {})[key] = settings[key];
-    }
+    if (Array.isArray(settings?.musicIds)) data.settings = { musicIds: settings.musicIds };
     await applyImportedData(data, { notify: false, sync: false });
     showToast('☁️ 已载入云端同步数据');
   }
@@ -1783,17 +1812,19 @@ function setupEvents() {
     Array.from(e.target.files).forEach(file => {
       const reader = new FileReader();
       reader.onload = async ev => {
-        const key = await saveImageToIDB(ev.target.result);
+        const key = await saveImageToIDB(ev.target.result, 'bg_');
         state.settings.backgrounds.push(key);
-        if (state.settings.currentBg<0) state.settings.currentBg=0;
-        save(); applyBackground(); renderBgPreviews();
+        if (!backgroundSource(state.settings.backgrounds[state.settings.currentBg])) {
+          state.settings.currentBg = state.settings.backgrounds.length - 1;
+        }
+        saveBackgrounds();
       }; reader.readAsDataURL(file);
     }); e.target.value='';
   });
   document.getElementById('bg-preview-list').addEventListener('click', e => {
     const sel = e.target.closest('[data-bg-select]');
     if (sel && !e.target.closest('.bg-preview-delete')) {
-      state.settings.currentBg=+sel.dataset.bgSelect; save(); applyBackground(); renderBgPreviews(); return;
+      state.settings.currentBg=+sel.dataset.bgSelect; saveBackgrounds(); return;
     }
     const del = e.target.closest('[data-bg-del]');
     if (del) {
@@ -1802,12 +1833,20 @@ function setupEvents() {
       if (key && !key.startsWith('data:')) idbDel(key).catch(()=>{});
       delete imageCache[key];
       state.settings.backgrounds.splice(i,1);
-      if(state.settings.currentBg>=state.settings.backgrounds.length) state.settings.currentBg=state.settings.backgrounds.length-1;
-      save(); applyBackground(); renderBgPreviews();
+      if (i < state.settings.currentBg) state.settings.currentBg--;
+      else if (i === state.settings.currentBg) state.settings.currentBg = Math.min(i, state.settings.backgrounds.length - 1);
+      saveBackgrounds();
     }
   });
   document.getElementById('bg-reset-btn').addEventListener('click', () => {
-    state.settings.currentBg=-1; save(); applyBackground(); renderBgPreviews();
+    state.settings.currentBg=-1; saveBackgrounds();
+  });
+  document.getElementById('bg-recovery').addEventListener('toggle', renderBackgroundRecovery);
+  document.getElementById('bg-recovery-list').addEventListener('click', e => {
+    const key = e.target.closest('[data-recover-bg]')?.dataset.recoverBg;
+    if (!key || state.settings.backgrounds.includes(key) || !imageCache[key]) return;
+    state.settings.currentBg = state.settings.backgrounds.push(key) - 1;
+    saveBackgrounds();
   });
 
   // Music
@@ -1842,7 +1881,8 @@ function setupEvents() {
   });
   document.getElementById('bg-view-btn').addEventListener('click', () => {
     closeSettings();
-    document.body.classList.add('bg-viewing');
+    const requested = new CustomEvent('seika:show-album', { cancelable: true });
+    if (document.dispatchEvent(requested)) document.body.classList.add('bg-viewing');
   });
   document.getElementById('bg-view-exit').addEventListener('click', () => {
     document.body.classList.remove('bg-viewing');

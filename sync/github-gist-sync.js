@@ -7,12 +7,14 @@ const GIST_ID_KEY = 'kotori-seika-gist-id-v1';
 const PAUSED_KEY = 'kotori-seika-gist-paused-v1';
 const SYNC_DELAY = 10000;
 const IMAGE_FILE_LIMIT = 700 * 1024;
+const GIST_PERMISSION_HELP = 'Fine-grained 令牌需要账户权限 Gists → Read and write，或使用仅勾选 gist 的 Classic 令牌。';
 
 let account = null;
 let busy = false;
 let timer;
 let poller;
 let pendingAction = null;
+let replacingToken = false;
 
 const ui = {};
 
@@ -48,6 +50,9 @@ function setStatus(message, kind = '') {
 }
 
 function errorText(error, fallback) {
+  if (error?.code === 403 && /Resource not accessible by personal access token/i.test(error.message)) {
+    return `GitHub 拒绝访问 Gist。${GIST_PERMISSION_HELP}`;
+  }
   const details = [error?.code && `[${error.code}]`, error?.message].filter(Boolean).join(' · ');
   return details ? details.slice(0, 220) : fallback;
 }
@@ -74,19 +79,24 @@ function setSynced(message, updatedAt, snapshot) {
 
 function render() {
   if (!ui.connect) return;
-  const connected = Boolean(account) && !isPaused();
+  const connected = Boolean(account) && !isPaused() && !replacingToken;
   ui.account.textContent = account ? `GitHub：${account.login}` : '尚未连接 GitHub Gist';
-  ui.tokenRow.hidden = Boolean(account);
+  ui.tokenRow.hidden = Boolean(account) && !replacingToken;
   ui.connect.hidden = !configured() || connected;
-  ui.connect.textContent = account && isPaused() ? '恢复同步' : '连接 GitHub Gist';
+  ui.connect.disabled = busy;
+  ui.connect.textContent = isPaused() && !replacingToken ? '恢复同步' : '连接 GitHub Gist';
   ui.sync.hidden = !connected;
   ui.pull.hidden = !connected;
   ui.push.hidden = !connected;
   ui.pause.hidden = !connected;
+  ui.replace.hidden = !token() || replacingToken;
+  ui.replace.disabled = busy || Boolean(pendingAction);
   if (!configured()) setStatus('GitHub Gist 同步尚未完成配置，本地保存不受影响。');
-  else if (isPaused()) setStatus('GitHub Gist 同步已暂停。');
-  else if (!account) setStatus('粘贴仅含 gist 权限的 GitHub Token 后即可同步。');
-  else if (!busy && !pendingAction && !ui.status.textContent) setStatus('已连接，等待同步。');
+  else if (!busy && !pendingAction && !ui.status.textContent) {
+    if (replacingToken || (!account && !isPaused())) setStatus(GIST_PERMISSION_HELP);
+    else if (isPaused()) setStatus('GitHub Gist 同步已暂停。');
+    else setStatus('已连接，等待同步。');
+  }
 }
 
 async function github(path, options = {}, accessToken = token()) {
@@ -164,7 +174,8 @@ function storedGistId() {
 }
 
 function isSyncGist(gist) {
-  return gist?.description === config().githubGistDescription && Boolean(gist.files?.[config().githubGistFileName]);
+  return gist?.owner?.id === account?.id && gist?.description === config().githubGistDescription &&
+    Boolean(gist.files?.[config().githubGistFileName]);
 }
 
 async function getGist(id) {
@@ -185,8 +196,11 @@ async function findGist() {
   }
   const response = await github('/gists?per_page=100');
   const gists = await response.json();
-  const gist = gists.find(isSyncGist) || null;
-  if (gist) localStorage.setItem(GIST_ID_KEY, gist.id);
+  const match = gists.find(isSyncGist);
+  if (!match) return null;
+  const gist = await getGist(match.id);
+  if (!isSyncGist(gist)) throw new Error('同步 Gist 已变更，请重试。');
+  localStorage.setItem(GIST_ID_KEY, gist.id);
   return gist;
 }
 
@@ -242,7 +256,7 @@ async function applyRemote(remote) {
 }
 
 async function syncNow() {
-  if (busy || pendingAction || isPaused() || !account || !navigator.onLine) return;
+  if (busy || pendingAction || isPaused() || replacingToken || !account || !navigator.onLine) return;
   busy = true;
   render();
   setStatus('正在检查 GitHub Gist…');
@@ -342,32 +356,53 @@ async function confirmAction() {
 }
 
 function schedule() {
-  if (!account || isPaused() || busy || pendingAction) return;
+  if (!account || isPaused() || replacingToken || busy || pendingAction) return;
   clearTimeout(timer);
   timer = setTimeout(syncNow, SYNC_DELAY);
 }
 
 async function connect() {
-  localStorage.removeItem(PAUSED_KEY);
-  const accessToken = ui.tokenInput.value.trim() || token();
+  if (busy || pendingAction) return;
+  const accessToken = ui.tokenInput.value.trim() || (replacingToken ? '' : token());
   if (!accessToken) {
-    setStatus('请粘贴仅含 gist 权限的 GitHub Token。', 'error');
+    setStatus(`请粘贴有 Gist 写入权限的令牌。${GIST_PERMISSION_HELP}`, 'error');
     return;
   }
   busy = true;
+  render();
   let connected = false;
   setStatus('正在验证 GitHub Token…');
   try {
     const response = await github('/user', {}, accessToken);
-    account = await response.json();
+    const scopes = response.headers.get('X-OAuth-Scopes');
+    if (accessToken.startsWith('ghp_') && scopes !== null && !scopes.split(',').some(scope => scope.trim() === 'gist')) {
+      throw new Error(`令牌缺少 gist 权限。${GIST_PERMISSION_HELP}`);
+    }
+    const nextAccount = await response.json();
+    if (account && account.id !== nextAccount.id) {
+      localStorage.removeItem(META_KEY);
+      localStorage.removeItem(GIST_ID_KEY);
+    }
+    account = nextAccount;
     localStorage.setItem(TOKEN_KEY, accessToken);
+    localStorage.removeItem(PAUSED_KEY);
     ui.tokenInput.value = '';
+    replacingToken = false;
     connected = true;
   } catch (error) {
     console.error(error);
     setStatus(`GitHub Token 无法使用：${errorText(error, '请重新创建。')}`, 'error');
   } finally { busy = false; render(); }
   if (connected) await syncNow();
+}
+
+function replaceToken() {
+  if (busy || pendingAction) return;
+  replacingToken = true;
+  clearTimeout(timer);
+  setStatus('');
+  render();
+  ui.tokenInput.focus();
 }
 
 function pause() {
@@ -388,6 +423,7 @@ async function init() {
     pull: document.getElementById('sync-pull-btn'),
     push: document.getElementById('sync-push-btn'),
     pause: document.getElementById('sync-pause-btn'),
+    replace: document.getElementById('sync-replace-btn'),
     confirm: document.getElementById('sync-confirm'),
     confirmMessage: document.getElementById('sync-confirm-message'),
     confirmYes: document.getElementById('sync-confirm-yes'),
@@ -399,13 +435,17 @@ async function init() {
   ui.pull.addEventListener('click', downloadRemote);
   ui.push.addEventListener('click', uploadLocal);
   ui.pause.addEventListener('click', pause);
+  ui.replace.addEventListener('click', replaceToken);
   ui.confirmYes.addEventListener('click', confirmAction);
-  ui.confirmNo.addEventListener('click', () => clearConfirmation('已取消，本机和云端数据均未修改。'));
+  ui.confirmNo.addEventListener('click', () => {
+    clearConfirmation('已取消，本机和云端数据均未修改。');
+    render();
+  });
   window.addEventListener('online', syncNow);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) syncNow(); });
   poller = window.setInterval(syncNow, 60000);
   setStatus('');
-  if (token()) await connect();
+  if (token() && !isPaused()) await connect();
   else render();
 }
 

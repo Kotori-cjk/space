@@ -22,7 +22,7 @@
 
 `Colorful Seika` 是一座独立运行的个人学习书房，以「**林间互动书桌**」为核心意象重构阅读与记录体验：木纹抽屉收纳着各门学科，桌前羊皮手账由真实翻页引擎驱动，窗畔台灯掌管白昼与夜读切换，合上抽屉后还可在桌面摊开精装跨页影集。
 
-数据采用**本地优先（Local-first）**架构——学科书架、多页读本与附件安放于本机浏览器的 `IndexedDB`，既可经 [HomePageEditor](https://github.com/Kotori-cjk/HomePageEditor) 编排迁移，也可通过 GitHub Secret Gist 与 JSON 备份在多设备间从容流转。
+学科书架、多页读本与附件保存在本机浏览器的 `IndexedDB`，可经 [HomePageEditor](https://github.com/Kotori-cjk/HomePageEditor) 编排，随 JSON 备份一起迁移。原有学科的笔记与任务可选择通过 GitHub Secret Gist 同步。
 
 ---
 
@@ -70,7 +70,7 @@
 
 - **本地优先学科书架**：内置数理、计算机与 AI 学科分组；笔记支持 Markdown、KaTeX 公式、剪贴板贴图与 Obsidian / NotebookLM 快捷跳转；新版学科页面与附件全部保存在浏览器 `IndexedDB`。
 - **每日任务与提醒**：支持按日期或学科分类索引待办、月度完成度热力图与本地到期通知（`task-notification-sw.js`）。
-- **跨设备同步与备份**：可选以仅含 `gist` 权限的 Classic PAT 连接 GitHub Secret Gist 自动同步原有学科笔记与任务；全部学科目录、页面、附件与笔记支持本地 JSON 一键导出与还原。
+- **跨设备同步与备份**：可选用具有 Gist 写入权限的令牌连接 GitHub Secret Gist，自动同步原有学科笔记与任务。背景图库、学科目录、页面及附件可随本地 JSON 备份迁移。
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/workflow-dark.svg">
@@ -126,9 +126,10 @@ npm run preview
 <details>
 <summary><b>GitHub Secret Gist 跨设备同步说明</b></summary>
 
-1. 创建一个 Classic personal access token，**仅勾选 `gist` scope**。
-2. 在各台设备的 Space 设置中填入该 Token 并连接，页面会自动在对应账号下创建固定的 Secret Gist（Token 仅存该设备 `localStorage`，不写入仓库、Space 数据或 Gist 快照）。
-3. 同步覆盖原有学科笔记、NotebookLM 链接、通用及原有学科任务、贴图、音乐与背景设置；新建学科、学科页面与附件通过本地 JSON 备份迁移。首次接入第二台设备或两端均有变更时，页面会提示明确选择拉取或上传方向。
+1. 创建 Fine-grained 令牌，资源所有者选自己的账号，账户权限 **Gists** 设为 **Read and write**。也可以创建仅勾选 `gist` 的 Classic 令牌。权限错配时可在设置中选择「更换令牌」。
+2. 在各台设备的 Space 设置中连接同一个 GitHub 账号。页面会读取该账号的 Secret Gist，首次同步时创建它。令牌只保存在当前设备的浏览器中。
+3. 同步覆盖原有学科笔记、NotebookLM 链接、通用及原有学科任务、相关贴图和音乐。首次接入第二台设备或两端均有变更时，页面会提示选择拉取或上传方向。
+4. 背景图库随完整 JSON 备份迁移。若原设备仍存有未列入图库的图片，可在「设置 → 背景图片 → 找回本机图片」中选回，再点击「在影集中查看」。
 
 </details>
 

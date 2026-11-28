@@ -606,6 +606,12 @@
   previous.addEventListener('click', () => void turnTo(leaf - 1));
   next.addEventListener('click', () => void turnTo(leaf + 1));
   overview.addEventListener('click', () => void turnTo(0));
+  document.addEventListener('seika:show-album', event => {
+    event.preventDefault();
+    if (album.hidden) closeDrawer();
+    if (jacket.hidden) shutAlbum.scrollIntoView({ block: 'nearest' });
+    else void turnAlbum(true);
+  });
   jacket.addEventListener('click', () => turnAlbum(true));
   shutAlbum.addEventListener('click', () => turnAlbum(false));
 
