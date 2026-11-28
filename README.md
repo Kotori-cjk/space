@@ -111,7 +111,8 @@ npm test
 npm run preview
 ```
 
-- **本机预览**：访问 `http://127.0.0.1:8000/`（需要与 `HomePageEditor` 同时运行时，可改用 `npm run preview -- --port=8001`）。本机环境保留了门禁登录与 `algorithm/`、`cs-learning/` 等旧交互目录，可直接将本机完整地址填入编辑器的「资料链接」。
+- **本机学习**：运行 `npm run preview` 后访问 `http://127.0.0.1:8000/`（也可用 `npm run preview -- --port=8001`）。登录后可从抽屉打开算法和 CS Learning，后者包含 ICS 习题、Lab 和数算课程。已有资料包中的同一路径优先显示其自定义标题。
+- **从公开 Space 进入私有学习站**：在「设置 → 私有学习入口」保存本机 Space 根地址，或填写已启用服务端登录的私有站点根地址。入口设置只记录在当前浏览器。远程访问的权限由目标站点验证，私有课程与资料仍需存放在公开构建和公开仓库之外。
 - **公开产物验证**：
   ```powershell
   npm run build:public

@@ -54,9 +54,9 @@
                 <div class="sidebar-section">
                     <h3>学科与项目</h3>
                     <div id="subject-nav" class="subject-nav">
-                        <a class="subject-btn subject-link private-only" data-default-project href="algorithm/"><span class="subj-icon">🏆</span> 算法 ↗</a>
+                        <a class="subject-btn subject-link" data-private-project="algorithm/" hidden><span class="subj-icon">🏆</span> 算法 ↗</a>
                         <a id="public-recite-link" class="subject-btn subject-link" data-default-project href="https://kotori-cjk.github.io/recite/"><span class="subj-icon">📕</span> 课程背诵 ↗</a>
-                        <a class="subject-btn subject-link private-only" data-default-project href="cs-learning/"><span class="subj-icon">💻</span> CS Learning ↗</a>
+                        <a class="subject-btn subject-link" data-private-project="cs-learning/" hidden><span class="subj-icon">💻</span> CS Learning ↗</a>
                     </div>
                 </div>
 
@@ -127,6 +127,13 @@
                     </div>
                     <div id="music-manage-list" class="music-manage-list"></div>
                 </div>
+                <div id="private-study-settings" class="settings-group" hidden>
+                    <h3>🔒 私有学习入口</h3>
+                    <label for="private-study-url">私有学习站地址</label>
+                    <input type="text" id="private-study-url" inputmode="url" autocomplete="off" placeholder="http://127.0.0.1:8000/">
+                    <p class="upload-hint">填写本机 Space 或已配置登录的私有站点根地址。地址仅保存在当前浏览器，留空可隐藏入口。</p>
+                    <button id="private-study-save" class="btn btn-secondary btn-sm" type="button">保存入口</button>
+                </div>
                 <div class="settings-group">
                     <h3>☁️ 跨设备同步</h3>
                     <div class="sync-panel">
@@ -175,7 +182,7 @@
     <script src="sync/github-gist-sync.bundle.js?v=gist-access-2"></script>
     <button class="bg-view-exit" id="bg-view-exit">🖼️ 点击或按 Esc 退出观赏</button>
     <div class="save-toast" id="save-toast"></div>
-    <script type="module" src="app.js?v=album-recovery-1"></script>
+    <script type="module" src="app.js?v=private-study-1"></script>
     <script type="module">
         import { SITE_CONFIG } from './site-config.js';
         document.getElementById('public-recite-link').href = SITE_CONFIG.reciteUrl;

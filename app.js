@@ -2,10 +2,17 @@ import {
   IMAGE_STORE as IDB_STORE, LEGACY_SUBJECTS, SPACE_STATE_KEY as STORAGE_KEY, downloadBlob, isLocalSubject,
   openSpaceDatabase, openSubjectLibrary, readSubjectPack, resourceUrl, setupSubjectPages
 } from './subjects.js?v=4';
+import { SITE_CONFIG } from './site-config.js';
 
 const EMOJIS = ['✿','❀','🌸','⭐','💫','🎀','🦋','🌙'];
 const CATEGORY_ICONS = { 数学:'📐', 物理:'⚛️', 计算机:'💻', AI:'🤖' };
 const DEFAULT_SUBJECT_COLORS = new Map(LEGACY_SUBJECTS.map(({ id, color }) => [id, color]));
+const SPACE_ROOT = new URL('./', import.meta.url).href;
+const PRIVATE_STUDY_URL_KEY = 'kotori-seika-private-study-url';
+let privateStudyBase = window.SPACE_PUBLIC === true ? '' : SPACE_ROOT;
+if (window.SPACE_PUBLIC === true) {
+  try { privateStudyBase = parsePrivateStudyBase(localStorage.getItem(PRIVATE_STUDY_URL_KEY)); } catch (_) {}
+}
 let subjectLibrary;
 let subjectPages;
 let renderedCatalog;
@@ -537,6 +544,19 @@ function renderAll() {
   if (enteringRoom) main.dispatchEvent(new Event('seika:room-change'));
 }
 
+function parsePrivateStudyBase(value) {
+  try {
+    const url = new URL(value);
+    const loopback = ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname);
+    if (url.protocol !== 'https:' && !(url.protocol === 'http:' && loopback)) return '';
+    if (url.username || url.password || url.search || url.hash || url.origin === location.origin) return '';
+    if (!url.pathname.endsWith('/')) url.pathname += '/';
+    return url.href;
+  } catch {
+    return '';
+  }
+}
+
 function renderSubjectNav() {
   const nav = document.getElementById('subject-nav');
   if (renderedCatalog !== subjectLibrary.subjects) {
@@ -562,11 +582,33 @@ function renderSubjectNav() {
   }
   const { projectLinks } = subjectLibrary;
   if (renderedProjects !== projectLinks) {
+    const privateDefaults = Array.from(nav.querySelectorAll('[data-private-project]'));
+    const customTargets = new Set();
     for (const link of nav.querySelectorAll('[data-default-project]')) link.hidden = projectLinks !== null;
     for (const link of nav.querySelectorAll('.custom-project-link')) link.remove();
     for (const link of projectLinks || []) {
-      nav.insertAdjacentHTML('beforeend', `<a class="subject-btn subject-link custom-project-link${link.localOnly ? ' private-only' : ''}"
-        href="${escHtml(resourceUrl(link.url))}"><span class="seika-door-icon" aria-hidden="true"></span>${escHtml(link.title)} ↗</a>`);
+      const href = resourceUrl(link.url);
+      if (!href) continue;
+      const url = new URL(href);
+      const sourceRoot = [SPACE_ROOT, SITE_CONFIG.spaceUrl].find(root => url.href.startsWith(root));
+      let path = sourceRoot ? url.pathname.slice(new URL(sourceRoot).pathname.length) : '';
+      const privateDefault = privateDefaults.find(({ dataset }) =>
+        path === dataset.privateProject.slice(0, -1) || path.startsWith(dataset.privateProject));
+      if (link.localOnly || privateDefault) {
+        if (!privateStudyBase) continue;
+        if (privateDefault && path + '/' === privateDefault.dataset.privateProject) path += '/';
+      }
+      const target = (link.localOnly || privateDefault) && sourceRoot
+        ? new URL('./' + path + url.search + url.hash, privateStudyBase).href : href;
+      customTargets.add(target);
+      nav.insertAdjacentHTML('beforeend', `<a class="subject-btn subject-link custom-project-link"
+        href="${escHtml(target)}"><span class="seika-door-icon" aria-hidden="true"></span>${escHtml(link.title)} ↗</a>`);
+    }
+    for (const link of privateDefaults) {
+      const target = privateStudyBase ? new URL(link.dataset.privateProject, privateStudyBase).href : '';
+      link.hidden = !target || customTargets.has(target);
+      if (link.hidden) link.removeAttribute('href');
+      else link.href = target;
     }
     renderedProjects = projectLinks;
   }
@@ -1154,6 +1196,11 @@ function parseMusicId(input) {
 /* ===== Settings ===== */
 function openSettings() {
   document.getElementById('set-obsidian-vault').value = state.settings.obsidianVault;
+  const privateSettings = document.getElementById('private-study-settings');
+  if (window.SPACE_PUBLIC === true && privateSettings) {
+    privateSettings.hidden = false;
+    document.getElementById('private-study-url').value = privateStudyBase;
+  }
   function renderFields(containerId, prefix, valueFor, placeholder) {
     document.getElementById(containerId).innerHTML = subjectLibrary.subjects.map(subject => {
       const id = prefix + subject.id;
@@ -1165,6 +1212,28 @@ function openSettings() {
   renderFields('subject-notebook-settings', 'set-nlm-', k => state.subjectLinks[k]?.notebookLM, 'NotebookLM URL');
   renderBgPreviews(); renderMusicManageList();
   document.getElementById('settings-modal').classList.add('open');
+}
+function savePrivateStudyBase() {
+  const input = document.getElementById('private-study-url');
+  const value = input.value.trim();
+  const base = parsePrivateStudyBase(value);
+  if (value && !base) {
+    showToast('请输入本机 HTTP 地址或私有站点的 HTTPS 根地址');
+    input.focus();
+    return;
+  }
+  try {
+    if (base) localStorage.setItem(PRIVATE_STUDY_URL_KEY, base);
+    else localStorage.removeItem(PRIVATE_STUDY_URL_KEY);
+  } catch {
+    showToast('浏览器无法保存私有学习入口');
+    return;
+  }
+  privateStudyBase = base;
+  input.value = base;
+  renderedProjects = undefined;
+  renderSubjectNav();
+  showToast(base ? '已保存私有学习入口' : '已隐藏私有学习入口');
 }
 function closeSettings() {
   state.settings.obsidianVault = document.getElementById('set-obsidian-vault').value.trim()||'Obsidian Vault';
@@ -1804,6 +1873,7 @@ function setupEvents() {
 
   // Settings
   document.getElementById('settings-btn').addEventListener('click', openSettings);
+  document.getElementById('private-study-save')?.addEventListener('click', savePrivateStudyBase);
   document.querySelector('.modal-close').addEventListener('click', closeSettings);
   document.querySelector('.modal-overlay').addEventListener('click', closeSettings);
 
