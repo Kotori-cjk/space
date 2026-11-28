@@ -70,7 +70,7 @@
 
 - **本地优先学科书架**：内置数理、计算机与 AI 学科分组；笔记支持 Markdown、KaTeX 公式、剪贴板贴图与 Obsidian / NotebookLM 快捷跳转；新版学科页面与附件全部保存在浏览器 `IndexedDB`。
 - **每日任务与提醒**：支持按日期或学科分类索引待办、月度完成度热力图与本地到期通知（`task-notification-sw.js`）。
-- **跨设备同步与备份**：可选用具有 Gist 写入权限的令牌连接 GitHub Secret Gist，自动同步原有学科笔记与任务。背景图库、学科目录、页面及附件可随本地 JSON 备份迁移。
+- **跨设备同步与备份**：可选 Google Drive 或 GitHub Secret Gist 同步原有学科的笔记与任务。Google Drive 可另选同步自定义背景。完整 JSON 备份还可迁移学科目录、页面和附件。
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/workflow-dark.svg">
@@ -122,7 +122,19 @@ npm run preview
 
 ---
 
-## Gist 同步与前端门禁
+## 跨设备同步与前端门禁
+
+<details>
+<summary><b>Google Drive 跨设备同步说明</b></summary>
+
+1. 在「设置 → 跨设备同步」选择 Google Drive，点击「连接 Google Drive」。每台设备使用同一个 Google 账号授权。授权失效后在 Space 重新连接。
+2. 第一次同步时，在有资料的设备选择「上传到 Drive」，在其他设备选择「从 Drive 下载」。笔记、任务和相关贴图保存在 Space 专用的 Drive 应用数据目录。[Google Drive 应用数据目录说明](https://developers.google.com/workspace/drive/api/guides/appdata)
+3. 同步自定义背景时，请在需要传输图库的设备分别勾选「同步自定义背景图库」。下载会合并本机已有背景。学科资料包和完整附件通过本地 JSON 备份迁移。
+4. 切换同步服务会暂停原连接。回到某个服务后，先选择一次同步方向。GitHub 令牌仍保存在当前浏览器中。
+
+自行部署时，在 Google Cloud 启用 Drive API，创建类型为 Web application 的 OAuth 客户端，将站点源填入授权 JavaScript 来源。本站的生产来源是 `https://kotori-cjk.github.io`。测试模式下将自己的 Google 账号加入测试用户。可在 Space 设置中填写客户端 ID，也可在 `sync-config.js` 中设置 `googleDriveClientId` 和对应的 `googleDriveOrigin`。[Google OAuth 客户端配置说明](https://developers.google.com/identity/oauth2/web/guides/get-google-api-clientid)
+
+</details>
 
 <details>
 <summary><b>GitHub Secret Gist 跨设备同步说明</b></summary>

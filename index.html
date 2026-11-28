@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=sync-provider-1">
     <link rel="stylesheet" href="theme/seika.css?v=seika-hand-1">
     <link rel="stylesheet" href="subjects.css?v=subjects-4">
     <link rel="stylesheet" href="theme/book-room/vendor/openpageflip.css">
@@ -136,7 +136,12 @@
                 </div>
                 <div class="settings-group">
                     <h3>☁️ 跨设备同步</h3>
-                    <div class="sync-panel">
+                    <label for="sync-provider">同步服务</label>
+                    <select id="sync-provider" class="sync-provider">
+                        <option value="gist">GitHub Gist</option>
+                        <option value="drive">Google Drive</option>
+                    </select>
+                    <div id="gist-sync-panel" class="sync-panel">
                         <strong id="sync-account">尚未连接 GitHub Gist</strong>
                         <p id="sync-status">正在初始化同步功能…</p>
                         <div id="sync-token-row" class="sync-token-row">
@@ -159,6 +164,24 @@
                         </div>
                         <small>连接后同步原有学科的笔记、通用及原有学科任务、相关贴图、NotebookLM 链接和音乐。背景图库、学科目录、页面、资料附件及新建学科的笔记和任务可通过数据备份迁移。</small>
                     </div>
+                    <div id="drive-sync-panel" class="sync-panel" hidden>
+                        <strong id="drive-account">尚未连接 Google Drive</strong>
+                        <p id="drive-status" role="status">用 Google 账号授权访问 Space 的应用数据目录。</p>
+                        <div id="drive-client-settings" hidden>
+                            <label for="drive-client-id">Space 的 Google OAuth Client ID</label>
+                            <input id="drive-client-id" type="text" autocomplete="off" spellcheck="false" placeholder="…apps.googleusercontent.com">
+                            <small>首次配置需创建 Web 客户端并启用 Drive API。<a href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noopener noreferrer">打开 Google Cloud</a></small>
+                        </div>
+                        <label class="sync-checkbox"><input id="drive-backgrounds" type="checkbox"> 同步自定义背景图库</label>
+                        <div class="data-actions sync-actions">
+                            <button id="drive-connect" class="btn btn-primary" type="button">连接 Google Drive</button>
+                            <button id="drive-now" class="btn btn-secondary" type="button" hidden>立即同步</button>
+                            <button id="drive-pull" class="btn btn-secondary" type="button" hidden>从 Drive 下载</button>
+                            <button id="drive-push" class="btn btn-secondary" type="button" hidden>上传到 Drive</button>
+                            <button id="drive-disconnect" class="btn btn-secondary" type="button" hidden>断开连接</button>
+                        </div>
+                        <small>同一设备只启用所选的同步服务。Drive 同步原有学科笔记、任务、贴图、NotebookLM 链接和音乐。背景图库需单独开启。</small>
+                    </div>
                 </div>
                 <div class="settings-group">
                     <h3>💾 数据管理</h3>
@@ -178,11 +201,11 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="sync-config.js"></script>
-    <script src="sync/github-gist-sync.bundle.js?v=gist-access-2"></script>
+    <script src="sync-config.js?v=sync-provider-1"></script>
+    <script src="sync/github-gist-sync.bundle.js?v=sync-provider-1"></script>
     <button class="bg-view-exit" id="bg-view-exit">🖼️ 点击或按 Esc 退出观赏</button>
     <div class="save-toast" id="save-toast"></div>
-    <script type="module" src="app.js?v=private-study-1"></script>
+    <script type="module" src="app.js?v=sync-provider-1"></script>
     <script type="module">
         import { SITE_CONFIG } from './site-config.js';
         document.getElementById('public-recite-link').href = SITE_CONFIG.reciteUrl;

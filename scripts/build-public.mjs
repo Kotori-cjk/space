@@ -7,6 +7,7 @@ const output = path.join(root, '.public-pages');
 const paths = [
   'index.html', 'gate.js', 'app.js', 'style.css', 'subjects.js', 'subjects.css',
   'site-config.js', 'sync-config.js', 'sync/github-gist-sync.bundle.js',
+  'sync/sync-core.js', 'sync/google-drive-sync.js',
   'task-notification-sw.js', 'politics-recite/index.html',
   'code-analysis/index.html', 'code-analysis/app.js', 'code-analysis/style.css',
   'theme/seika.css', 'theme/seika.js', 'theme/avatar.webp', 'theme/banner.webp',

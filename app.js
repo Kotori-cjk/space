@@ -3,12 +3,14 @@ import {
   openSpaceDatabase, openSubjectLibrary, readSubjectPack, resourceUrl, setupSubjectPages
 } from './subjects.js?v=4';
 import { SITE_CONFIG } from './site-config.js';
+import { driveSync } from './sync/google-drive-sync.js?v=1';
 
 const EMOJIS = ['✿','❀','🌸','⭐','💫','🎀','🦋','🌙'];
 const CATEGORY_ICONS = { 数学:'📐', 物理:'⚛️', 计算机:'💻', AI:'🤖' };
 const DEFAULT_SUBJECT_COLORS = new Map(LEGACY_SUBJECTS.map(({ id, color }) => [id, color]));
 const SPACE_ROOT = new URL('./', import.meta.url).href;
 const PRIVATE_STUDY_URL_KEY = 'kotori-seika-private-study-url';
+const SYNC_PROVIDER_KEY = 'kotori-seika-sync-provider';
 let privateStudyBase = window.SPACE_PUBLIC === true ? '' : SPACE_ROOT;
 if (window.SPACE_PUBLIC === true) {
   try { privateStudyBase = parsePrivateStudyBase(localStorage.getItem(PRIVATE_STUDY_URL_KEY)); } catch (_) {}
@@ -88,7 +90,10 @@ function save(options = {}) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     updateSaveStatus(true);
-    if (options.sync !== false) window.spaceSync?.schedule();
+    if (options.sync !== false) {
+      if (syncProvider() === 'drive') driveSync.schedule();
+      else window.spaceSync?.schedule();
+    }
   } catch(e) {
     console.warn('Save failed', e);
     updateSaveStatus(false);
@@ -1166,6 +1171,7 @@ function renderBgPreviews() {
 }
 function saveBackgrounds() {
   save({ sync: false });
+  driveSync.scheduleAlbum();
   applyBackground();
   renderBgPreviews();
 }
@@ -1351,7 +1357,8 @@ function legacyEntries(entries) {
 }
 
 window.SpaceDataBridge = Object.freeze({
-  async exportSnapshot({ includeImages = true } = {}) {
+  get syncProvider() { return syncProvider(); },
+  async exportSnapshot({ includeImages = true, includeBackgrounds = false } = {}) {
     const notes = legacyEntries(state.notes);
     const tasks = state.tasks.filter(task => !isLocalSubject(task.subject));
     const allImages = includeImages ? await idbGetAll() : {};
@@ -1361,7 +1368,7 @@ window.SpaceDataBridge = Object.freeze({
         if (allImages[key]) images[key] = allImages[key];
       });
     }
-    return {
+    const snapshot = {
       data: {
         notes: structuredClone(notes),
         tasks: structuredClone(tasks),
@@ -1370,8 +1377,17 @@ window.SpaceDataBridge = Object.freeze({
       },
       images
     };
+    if (includeBackgrounds) {
+      const backgrounds = state.settings.backgrounds.filter(key => backgroundSource(key));
+      snapshot.album = {
+        backgrounds,
+        currentBg: backgrounds.indexOf(state.settings.backgrounds[state.settings.currentBg]),
+        images: Object.fromEntries(backgrounds.filter(key => allImages[key]).map(key => [key, allImages[key]]))
+      };
+    }
+    return snapshot;
   },
-  async importSnapshot(snapshot) {
+  async importSnapshot(snapshot, { includeBackgrounds = false } = {}) {
     if (snapshot?.kind !== 'kotori-seika-space' || snapshot?.schemaVersion !== 1 || !snapshot?.data) {
       throw new Error('云端同步数据格式不受支持。');
     }
@@ -1380,14 +1396,62 @@ window.SpaceDataBridge = Object.freeze({
     const localTasks = state.tasks.filter(task => isLocalSubject(task.subject));
     const data = {
       notes:legacyEntries(notes), subjectLinks:legacyEntries(subjectLinks),
-      _images:snapshot.images || {}
+      _images:{ ...(snapshot.images || {}) }
     };
     if (incomingTasks) data.tasks = [...incomingTasks, ...localTasks];
     if (Array.isArray(settings?.musicIds)) data.settings = { musicIds: settings.musicIds };
+    const album = snapshot.album;
+    if (includeBackgrounds && Array.isArray(album?.backgrounds) && album.backgrounds.every(key => typeof key === 'string')) {
+      const albumImages = Object.fromEntries(album.backgrounds.filter(key =>
+        Object.hasOwn(album.images || {}, key) && typeof album.images[key] === 'string' && album.images[key].startsWith('data:image/')
+      ).map(key => [key, album.images[key]]));
+      const available = album.backgrounds.filter(key => albumImages[key] || backgroundSource(key));
+      const backgrounds = [...new Set([...available, ...state.settings.backgrounds])];
+      data.settings = { ...data.settings, backgrounds, currentBg: backgrounds.indexOf(album.backgrounds[album.currentBg]) };
+      Object.assign(data._images, albumImages);
+    }
     await applyImportedData(data, { notify: false, sync: false });
     showToast('☁️ 已载入云端同步数据');
   }
 });
+
+function syncProvider() {
+  try { return localStorage.getItem(SYNC_PROVIDER_KEY) === 'drive' ? 'drive' : 'gist'; }
+  catch { return 'gist'; }
+}
+
+function setupSyncProviders() {
+  const select = document.getElementById('sync-provider');
+  if (!select) return;
+  const gistPanel = document.getElementById('gist-sync-panel');
+  const drivePanel = document.getElementById('drive-sync-panel');
+  let currentProvider;
+  const update = () => {
+    const nextProvider = syncProvider();
+    if (nextProvider === currentProvider) return;
+    if (currentProvider === 'drive') driveSync.requireDirection();
+    if (nextProvider === 'drive') window.spaceSync?.pauseForDrive?.();
+    currentProvider = nextProvider;
+    select.value = nextProvider;
+    gistPanel.hidden = select.value === 'drive';
+    drivePanel.hidden = !gistPanel.hidden;
+    driveSync.providerChanged();
+  };
+  driveSync.init(drivePanel);
+  select.addEventListener('change', () => {
+    if (window.spaceSync?.busy || driveSync.busy) {
+      select.value = syncProvider();
+      showToast('同步操作正在进行，请稍后切换服务');
+      return;
+    }
+    localStorage.setItem(SYNC_PROVIDER_KEY, select.value);
+    update();
+  });
+  window.addEventListener('storage', event => {
+    if (event.key === SYNC_PROVIDER_KEY) update();
+  });
+  update();
+}
 
 /* ===== Events ===== */
 function setupEvents() {
@@ -1984,6 +2048,7 @@ async function init() {
   });
   window.addEventListener('beforeunload', () => save({ sync:false }));
   setInterval(() => { save({ sync:false }); refreshDeadlines(); }, 30000);
+  setupSyncProviders();
   await window.spaceSync?.init();
 }
 document.addEventListener('DOMContentLoaded', () => init());

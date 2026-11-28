@@ -34,6 +34,10 @@ function isPaused() {
   return localStorage.getItem(PAUSED_KEY) === '1';
 }
 
+function isActive() {
+  return window.SpaceDataBridge?.syncProvider !== 'drive';
+}
+
 function readMeta() {
   try { return JSON.parse(localStorage.getItem(META_KEY) || '{}'); }
   catch { return {}; }
@@ -81,7 +85,7 @@ function render() {
   if (!ui.connect) return;
   const connected = Boolean(account) && !isPaused() && !replacingToken;
   ui.account.textContent = account ? `GitHub：${account.login}` : '尚未连接 GitHub Gist';
-  ui.tokenRow.hidden = Boolean(account) && !replacingToken;
+  ui.tokenRow.hidden = Boolean(token()) && !replacingToken;
   ui.connect.hidden = !configured() || connected;
   ui.connect.disabled = busy;
   ui.connect.textContent = replacingToken ? '保存新令牌并连接' : isPaused() ? '恢复同步' : '连接 GitHub Gist';
@@ -218,6 +222,7 @@ async function readRemote() {
 async function uploadRemote(snapshot) {
   const { images = {}, ...snapshotData } = snapshot;
   const gist = await findGist();
+  if (!isActive()) throw new Error('已切换同步服务。');
   const payload = {
     kind: 'kotori-seika-space',
     schemaVersion: 1,
@@ -250,13 +255,18 @@ async function uploadRemote(snapshot) {
 }
 
 async function applyRemote(remote) {
+  if (!isActive()) throw new Error('已切换同步服务。');
   await window.SpaceDataBridge.importSnapshot(remote.payload);
   const localHash = await snapshotHash(await localSnapshot());
   writeMeta({ revision: remote.revision, updatedAt: remote.updatedAt, localHash, lastSyncedAt: new Date().toISOString() });
 }
 
 async function syncNow() {
-  if (busy || pendingAction || isPaused() || replacingToken || !account || !navigator.onLine) return;
+  if (!isActive() || busy || pendingAction || isPaused() || replacingToken || !account || !navigator.onLine) return;
+  if (readMeta().chooseDirection) {
+    setStatus('已切换回 GitHub Gist，请选择从云端下载或上传本机数据。', 'conflict');
+    return;
+  }
   busy = true;
   render();
   setStatus('正在检查 GitHub Gist…');
@@ -297,12 +307,12 @@ function showConfirmation(action, message) {
 
 function clearConfirmation(message = '') {
   pendingAction = null;
-  ui.confirm.hidden = true;
+  if (ui.confirm) ui.confirm.hidden = true;
   if (message) setStatus(message);
 }
 
 async function downloadRemote() {
-  if (busy || pendingAction) return;
+  if (!isActive() || busy || pendingAction) return;
   busy = true;
   setStatus('正在读取云端数据…');
   try {
@@ -356,13 +366,13 @@ async function confirmAction() {
 }
 
 function schedule() {
-  if (!account || isPaused() || replacingToken || busy || pendingAction) return;
+  if (!isActive() || !account || isPaused() || replacingToken || busy || pendingAction) return;
   clearTimeout(timer);
   timer = setTimeout(syncNow, SYNC_DELAY);
 }
 
 async function connect() {
-  if (busy || pendingAction) return;
+  if (!isActive() || busy || pendingAction) return;
   const accessToken = ui.tokenInput.value.trim() || (replacingToken ? '' : token());
   if (!accessToken) {
     setStatus(`请粘贴有 Gist 写入权限的令牌。${GIST_PERMISSION_HELP}`, 'error');
@@ -379,6 +389,7 @@ async function connect() {
       throw new Error(`令牌缺少 gist 权限。${GIST_PERMISSION_HELP}`);
     }
     const nextAccount = await response.json();
+    if (!isActive()) return;
     if (account && account.id !== nextAccount.id) {
       localStorage.removeItem(META_KEY);
       localStorage.removeItem(GIST_ID_KEY);
@@ -410,6 +421,13 @@ function pause() {
   clearTimeout(timer);
   setStatus('GitHub Gist 同步已暂停。');
   render();
+}
+
+function pauseForDrive() {
+  if (!token()) return;
+  writeMeta({ ...readMeta(), chooseDirection:true });
+  clearConfirmation();
+  pause();
 }
 
 async function init() {
@@ -445,8 +463,8 @@ async function init() {
   document.addEventListener('visibilitychange', () => { if (!document.hidden) syncNow(); });
   poller = window.setInterval(syncNow, 60000);
   setStatus('');
-  if (token() && !isPaused()) await connect();
+  if (isActive() && token() && !isPaused()) await connect();
   else render();
 }
 
-window.spaceSync = Object.freeze({ init, schedule, syncNow });
+window.spaceSync = Object.freeze({ init, schedule, syncNow, pauseForDrive, get busy() { return busy; } });
