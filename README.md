@@ -2,7 +2,7 @@
 
 # Kotori's Colorful Seika
 
-<p><em>Learning is a colorful journey</em><br>林间书屋风格的个人学习空间、学科资料库与每日待办工作台</p>
+<p><em>Learning is a colorful journey</em><br>林间书屋风格的互动书桌学习空间 · 学科资料库 · 每日待办手账</p>
 
 <p>
   <a href="https://kotori-cjk.github.io/space/">在线访问</a> ·
@@ -12,7 +12,7 @@
 </p>
 
 <p><img src="docs/readme-cover.png" alt="Colorful Seika Space 插画" width="760"></p>
-<p><sub>樱影落窗，茶香伴卷——把日常课业、代码思维与手账笔记收进同一座静谧书房。</sub></p>
+<p><sub>樱影落窗，灯暖卷开——把日常课业、思维笔记与珍藏画册收进同一张随页面生长的林间木桌。</sub></p>
 
 </div>
 
@@ -20,26 +20,57 @@
 
 ## 概览
 
-`Colorful Seika` 是独立运行的个人学习工作区，与公开主页解耦。界面以林间书屋为意象，提供浅绿与天蓝双色切换、深浅色外观、门扉切换动画以及随文档高度自然延展的木纹桌面；数据采用**本地优先（Local-first）**架构，并支持通过 GitHub Secret Gist 与 JSON 资料包在多台设备间轻盈流转。
+`Colorful Seika` 是一座独立运行的个人学习书房，以「**林间互动书桌**」为核心意象重构阅读与记录体验：木纹抽屉收纳着各门学科，桌前羊皮手账由真实翻页引擎驱动，窗畔台灯掌管白昼与夜读切换，合上抽屉后还可在桌面摊开精装跨页影集。
+
+数据采用**本地优先（Local-first）**架构——学科书架、多页读本与附件安放于本机浏览器的 `IndexedDB`，既可经 [HomePageEditor](https://github.com/Kotori-cjk/HomePageEditor) 编排迁移，也可通过 GitHub Secret Gist 与 JSON 备份在多设备间从容流转。
 
 ---
 
-## 核心特性
+## 书房风物与交互美学 · 迦勒底见习簿
 
-- **林间书屋视觉与交互**：内建浅绿 / 天蓝强调色与深浅色主题，支持房间切换门扉动效、点击涟漪（遵循系统与站内动效开关）以及全屏观赏背景模式。
-- **本地优先学科书架**：内置数理、计算机与 AI 学科分组；支持 Markdown 与 KaTeX 数学公式笔记、贴图、Obsidian / NotebookLM 快捷跳转，以及在本地浏览器 `IndexedDB` 中阅读由 [HomePageEditor](https://github.com/Kotori-cjk/HomePageEditor) 编排的多页学科读本与附件。
-- **每日任务与提醒**：支持按日期或学科分类索引待办、月度完成热力图日历与本地到期通知（`task-notification-sw.js`）。
-- **跨设备同步与备份**：既可连接仅含 `gist` 权限的 GitHub Secret Gist 自动同步原有学科笔记与任务，也可通过 JSON 一键导入导出包含学科目录、页面与附件的完整资料。
+以型月（TYPE-MOON / Fate/Grand Order）世界观搭建的虚构书房演示（画面中的学科、人物、日程与插画均为本地演示素材）：
 
----
+### 1. 白日书桌 · 木质抽屉、手账待办与分形花藤
 
-## 路由与公开边界
+拉开「每日任务」木抽屉，桌面随之摊开一份线装手账。同一视野内收拢了**月度完成热力日历**、**24 小时内临近截止提醒**与**任务索引**；点击右上角红色羽毛笔会轻盈摇晃，页面支持底部按钮、边缘滚轮、触控滑动与键盘方向键翻页。
 
-| 路由 | 页面 | 说明 |
+顶栏木绿菜单条内嵌了由 **L-System 分形文法**（`lindenmayer.js`）生长的双色常春藤与五瓣花朵：鼠标滑过时顶栏金属光晕与藤蔓产生 3D 视差微倾，轻点粉花或白花还会使其绽放。桌面木纹亦会随文档内容向下自然铺展，长短页滚到底始终纹理不断。
+
+![白天的 Space 书桌，顶部人物与台灯完整露出，木质抽屉展开每日任务手账与 2016-12-22 示巴观测待办](docs/demo/chaldea-tasks.png)
+
+### 2. 拨亮台灯 · 昼夜光影流转与纸页翻折
+
+轻点窗前「台灯」开关，书房即刻从晨光切入暖灯夜读——室内光影收敛至灯罩晕影，手账纸面同步转为温和护眼的深色羊皮纸。点击左侧任意学科抽屉，抽屉会平滑探出并点亮绿底圆点标签，书页由 **OpenPageFlip** 渲染立体翻折动画，在多页学科读本与「写笔记」（Markdown、KaTeX 公式与剪贴板贴图）间自在翻阅。
+
+![夜间台灯模式下展开特异点记录抽屉，书页显示第七特异点乌鲁克灵脉观测手记与完整发布控件](docs/demo/chaldea-notes.png)
+
+### 3. 合上抽屉 · 桌面精装影集与跨页画册
+
+将所有抽屉推进木柜，一张象牙白精装影集便显露于桌面。点击「翻开影集」，即可依据你上传并选中的背景插画原始比例，以双页跨页形式舒展装裱于书页之间，还原纸脊中缝折痕与立体纸边，点击「合上影集」再度归位。
+
+![桌面精装影集对开摊开，双页展示盛装步上宅邸阶梯的四位型月女主](docs/demo/chaldea-album.png)
+
+<details>
+<summary><b>交互与美学工艺细节一览</b></summary>
+
+| 模块 | 实现位置 | 体验细节 |
 | --- | --- | --- |
-| `/space/` | Colorful Seika 主页 | 学科笔记、学科页面阅读器与每日任务工作台 |
-| `/space/code-analysis/` | Code Analysis | 洛谷刷题、代码诊断与思维沉淀工作台 |
-| `/recite/` | 课程背诵 | 独立公开课程背诵站 |
+| **林间木纹与抽屉书架** | `theme/book-room/folio.js` · `folio.css` | 抽屉滑出位移动画、纸质标签点亮、`desk-wood.webp` 随页面高度纵向铺满 |
+| **立体纸页翻折** | `theme/book-room/vendor/openpageflip.js` | 任务总览/详情与学科读本/笔记双面切叶，兼容滚轮边缘、触控与方向键 |
+| **L-System 顶栏藤蔓** | `theme/book-room/vines.js` | 分形文法生成枝叶与可点击绽放的五瓣花朵，随指针移动产生光斑与 3D 视差 |
+| **桌面台灯与羽毛笔** | `theme/book-room/folio.js` | 一键联动全站深浅色与室内灯晕；书页旁羽毛笔点击可触发轻晃动效 |
+| **自适应跨页影集** | `theme/book-room/folio.css` · `folio.js` | 自动读取背景原图宽高比（`--album-ratio`）展开双页跨页与书脊阴影 |
+| **无障碍与动效克制** | `theme/seika.js` · `folio.css` | 全面尊重系统 `prefers-reduced-motion` 与站内动效开关，关动效后直切无闪烁 |
+
+</details>
+
+---
+
+## 核心特性与数据流转
+
+- **本地优先学科书架**：内置数理、计算机与 AI 学科分组；笔记支持 Markdown、KaTeX 公式、剪贴板贴图与 Obsidian / NotebookLM 快捷跳转；新版学科页面与附件全部保存在浏览器 `IndexedDB`。
+- **每日任务与提醒**：支持按日期或学科分类索引待办、月度完成度热力图与本地到期通知（`task-notification-sw.js`）。
+- **跨设备同步与备份**：可选以仅含 `gist` 权限的 Classic PAT 连接 GitHub Secret Gist 自动同步原有学科笔记与任务；全部学科目录、页面、附件与笔记支持本地 JSON 一键导出与还原。
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/workflow-dark.svg">
@@ -47,7 +78,17 @@
   <img src="docs/workflow-light.svg" alt="Colorful Seika Space 数据与同步流转">
 </picture>
 
-> 公开构建仅打包白名单内的静态文件至 `.public-pages/`；编辑器、个人资料预设及本机留存的旧交互目录（`algorithm/`、`cs-learning/`、`ai-recite/`、`seed.js`）均不进入 GitHub Pages 产物。
+---
+
+## 路由与公开边界
+
+| 路由 | 页面 | 说明 |
+| --- | --- | --- |
+| `/space/` | Colorful Seika 主页 | 林间互动书桌、学科阅读器与每日任务手账 |
+| `/space/code-analysis/` | Code Analysis | 洛谷刷题、代码诊断与思维沉淀工作台 |
+| `/recite/` | 课程背诵 | 独立公开课程背诵站 |
+
+> 公开构建（`npm run build:public`）仅将白名单静态资源打包至 `.public-pages/`；编辑器、个人资料预设及本机留存的旧交互目录（`algorithm/`、`cs-learning/`、`ai-recite/`、`seed.js`）均不进入 GitHub Pages 产物。
 
 ---
 
@@ -109,4 +150,5 @@ npm run preview
 ## 致谢与关联
 
 - 插画与房间素材授权见 [theme/room-assets/README.md](theme/room-assets/README.md)
+- 互动书桌开源依赖（MIT）：[OpenPageFlip](theme/book-room/vendor/openpageflip.LICENSE.txt) · [Lindenmayer](theme/book-room/vendor/lindenmayer.LICENSE.txt)
 - 配套站点与工具：[Kotori Homepage](https://github.com/Kotori-cjk/Kotori-cjk.github.io) · [HomePageEditor](https://github.com/Kotori-cjk/HomePageEditor)
